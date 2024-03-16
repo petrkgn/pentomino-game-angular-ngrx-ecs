@@ -12,8 +12,8 @@ import { WINDOW } from '@ng-web-apis/common';
   standalone: true,
 })
 export class BonudsElementDirective implements AfterViewInit {
-  @Input('selector') private readonly selector: string = '';
-  @Input('color') private color: string = 'red';
+  @Input('selector') selector: string = '';
+  @Input('color-board') color: string = 'red';
   // private window = inject(WINDOW)
 
   el = this.element.nativeElement;
