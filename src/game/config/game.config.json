@@ -1,0 +1,11 @@
+{
+  "levels": {
+    "1": {
+      "boardSize": {
+        "width": 5,
+        "height": 3
+      },
+      "shapes": ["L", "Y", "T"]
+    }
+  }
+}

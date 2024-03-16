@@ -1,0 +1,1 @@
+export createEntitiesWithDifferentComponents as createEntitiesWithDifferentComponents from 'pentomino-factory'
