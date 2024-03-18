@@ -3,11 +3,10 @@ import {
   Component,
   ElementRef,
   inject,
-  Input,
-  ViewChild,
+  viewChild,
 } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { fromEvent, Observable, tap } from 'rxjs';
+import { tap } from 'rxjs';
 import { BonudsElementDirective } from '../../directives/bounds-element.directive';
 import { BoardsSize } from '../../constants/board-size';
 import { PentominoActions } from '../../store/game/game.actions';
@@ -26,9 +25,8 @@ import { ResizeService } from '../../services/resize.service';
 export class BoardComponent implements AfterViewInit {
   private readonly store = inject(Store);
   private readonly resizeService = inject(ResizeService);
-  @ViewChild('canvas', { static: true })
-  private canvas!: ElementRef<HTMLCanvasElement>;
-  myCanvas!: HTMLCanvasElement;
+  private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas')
+  boardLayer!: HTMLCanvasElement;
   ctx!: CanvasRenderingContext2D | null;
   cellSize = 32;
   numRows = BoardsSize.firstLevel.length;
@@ -39,10 +37,10 @@ export class BoardComponent implements AfterViewInit {
   constructor() {}
 
   ngAfterViewInit() {
-    this.myCanvas = this.canvas.nativeElement;
-    this.ctx = this.myCanvas.getContext('2d');
-    this.myCanvas.width = this.numCols * this.cellSize;
-    this.myCanvas.height = this.numRows * this.cellSize;
+    this.boardLayer = this.canvas().nativeElement;
+    this.ctx = this.boardLayer.getContext('2d');
+    this.boardLayer.width = this.numCols * this.cellSize;
+    this.boardLayer.height = this.numRows * this.cellSize;
     // this.drawGrid();
 
     this.resizeService
@@ -52,8 +50,8 @@ export class BoardComponent implements AfterViewInit {
           const ratio = Math.ceil(value);
           // console.log('ratio', ratio);
           this.cellSize = 32 * ratio;
-          this.myCanvas.width = this.numCols * this.cellSize;
-          this.myCanvas.height = this.numRows * this.cellSize;
+          this.boardLayer.width = this.numCols * this.cellSize;
+          this.boardLayer.height = this.numRows * this.cellSize;
           this.getBoardPosition();
           this.drawGrid(ratio);
         })
@@ -62,8 +60,8 @@ export class BoardComponent implements AfterViewInit {
   }
 
   private getBoardPosition(): void {
-    this.boardTop = this.myCanvas.getBoundingClientRect().top;
-    this.boardLeft = this.myCanvas.getBoundingClientRect().left;
+    this.boardTop = this.boardLayer.getBoundingClientRect().top;
+    this.boardLeft = this.boardLayer.getBoundingClientRect().left;
     this.store.dispatch(
       PentominoActions.updateComponentData({
         entityId: GameObjectsIds.BOARD,
@@ -76,13 +74,13 @@ export class BoardComponent implements AfterViewInit {
   private drawGrid(ratio: number): void {
     if (!this.ctx) return;
 
-    this.ctx.clearRect(0, 0, this.myCanvas.width, this.myCanvas.height);
+    this.ctx.clearRect(0, 0, this.boardLayer.width, this.boardLayer.height);
     this.ctx.lineWidth = 0.6 * ratio;
     for (let i = 0; i <= this.numRows; i++) {
       const y = i * this.cellSize;
       this.ctx.beginPath();
       this.ctx.moveTo(0, y);
-      this.ctx.lineTo(this.myCanvas.width, y);
+      this.ctx.lineTo(this.boardLayer.width, y);
       this.ctx.stroke();
     }
 
@@ -91,7 +89,7 @@ export class BoardComponent implements AfterViewInit {
       const x = i * this.cellSize;
       this.ctx.beginPath();
       this.ctx.moveTo(x, 0);
-      this.ctx.lineTo(x, this.myCanvas.height);
+      this.ctx.lineTo(x, this.boardLayer.height);
       this.ctx.stroke();
     }
   }
