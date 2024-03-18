@@ -1,1 +1,12 @@
 /* Add application styles & imports to this file! */
+canvas {
+    position: absolute;
+  }
+  
+  body {
+    background-color: beige;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    overflow: clip;
+  }
