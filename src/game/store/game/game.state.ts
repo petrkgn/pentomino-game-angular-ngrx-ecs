@@ -22,7 +22,7 @@ import {
 } from '../../utils/matricies-utils.old';
 import { PentominoService } from '../../services/pentomino.service';
 
-export const gameReducer =  createReducer(
+const gameReducer =  createReducer(
     initialGameEntitiesState,
     on(PentominoActions.addEntity, (state, { entity }) => {
       return entitiesAdapter.addOne(entity, state);
