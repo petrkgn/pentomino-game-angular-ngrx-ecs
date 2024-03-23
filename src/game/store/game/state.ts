@@ -1,73 +1,21 @@
 import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
 
 import { Entity } from '../../interfaces/entity';
-import {
-  EntityComponents,
-  PickComponentType,
-} from '../../interfaces/components';
 import { ComponentType } from '../../constants/component-type.enum';
-import { PentominoActions, PlayerActions, GameActions } from './actions';
-import { updateEntitiesWithComponents } from '../../utils/updates-entities';
+import { PlayerActions, GameActions } from './actions';
 import { initialGameEntitiesState, entitiesAdapter } from './initial.state';
-import { getEntitiesWithComponents, selectEntitiesWithFilteredComponents } from '../../utils/filtered-entities';
 import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
-import {
-  canPlacePentomino,
-} from '../../utils/matricies-utils.old';
-import { PentominoService } from '../../services/pentomino.service';
+import { canPlacePentomino } from '../../utils/matricies-utils.old';
+import { CELL_SIZE } from '../../constants/cell-size';
+import * as  utils from '../../utils';
 
 
 const gameReducer =  createReducer(
     initialGameEntitiesState,
-    on(PentominoActions.addEntity, (state, { entity }) => {
-      return entitiesAdapter.addOne(entity, state);
-    }),
-    on(PentominoActions.updateEntity, (state, { id, changes }) => {
-      return entitiesAdapter.updateOne({ id, changes }, state);
-    }),
-    on(PentominoActions.deleteEntity, (state, { id }) => {
-      return entitiesAdapter.removeOne(id, state);
-    }),
-    on(
-      PentominoActions.addComponentToEntity,
-      (state, { entityId, component }) => {
-        const currentPentomino = state.entities[entityId];
-        if (!currentPentomino) return state;
-
-        return entitiesAdapter.updateOne(
-          {
-            id: entityId,
-            changes: {
-              components: [...currentPentomino.components, component],
-            },
-          },
-          state
-        );
-      }
-    ),
-    on(
-      PentominoActions.removeComponentFromEntity,
-      (state, { entityId, currentComponent }) => {
-        const currentPentomino = state.entities[entityId];
-        if (!currentPentomino) return state;
-        const updatedEntity = entitiesAdapter.updateOne(
-          {
-            id: entityId,
-            changes: {
-              components: currentPentomino.components.filter(
-                (component) => component['type'] !== currentComponent
-              ),
-            },
-          },
-          state
-        );
-        return updatedEntity;
-      }
-    ),
-    on(PlayerActions.keyDown, (state, { angle }) => {
+    on(PlayerActions.rotateShape, (state, { angle }) => {
       const includedComponents: ComponentType[] = [ComponentType.ROTATE];
       const excludedComponents: ComponentType[] = [];
-      const updates = updateEntitiesWithComponents(
+      const updates = utils.updateEntitiesWithComponents(
         state,
         includedComponents,
         excludedComponents,
@@ -76,37 +24,7 @@ const gameReducer =  createReducer(
       );
 
       return entitiesAdapter.updateMany(updates, state);
-    }),
-    on(
-      PentominoActions.updateComponentData,
-      (state, { entityId, currentComponent, changes }) => {
-        if (
-          entityId === undefined ||
-          currentComponent === undefined ||
-          changes === undefined
-        ) {
-          return state; // Возвращаем исходное состояние, если не указаны все необходимые параметры
-        }
-        // console.log(entityId, currentComponent, changes);
-        const updatedPentominosState = entitiesAdapter.updateOne(
-          {
-            id: entityId,
-            changes: {
-              components: (state.entities[entityId]?.components || []).map(
-                (component) => {
-                  if (component.type === currentComponent) {
-                    return { ...component, ...changes } as EntityComponents;
-                  }
-                  return component as EntityComponents;
-                }
-              ),
-            },
-          },
-          state
-        );
-        return updatedPentominosState;
-      }
-    ),
+    }),  
     on(PlayerActions.mouseMove, (state, { mx, my }) => {
       const includedComponents: ComponentType[] = [
         ComponentType.MOUSE,
@@ -114,7 +32,7 @@ const gameReducer =  createReducer(
       ];
       const excludedComponents: ComponentType[] = [];
 
-      const updates = updateEntitiesWithComponents(
+      const updates = utils.updateEntitiesWithComponents(
         state,
         includedComponents,
         excludedComponents,
@@ -125,45 +43,39 @@ const gameReducer =  createReducer(
       return entitiesAdapter.updateMany(updates, state);
     }),
     on(GameActions.shapePlacement, (state) => {
+      const board = utils.getEntitiesById(GameObjectsIds.BOARD, state)[0]
       const includedComponents = [ComponentType.IS_ACTIVE_TAG];
       const excludedComponents: ComponentType[] = [];
-      const entities = entitiesAdapter.getSelectors().selectAll(state);
-      const board = entities.find(
-        (entity) => entity.id === GameObjectsIds.BOARD
-      );
-      
-      const filteredEntities = getEntitiesWithComponents(
-        entities,
+      const entities = state.entities;
+      const activeShape = utils.selectEntitiesWithFilteredComponents(    
         includedComponents,
-        excludedComponents
-      );
+        excludedComponents,
+        entities,
+      )[0];     
 
-      if (!board || filteredEntities.length === 0) {
+      if (!board || !activeShape) {
         return { ...state };
       }
-
-      const cloneBoard = structuredClone(board);
-      const clonePentomino = structuredClone(filteredEntities[0]);
-      const service = new PentominoService();
-      const canPlacement = canPlacePentomino(
+   
+      const placementPosition = canPlacePentomino(
         board,
-        filteredEntities[0],
-        PLACE_PENTOMINO_SIZE
+        activeShape,
+        CELL_SIZE
       );
 
-      if (!canPlacement) {
+      if (!placementPosition) {
         return { ...state };
       }
 
-      const updatedComponents = updateEntityComponents(
-        filteredEntities[0],
-        canPlacement
-      );
+      const updatedComponents = utils.updateActiveEntityWhenPlacement(
+        activeShape,
+        placementPosition
+      );      
 
       return entitiesAdapter.updateOne(
         {
-          id: filteredEntities[0].id,
-          changes: { components: updatedComponents },
+          id: activeShape.id,
+          changes: { components: updatedComponents  },
         },
         state
       );
@@ -171,9 +83,9 @@ const gameReducer =  createReducer(
     on(GameActions.ratioChanged, (state, { ratio }) => {
       const includedComponents: ComponentType[] = [ComponentType.RATIO];
       const excludedComponents: ComponentType[] = [];
-      const clonedState = structuredClone(state);
-      const updates = updateEntitiesWithComponents(
-        clonedState,
+  
+      const updates = utils.updateEntitiesWithComponents(
+        state,
         includedComponents,
         excludedComponents,
         ComponentType.RATIO,
@@ -183,28 +95,6 @@ const gameReducer =  createReducer(
       return entitiesAdapter.updateMany(updates, state);
     })
   )
-
-
-// export const { selectAll } = entitiesAdapter.getSelectors(
-//   GameFeature.selectGameState
-// );
-
-function updateEntityComponents(
-  currentPentomino: Entity,
-  canPlacement: PickComponentType<ComponentType.POSITION>
-) {
-  return currentPentomino.components
-    .filter((component) => component.type !== ComponentType.IS_ACTIVE_TAG)
-    .map((component) =>
-      component.type === ComponentType.POSITION
-        ? { ...component, ...canPlacement }
-        : component
-    )
-    .concat({ type: ComponentType.IS_PLACEMENT_TAG });
-}
-
-const PLACE_PENTOMINO_SIZE = 32;
-
 
 export const gameFeature = createFeature({
     name: 'Game',
@@ -217,17 +107,16 @@ export const gameFeature = createFeature({
       const includedComponents = [ComponentType.IS_ACTIVE_TAG];
       const excludedComponents: ComponentType[] = [];
     
-      return selectEntitiesWithFilteredComponents(
+      return utils.selectEntitiesWithFilteredComponents(
         includedComponents,
         excludedComponents,
         entities
       )
     }),
-    //   selectSelectedUser: createSelector(
-    //     selectSelectedUserId,
-    //     selectEntities,
-    //     (selectedId, entities) => selectedId ? entities[selectedId] : null
-    //   ),
+      selectBoard: createSelector(
+        selectGameState, 
+        (state) => utils.getEntitiesById(GameObjectsIds.BOARD, state)
+      ),
     }),
   })
 

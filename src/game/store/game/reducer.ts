@@ -7,7 +7,7 @@ import {
 } from '../../interfaces/components';
 import { ComponentType } from '../../constants/component-type.enum';
 import { PentominoActions, PlayerActions, GameActions } from './actions';
-import { updateEntitiesWithComponents } from '../../utils/updates-entities';
+import { updateEntitiesWithComponents } from '../../utils/update-entities';
 import {
   allEntities,
   selectEntitiesWithFilteredComponents,

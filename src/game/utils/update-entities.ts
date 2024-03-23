@@ -2,12 +2,13 @@ import { Update } from '@ngrx/entity';
 import { ComponentType } from '../constants/component-type.enum';
 import { Entity } from '../interfaces/entity';
 import { GameObjects } from '../store/game/initial.state';
+import { PickComponentType } from '../interfaces/components';
 
 export function updateEntitiesWithComponents(
   state: GameObjects,
   includedComponents: ComponentType[],
   excludedComponents: ComponentType[],
-  currentComonentType: ComponentType,
+  currentComponentType: ComponentType,
   componentChanges: {}
 ): Update<Entity>[] {
   const updates: Update<Entity>[] = [];
@@ -28,11 +29,11 @@ export function updateEntitiesWithComponents(
         (!hasExcludedComponents || excludedComponents.length === 0)
       ) {
         const currentComponentIndex = entity.components.findIndex(
-          (component) => component.type === currentComonentType
+          (component) => component.type === currentComponentType
         );
 
         if (currentComponentIndex !== -1) {
-          const updatedMouseComponent = {
+          const updatedComponent = {
             ...entity.components[currentComponentIndex],
             ...componentChanges,
           };
@@ -42,7 +43,7 @@ export function updateEntitiesWithComponents(
             changes: {
               components: [
                 ...entity.components.slice(0, currentComponentIndex),
-                updatedMouseComponent,
+                updatedComponent,
                 ...entity.components.slice(currentComponentIndex + 1),
               ],
             },
@@ -52,4 +53,18 @@ export function updateEntitiesWithComponents(
     }
   });
   return updates;
+}
+
+export function updateActiveEntityWhenPlacement(
+  activePentomino: Entity,
+  currentPosition: PickComponentType<ComponentType.POSITION>
+) {
+  return activePentomino.components
+    .filter((component) => component.type !== ComponentType.IS_ACTIVE_TAG)
+    .map((component) =>
+      component.type === ComponentType.POSITION
+        ? { ...component, ...currentPosition }
+        : component
+    )
+    .concat({ type: ComponentType.IS_PLACEMENT_TAG });
 }

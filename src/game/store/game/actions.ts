@@ -27,7 +27,7 @@ export const PlayerActions = createActionGroup({
   source: 'Control',
   events: {
     mouseMove: props<{ mx: number; my: number }>(),
-    keyDown: props<{ angle: number }>(),
+    rotateShape: props<{ angle: number }>(),
   },
 });
 
