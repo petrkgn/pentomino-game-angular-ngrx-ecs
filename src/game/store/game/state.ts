@@ -8,19 +8,14 @@ import {
 import { ComponentType } from '../../constants/component-type.enum';
 import { PentominoActions, PlayerActions, GameActions } from './actions';
 import { updateEntitiesWithComponents } from '../../utils/updates-entities';
-import {
-  allEntities,
-  selectEntitiesWithFilteredComponents,
-} from './selectors';
 import { initialGameEntitiesState, entitiesAdapter } from './initial.state';
-import { getEntitiesWithComponents } from '../../utils/filtered-entities';
-import { entitiesMapper } from '../../utils/entities-mapper';
+import { getEntitiesWithComponents, selectEntitiesWithFilteredComponents } from '../../utils/filtered-entities';
 import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
 import {
   canPlacePentomino,
-  placePentomino,
 } from '../../utils/matricies-utils.old';
 import { PentominoService } from '../../services/pentomino.service';
+
 
 const gameReducer =  createReducer(
     initialGameEntitiesState,
@@ -136,6 +131,7 @@ const gameReducer =  createReducer(
       const board = entities.find(
         (entity) => entity.id === GameObjectsIds.BOARD
       );
+      
       const filteredEntities = getEntitiesWithComponents(
         entities,
         includedComponents,
@@ -213,12 +209,20 @@ const PLACE_PENTOMINO_SIZE = 32;
 export const gameFeature = createFeature({
     name: 'Game',
     reducer: gameReducer,
-    extraSelectors: ({ selectGameState }) => ({
+    extraSelectors: ({ selectGameState, selectEntities }) => ({
       ...entitiesAdapter.getSelectors(selectGameState),
-    //   selectIsUserSelected: createSelector(
-    //     selectSelectedUserId,
-    //     (selectedId) => selectedId !== null
-    //   ),
+      selectActiveShape: createSelector(
+        selectEntities, 
+        (entities): Entity[] => {
+      const includedComponents = [ComponentType.IS_ACTIVE_TAG];
+      const excludedComponents: ComponentType[] = [];
+    
+      return selectEntitiesWithFilteredComponents(
+        includedComponents,
+        excludedComponents,
+        entities
+      )
+    }),
     //   selectSelectedUser: createSelector(
     //     selectSelectedUserId,
     //     selectEntities,
