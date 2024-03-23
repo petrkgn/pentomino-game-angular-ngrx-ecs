@@ -6,12 +6,12 @@ import {
   PickComponentType,
 } from '../../interfaces/components';
 import { ComponentType } from '../../constants/component-type.enum';
-import { PentominoActions, PlayerActions, GameActions } from './game.actions';
+import { PentominoActions, PlayerActions, GameActions } from './actions';
 import { updateEntitiesWithComponents } from '../../utils/updates-entities';
 import {
   allEntities,
   selectEntitiesWithFilteredComponents,
-} from './game.selectors';
+} from './selectors';
 import { initialGameEntitiesState, entitiesAdapter } from './initial.state';
 import { getEntitiesWithComponents } from '../../utils/filtered-entities';
 import { entitiesMapper } from '../../utils/entities-mapper';

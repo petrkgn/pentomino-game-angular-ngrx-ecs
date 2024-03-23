@@ -12,13 +12,13 @@ import { BackgroundComponent } from './layers/background/background.component';
 import { ActiveShapeComponent } from './layers/active-shape/active-shape.component';
 import { BoardComponent } from './layers/board/board.component';
 import { GameFacade } from './game.facade';
-import * as gameSelectors from './store/game/game.selectors';
+import * as gameSelectors from './store/game/selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { areAllObjectsDefined } from './utils/filter-defined';
 import { filter, map } from 'rxjs';
 import { Entity } from './interfaces/entity';
 import { PlacementShapesComponent } from './layers/placement-shapes/placement-shapes.component';
-import { GameActions } from './store/game/game.actions';
+import { GameActions } from './store/game/actions';
 
 @Component({
   selector: 'katamino-game',

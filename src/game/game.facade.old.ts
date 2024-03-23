@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { GameActions, PentominoActions } from './store/game/game.actions';
+import { GameActions, PentominoActions } from './store/game/actions';
 import { ComponentType } from './constants/component-type.enum';
 import * as utils from './utils/pentomino-factory';
 import { BoardsSize } from './constants/board-size';

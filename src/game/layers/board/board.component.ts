@@ -9,7 +9,7 @@ import { Store } from '@ngrx/store';
 import { tap } from 'rxjs';
 import { BonudsElementDirective } from '../../directives/bounds-element.directive';
 import { BoardsSize } from '../../constants/board-size';
-import { PentominoActions } from '../../store/game/game.actions';
+import { PentominoActions } from '../../store/game/actions';
 import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
 import { ComponentType } from '../../constants/component-type.enum';
 import { ResizeService } from '../../services/resize.service';
