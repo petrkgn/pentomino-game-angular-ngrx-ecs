@@ -6,6 +6,7 @@ import { provideEffects } from '@ngrx/effects';
 import { GameComponent } from './game/game.component';
 import { GameFeature } from './game/store/game/reducer';
 import { GameEffects } from './game/store/game/effects';
+import { gameFeature } from './game/store/game/state';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +24,7 @@ export class App {
 bootstrapApplication(App, {
     providers: [
       provideStore(), 
-      provideState(GameFeature),
+      provideState(gameFeature),
       provideEffects([GameEffects])
     ]
 });

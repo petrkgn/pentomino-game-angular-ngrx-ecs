@@ -38,7 +38,7 @@ export class GameEffects {
     );
   });
 
-  readonly keyEvent$ = createEffect(() =>
+  readonly rotateShape$ = createEffect(() =>
     this.keyPressed$.pipe(
       filter((e) => e === 'Space'),
       map((e) => {
@@ -48,7 +48,7 @@ export class GameEffects {
           this.currentAngle += 90;
         }
 
-        return PlayerActions.keyDown({ angle: this.currentAngle });
+        return PlayerActions.rotateShape({ angle: this.currentAngle });
       })
     )
   );

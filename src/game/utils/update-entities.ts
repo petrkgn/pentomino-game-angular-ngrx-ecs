@@ -66,5 +66,5 @@ export function updateActiveEntityWhenPlacement(
         ? { ...component, ...currentPosition }
         : component
     )
-    .concat({ type: ComponentType.IS_PLACEMENT_TAG });
+    .concat([{ type: ComponentType.IS_PLACEMENT_TAG }]);
 }

@@ -8,10 +8,7 @@ import {
 import { ComponentType } from '../../constants/component-type.enum';
 import { PentominoActions, PlayerActions, GameActions } from './actions';
 import { updateEntitiesWithComponents } from '../../utils/update-entities';
-import {
-  allEntities,
-  selectEntitiesWithFilteredComponents,
-} from './selectors';
+import { allEntities, selectEntitiesWithFilteredComponents } from './selectors';
 import { initialGameEntitiesState, entitiesAdapter } from './initial.state';
 import { getEntitiesWithComponents } from '../../utils/filtered-entities';
 import { entitiesMapper } from '../../utils/entities-mapper';
@@ -71,7 +68,7 @@ export const GameFeature = createFeature({
         return updatedEntity;
       }
     ),
-    on(PlayerActions.keyDown, (state, { angle }) => {
+    on(PlayerActions.rotateShape, (state, { angle }) => {
       const includedComponents: ComponentType[] = [ComponentType.ROTATE];
       const excludedComponents: ComponentType[] = [];
       const updates = updateEntitiesWithComponents(
