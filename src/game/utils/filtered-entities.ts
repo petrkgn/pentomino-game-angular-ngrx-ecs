@@ -1,5 +1,7 @@
-import { ComponentType } from "../constants/component-type.enum";
-import { Entity } from "../interfaces/entity";
+import { Dictionary } from '@ngrx/entity';
+import { ComponentType } from '../constants/component-type.enum';
+import { Entity } from '../interfaces/entity';
+import { entitiesMapper } from './entities-mapper';
 
 export function getEntitiesWithComponents(
   entities: Entity[],
@@ -27,3 +29,17 @@ export function getEntitiesWithComponents(
   });
   return entitiesWithComponents;
 }
+
+export const selectEntitiesWithFilteredComponents = (
+  allEntities: Dictionary<Entity>,
+  includedComponents: ComponentType[],
+  excludedComponents: ComponentType[] = []
+) => {
+  const filteredEntities = entitiesMapper(allEntities);
+
+  return getEntitiesWithComponents(
+    filteredEntities,
+    includedComponents,
+    excludedComponents
+  );
+};

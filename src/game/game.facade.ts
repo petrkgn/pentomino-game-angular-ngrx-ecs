@@ -1,13 +1,16 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Signal } from '@angular/core';
 import { Store } from '@ngrx/store';
 
-import { GameActions, PentominoActions } from './store/game/game.actions';
+import { GameActions, PentominoActions } from './store/game/actions';
 import { ComponentType } from './constants/component-type.enum';
 import * as utils from './utils/pentomino-factory';
 import { BoardsSize } from './constants/board-size';
 import { GameObjectsIds } from './constants/game-objects-ids.enum';
 import { ResizeService } from './services/resize.service';
-import { Observable } from 'rxjs';
+import { filter, map, Observable } from 'rxjs';
+import { gameFeature } from './store/game/state';
+import { Entity } from './interfaces/entity';
+import { areAllObjectsDefined } from './utils';
 
 @Injectable()
 export class GameFacade {
@@ -60,6 +63,24 @@ export class GameFacade {
     },
   ]);
 
+  selectActiveShape(): Observable<Entity[]> {
+    return this.store
+      .select(gameFeature.selectActiveShape)
+      .pipe(map((entities) => this.handleEntitiesDefined(entities)));
+  }
+ 
+  selectPlacementShapes(): Observable<Entity[]> {
+    return this.store
+      .select(gameFeature.selectPlacementShapes)
+      .pipe(map((entities) => this.handleEntitiesDefined(entities)));
+  }
+
+  private handleEntitiesDefined(entities: Entity[]): Entity[] {
+    const isEntitiesDefined =
+      entities.length > 0 && areAllObjectsDefined(entities);
+    return isEntitiesDefined ? structuredClone(entities) : [];
+  }
+
   initGameState(store: Store<any>) {
     store.dispatch(PentominoActions.addEntity({ entity: this.gameBoard }));
     store.dispatch(PentominoActions.addEntity({ entity: this.pentominoF }));
@@ -99,7 +120,6 @@ export class GameFacade {
       })
     );
 
-   
     // this.mouseSystem.getEntitiesByMouseComponent();
     // this.mouseSystem.mouseMoved();
     setTimeout(

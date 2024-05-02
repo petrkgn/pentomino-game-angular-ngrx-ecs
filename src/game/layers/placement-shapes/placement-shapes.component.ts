@@ -120,7 +120,7 @@ export class PlacementShapesComponent implements AfterViewInit {
   }
 
   render(placementShapes: Entity[]): void {
-    if (!placementShapes.length && this.ctx) {
+    if (!placementShapes?.length && this.ctx) {
       this.ctx.clearRect(0, 0, this.window.innerWidth, this.window.innerHeight);
       return;
     }

@@ -12,13 +12,13 @@ import { BackgroundComponent } from './layers/background/background.component';
 import { ActiveShapeComponent } from './layers/active-shape/active-shape.component';
 import { BoardComponent } from './layers/board/board.component';
 import { GameFacade } from './game.facade';
-import * as gameSelectors from './store/game/game.selectors';
+import * as gameSelectors from './store/game/selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { areAllObjectsDefined } from './utils/filter-defined';
 import { filter, map } from 'rxjs';
 import { Entity } from './interfaces/entity';
 import { PlacementShapesComponent } from './layers/placement-shapes/placement-shapes.component';
-import { GameActions } from './store/game/game.actions';
+import { GameActions } from './store/game/actions';
 
 @Component({
   selector: 'katamino-game',
@@ -34,34 +34,18 @@ import { GameActions } from './store/game/game.actions';
   standalone: true,
   providers: [GameFacade],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <pre style='position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 50px'
-    >{{entities2$ | async | json}}</pre>
-    <game-board/>   
-    <game-placement-shapes [placementShapes]='placementShapes()'/>
-    <game-active-shape [activeShapes]='activeShapes()'/>`,
+  template: ` <pre
+      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 50px"
+      >{{ entities2$ | async | json }}</pre
+    >
+    <game-board />
+    <game-placement-shapes [placementShapes]="placementShapes()" />
+    <game-active-shape [activeShapes]="activeShapes()" />`,
   styles: ``,
 })
 export class GameComponent implements OnInit {
   private readonly gameFacade = inject(GameFacade);
   private readonly store = inject(Store);
-
-  entities$ = this.store
-    .select(
-      gameSelectors.selectEntitiesWithFilteredComponents(
-        [ComponentType.IS_ACTIVE_TAG],
-        []
-      )
-    )
-    .pipe(
-      map((entities) => {
-        if (entities.length > 0 && areAllObjectsDefined(entities)) {
-          return entities;
-        } else {
-          return [];
-        }
-      })
-    );
 
   entities2$ = this.store
     .select(
@@ -80,12 +64,12 @@ export class GameComponent implements OnInit {
       })
     );
 
-  activeShapes = toSignal<Entity[]>(this.entities$, {
-    initialValue: null,
+  activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
+    initialValue: [],
   });
 
-  placementShapes = toSignal<Entity[]>(this.entities2$, {
-    initialValue: null,
+  placementShapes = toSignal(this.gameFacade.selectPlacementShapes(), {
+    initialValue: [],
   });
 
   ngOnInit() {

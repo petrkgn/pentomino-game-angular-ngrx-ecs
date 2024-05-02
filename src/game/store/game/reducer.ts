@@ -6,17 +6,18 @@ import {
   PickComponentType,
 } from '../../interfaces/components';
 import { ComponentType } from '../../constants/component-type.enum';
-import { PentominoActions, PlayerActions, GameActions } from './game.actions';
-import { updateEntitiesWithComponents } from '../../utils/updates-entities';
-import {
-  allEntities,
-  selectEntitiesWithFilteredComponents,
-} from './game.selectors';
+import { PentominoActions, PlayerActions, GameActions } from './actions';
+import { updateEntitiesWithComponents } from '../../utils/update-entities';
+import { allEntities, selectEntitiesWithFilteredComponents } from './selectors';
 import { initialGameEntitiesState, entitiesAdapter } from './initial.state';
 import { getEntitiesWithComponents } from '../../utils/filtered-entities';
 import { entitiesMapper } from '../../utils/entities-mapper';
 import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
-import { canPlacePentomino, placePentomino } from '../../utils/matricies-utils';
+import {
+  canPlacePentomino,
+  placePentomino,
+} from '../../utils/matricies-utils.old';
+import { PentominoService } from '../../services/pentomino.service';
 
 export const GameFeature = createFeature({
   name: 'Game',
@@ -67,7 +68,7 @@ export const GameFeature = createFeature({
         return updatedEntity;
       }
     ),
-    on(PlayerActions.keyDown, (state, { angle }) => {
+    on(PlayerActions.rotateShape, (state, { angle }) => {
       const includedComponents: ComponentType[] = [ComponentType.ROTATE];
       const excludedComponents: ComponentType[] = [];
       const updates = updateEntitiesWithComponents(
@@ -146,6 +147,7 @@ export const GameFeature = createFeature({
 
       const cloneBoard = structuredClone(board);
       const clonePentomino = structuredClone(filteredEntities[0]);
+      const service = new PentominoService();
       const canPlacement = canPlacePentomino(
         board,
         filteredEntities[0],
@@ -155,12 +157,7 @@ export const GameFeature = createFeature({
       if (!canPlacement) {
         return { ...state };
       }
-      // console.log('CAN????', canPlacement)
-      // const newBoard = placePentomino(
-      //   cloneBoard,
-      //   clonePentomino,
-      //   PLACE_PENTOMINO_SIZE
-      // ); // Предположим, что это действие необходимо
+
       const updatedComponents = updateEntityComponents(
         filteredEntities[0],
         canPlacement
@@ -177,7 +174,7 @@ export const GameFeature = createFeature({
     on(GameActions.ratioChanged, (state, { ratio }) => {
       const includedComponents: ComponentType[] = [ComponentType.RATIO];
       const excludedComponents: ComponentType[] = [];
-      const clonedState = structuredClone(state)
+      const clonedState = structuredClone(state);
       const updates = updateEntitiesWithComponents(
         clonedState,
         includedComponents,
