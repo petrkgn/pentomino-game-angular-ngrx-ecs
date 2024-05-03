@@ -2,6 +2,16 @@ import { ComponentType } from '../constants/component-type.enum';
 import { PickComponentType } from '../interfaces/components';
 import { Entity } from '../interfaces/entity';
 
+interface IPlacementData {
+  ratio: number;
+  boardMatrix: number[][];
+  pentominoMatrix: number[][];
+  centerShapePositionX: number;
+  centerShapePositionY: number;
+  shapeMouseComponent: PickComponentType<ComponentType.MOUSE>;
+  boardPositionComponent: PickComponentType<ComponentType.POSITION>;
+}
+
 /**
  * Класс для управления игровой доской и размещением фигур.
  */
@@ -46,24 +56,29 @@ class BoardGame {
    * @param pentomino Фигура для размещения.
    * @returns Объект с данными для размещения.
    */
-  private preparePlacementData(board: Entity, pentomino: Entity) {
+  private preparePlacementData(
+    board: Entity,
+    pentomino: Entity
+  ): IPlacementData | null {
     const ratio = this.getCurrentRatio(pentomino);
     const boardMatrix = this.getMatrix(board);
     const pentominoMatrix = this.getMatrix(pentomino);
 
-    const centerShapePositionX = (pentominoMatrix[0].length * this.cellSize * ratio) / 2;
-    const centerShapePositionY = (pentominoMatrix.length * this.cellSize * ratio) / 2;
+    const centerShapePositionX =
+      (pentominoMatrix[0].length * this.cellSize * ratio) / 2;
+    const centerShapePositionY =
+      (pentominoMatrix.length * this.cellSize * ratio) / 2;
 
-    const mouseComponent = pentomino.components.find(
+    const shapeMouseComponent = pentomino.components.find(
       (component) => component.type === ComponentType.MOUSE
     ) as PickComponentType<ComponentType.MOUSE>;
 
-    const positionComponent = board.components.find(
+    const boardPositionComponent = board.components.find(
       (component) => component.type === ComponentType.POSITION
     ) as PickComponentType<ComponentType.POSITION>;
 
-    if (!mouseComponent || !positionComponent) {
-      throw new Error("Critical components are missing");
+    if (!shapeMouseComponent || !boardPositionComponent) {
+      throw new Error('Critical components are missing');
     }
 
     return {
@@ -72,8 +87,8 @@ class BoardGame {
       pentominoMatrix,
       centerShapePositionX,
       centerShapePositionY,
-      mouseComponent,
-      positionComponent
+      shapeMouseComponent,
+      boardPositionComponent,
     };
   }
 
@@ -82,12 +97,12 @@ class BoardGame {
    * @param data Данные для проверки.
    * @returns true если координаты не определены, иначе false.
    */
-  private hasUndefinedCoordinates(data: any): boolean {
+  private hasUndefinedCoordinates(data: IPlacementData): boolean {
     return (
-      data.mouseComponent.mx === undefined ||
-      data.mouseComponent.my === undefined ||
-      data.positionComponent.x === undefined ||
-      data.positionComponent.y === undefined
+      data.shapeMouseComponent.mx === undefined ||
+      data.shapeMouseComponent.my === undefined ||
+      data.boardPositionComponent.x === undefined ||
+      data.boardPositionComponent.y === undefined
     );
   }
 
@@ -96,17 +111,29 @@ class BoardGame {
    * @param data Данные для проверки.
    * @returns true если фигура выходит за границы, иначе false.
    */
-  private isOutOfBounds(data: any): boolean {
-    const { mouseComponent, positionComponent, centerShapePositionX, centerShapePositionY, boardMatrix, cellSize, ratio } = data;
-    const diff = -10 * ratio;
+  private isOutOfBounds(data: IPlacementData): boolean {
+    const {
+      shapeMouseComponent,
+      boardPositionComponent,
+      boardMatrix,
+      pentominoMatrix,
+      ratio,
+    } = data;
+    const boardWidth = boardMatrix[0].length * this.cellSize * ratio;
+    const boardHeight = boardMatrix.length * this.cellSize * ratio;
+    const shapeWidth = pentominoMatrix[0].length * this.cellSize * ratio;
+    const shapeHeight = pentominoMatrix.length * this.cellSize * ratio;
+
+    const shapeLeftX = shapeMouseComponent.mx - shapeWidth / 2;
+    const shapeRightX = shapeMouseComponent.mx + shapeWidth / 2;
+    const shapeTopY = shapeMouseComponent.my - shapeHeight / 2;
+    const shapeBottomY = shapeMouseComponent.my + shapeHeight / 2;
 
     return (
-      mouseComponent.mx < positionComponent.x ||
-      mouseComponent.my < positionComponent.y ||
-      mouseComponent.mx - centerShapePositionX + diff > positionComponent.x + boardMatrix[0].length * cellSize * ratio ||
-      mouseComponent.my - centerShapePositionY + diff > positionComponent.y + boardMatrix.length * cellSize * ratio ||
-      mouseComponent.mx - centerShapePositionX - diff < positionComponent.x ||
-      mouseComponent.my + centerShapePositionY - diff < positionComponent.y
+      shapeLeftX < boardPositionComponent.x ||
+      shapeRightX > boardPositionComponent.x + boardWidth ||
+      shapeTopY < boardPositionComponent.y ||
+      shapeBottomY > boardPositionComponent.y + boardHeight
     );
   }
 
@@ -115,17 +142,40 @@ class BoardGame {
    * @param data Данные для проверки.
    * @returns true если есть пересечения, иначе false.
    */
-  private intersectsOtherShapes(data: any): boolean {
-    const { boardMatrix, pentominoMatrix, mouseComponent, positionComponent, centerShapePositionX, centerShapePositionY, ratio } = data;
-    
+  private intersectsOtherShapes(data: IPlacementData): boolean {
+    const {
+      boardMatrix,
+      pentominoMatrix,
+      shapeMouseComponent,
+      boardPositionComponent,
+      centerShapePositionX,
+      centerShapePositionY,
+      ratio,
+    } = data;
+
     for (let i = 0; i < pentominoMatrix.length; i++) {
       for (let j = 0; j < pentominoMatrix[i].length; j++) {
         if (pentominoMatrix[i][j] !== 0) {
-          const placementX = Math.round((mouseComponent.mx - centerShapePositionX - positionComponent.x) / (this.cellSize * ratio)) + j;
-          const placementY = Math.round((mouseComponent.my - centerShapePositionY - positionComponent.y) / (this.cellSize * ratio)) + i;
+          const placementX =
+            Math.round(
+              (shapeMouseComponent.mx -
+                centerShapePositionX -
+                boardPositionComponent.x) /
+                (this.cellSize * ratio)
+            ) + j;
+          const placementY =
+            Math.round(
+              (shapeMouseComponent.my -
+                centerShapePositionY -
+                boardPositionComponent.y) /
+                (this.cellSize * ratio)
+            ) + i;
 
-          if (!boardMatrix[placementY] || boardMatrix[placementY][placementX] === undefined) {
-            continue;  // Skip non-existing indices to avoid runtime errors
+          if (
+            !boardMatrix[placementY] ||
+            boardMatrix[placementY][placementX] === undefined
+          ) {
+            continue; // Skip non-existing indices to avoid runtime errors
           }
 
           if (boardMatrix[placementY][placementX] !== 0) {
@@ -146,11 +196,13 @@ class BoardGame {
   private canPlacePentomino(board: Entity, pentomino: Entity): boolean {
     const placementData = this.preparePlacementData(board, pentomino);
 
-    if (this.hasUndefinedCoordinates(placementData)) {
-      return false;
-    }
+    if (!placementData) return false;
 
-    if (this.isOutOfBounds(placementData) || this.intersectsOtherShapes(placementData)) {
+    const undefinedCoords = this.hasUndefinedCoordinates(placementData);
+    const outOfBounds = this.isOutOfBounds(placementData);
+    const intersects = this.intersectsOtherShapes(placementData);
+
+    if (undefinedCoords || outOfBounds || intersects) {
       return false;
     }
     return true;
@@ -162,35 +214,44 @@ class BoardGame {
    * @param pentomino Фигура, которую требуется разместить.
    * @returns Координаты для размещения или null, если размещение невозможно.
    */
-//   public getPlacementCoordinates(board: Entity, pentomino: Entity): PickComponentType<ComponentType.POSITION> | null {
-//     if (this.canPlacePentomino(board, pentomino)) {
-//       const data = this.preparePlacementData(board, pentomino);
-//       const { mouseComponent, centerShapePositionX, centerShapePositionY, positionComponent, ratio } = data;
-//       const placementX = mouseComponent.mx - centerShapePositionX + positionComponent.x;
-//       const placementY = mouseComponent.my - centerShapePositionY + positionComponent.y;
-
-//     //   return {ty x: placementX, y: placementY };
-//       return {
-//         type: ComponentType.POSITION,
-//         x: placementX,
-//         y: placementY,
-//       };
-//     }
-//     return null;
-//   }
-
-  public getPlacementCoordinates(board: Entity, pentomino: Entity): PickComponentType<ComponentType.POSITION> | null {
+  public getPlacementCoordinates(
+    board: Entity,
+    pentomino: Entity
+  ): PickComponentType<ComponentType.POSITION> | null {
     if (this.canPlacePentomino(board, pentomino)) {
       const data = this.preparePlacementData(board, pentomino);
-      const { mouseComponent, centerShapePositionX, centerShapePositionY, positionComponent, ratio } = data;
-      const cellX = Math.round((mouseComponent.mx - centerShapePositionX - positionComponent.x) / (this.cellSize * ratio));
-      const cellY = Math.round((mouseComponent.my - centerShapePositionY - positionComponent.y) / (this.cellSize * ratio));
-      // Corrected coordinate calculation
-      const placementX = positionComponent.x + centerShapePositionX + cellX * this.cellSize * ratio;
-      const placementY = positionComponent.y + centerShapePositionY + cellY * this.cellSize * ratio;
-    //   boardPositionComponent.x +
-    //   centerShapePositionX +
-    //   cellX * cellSize * ratio;
+
+      if (!data) return null;
+
+      const {
+        shapeMouseComponent,
+        centerShapePositionX,
+        centerShapePositionY,
+        boardPositionComponent,
+        ratio,
+      } = data;
+      const cellX = Math.round(
+        (shapeMouseComponent.mx -
+          centerShapePositionX -
+          boardPositionComponent.x) /
+          (this.cellSize * ratio)
+      );
+      const cellY = Math.round(
+        (shapeMouseComponent.my -
+          centerShapePositionY -
+          boardPositionComponent.y) /
+          (this.cellSize * ratio)
+      );
+
+      const placementX =
+        boardPositionComponent.x +
+        centerShapePositionX +
+        cellX * this.cellSize * ratio;
+      const placementY =
+        boardPositionComponent.y +
+        centerShapePositionY +
+        cellY * this.cellSize * ratio;
+
       return {
         type: ComponentType.POSITION,
         x: placementX,
@@ -199,16 +260,80 @@ class BoardGame {
     }
     return null;
   }
+
+  /**
+   * Обновляет координаты фигуры на доске при изменении соотношения масштабирования.
+   * @param board Игровая доска с новыми значениями ratio.
+   * @param pentomino Фигура с текущими координатами.
+   * @param newRatio Новое значение ratio.
+   * @returns Новые координаты фигуры или null, если фигура не может быть размещена с новыми параметрами.
+   */
+  public updatePentominoCoordinates(
+    board: Entity,
+    pentomino: Entity,
+    newRatio: number
+  ): PickComponentType<ComponentType.POSITION> | null {
+    // Получаем текущие данные для размещения
+    const currentData = this.preparePlacementData(board, pentomino);
+    if (!currentData) return null;
+
+    const {
+      shapeMouseComponent,
+      centerShapePositionX,
+      centerShapePositionY,
+      boardPositionComponent,
+    } = currentData;
+
+    // Рассчитываем текущие координаты центра фигуры на доске
+    const currentCenterX = shapeMouseComponent.mx;
+    const currentCenterY = shapeMouseComponent.my;
+
+    // Рассчитываем новые координаты центра фигуры с использованием нового ratio
+    const newCenterShapePositionX =
+      (currentData.pentominoMatrix[0].length * this.cellSize * newRatio) / 2;
+    const newCenterShapePositionY =
+      (currentData.pentominoMatrix.length * this.cellSize * newRatio) / 2;
+
+    // Новые абсолютные координаты на доске
+    const newPlacementX =
+      ((currentCenterX - boardPositionComponent.x - centerShapePositionX) /
+        currentData.ratio) *
+        newRatio +
+      boardPositionComponent.x +
+      newCenterShapePositionX;
+    const newPlacementY =
+      ((currentCenterY - boardPositionComponent.y - centerShapePositionY) /
+        currentData.ratio) *
+        newRatio +
+      boardPositionComponent.y +
+      newCenterShapePositionY;
+
+    // Проверяем, можно ли разместить фигуру на новом месте с новым ratio
+    const newPlacementData = {
+      ...currentData,
+      ratio: newRatio,
+      centerShapePositionX: newCenterShapePositionX,
+      centerShapePositionY: newCenterShapePositionY,
+      shapeMouseComponent: {
+        ...shapeMouseComponent,
+        mx: newPlacementX,
+        my: newPlacementY,
+      }, // Создаем копию с обновленными координатами
+    };
+
+    if (
+      this.isOutOfBounds(newPlacementData) ||
+      this.intersectsOtherShapes(newPlacementData)
+    ) {
+      return null;
+    }
+
+    return {
+      type: ComponentType.POSITION,
+      x: newPlacementX,
+      y: newPlacementY,
+    };
+  }
 }
-
-
-// Использование класса
-// const game = new BoardGame(20);
-// const placement = game.getPlacementCoordinates(board, pentomino);
-// if (placement) {
-//   console.log("Pentomino can be placed at:", placement);
-// } else {
-//   console.log("Pentomino cannot be placed.");
-// }
 
 export default BoardGame;

@@ -9,6 +9,7 @@ import { canPlacePentomino } from '../../utils/matricies-utils.old';
 import { CELL_SIZE } from '../../constants/cell-size';
 import * as utils from '../../utils';
 import { EntityComponents } from '../../interfaces/components';
+import BoardGame from '../../utils/board';
 
 const gameReducer = createReducer(
   initialGameEntitiesState,
@@ -130,8 +131,11 @@ const gameReducer = createReducer(
     if (!board || !activeShape) {
       return { ...state };
     }
-
-    const placementPosition = canPlacePentomino(board, activeShape, CELL_SIZE);
+    const boardGame = new BoardGame(32);
+    const placementPosition = boardGame.getPlacementCoordinates(
+      board,
+      activeShape
+    );
 
     if (!placementPosition) {
       return { ...state };
@@ -141,7 +145,7 @@ const gameReducer = createReducer(
       activeShape,
       placementPosition
     );
-console.log(updatedComponents)
+    console.log(updatedComponents);
     return entitiesAdapter.updateOne(
       {
         id: activeShape.id,

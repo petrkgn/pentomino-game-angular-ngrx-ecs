@@ -12,7 +12,7 @@ import { BackgroundComponent } from './layers/background/background.component';
 import { ActiveShapeComponent } from './layers/active-shape/active-shape.component';
 import { BoardComponent } from './layers/board/board.component';
 import { GameFacade } from './game.facade';
-import * as gameSelectors from './store/game/selectors';
+// import * as gameSelectors from './store/game/selectors';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { areAllObjectsDefined } from './utils/filter-defined';
 import { filter, map } from 'rxjs';
@@ -35,9 +35,7 @@ import { GameActions } from './store/game/actions';
   providers: [GameFacade],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <pre
-      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 50px"
-      >{{ entities2$ | async | json }}</pre
-    >
+      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 50px"></pre>
     <game-board />
     <game-placement-shapes [placementShapes]="placementShapes()" />
     <game-active-shape [activeShapes]="activeShapes()" />`,
@@ -47,22 +45,22 @@ export class GameComponent implements OnInit {
   private readonly gameFacade = inject(GameFacade);
   private readonly store = inject(Store);
 
-  entities2$ = this.store
-    .select(
-      gameSelectors.selectEntitiesWithFilteredComponents(
-        [ComponentType.IS_PLACEMENT_TAG],
-        []
-      )
-    )
-    .pipe(
-      map((entities) => {
-        if (entities.length > 0 && areAllObjectsDefined(entities)) {
-          return entities;
-        } else {
-          return [];
-        }
-      })
-    );
+  // entities2$ = this.store
+  //   .select(
+  //     gameSelectors.selectEntitiesWithFilteredComponents(
+  //       [ComponentType.IS_PLACEMENT_TAG],
+  //       []
+  //     )
+  //   )
+  //   .pipe(
+  //     map((entities) => {
+  //       if (entities.length > 0 && areAllObjectsDefined(entities)) {
+  //         return entities;
+  //       } else {
+  //         return [];
+  //       }
+  //     })
+  //   );
 
   activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
     initialValue: [],
