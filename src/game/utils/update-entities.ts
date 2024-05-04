@@ -57,7 +57,8 @@ export function updateEntitiesWithComponents(
 
 export function updateActiveEntityWhenPlacement(
   activePentomino: Entity,
-  currentPosition: PickComponentType<ComponentType.POSITION>
+  currentPosition: PickComponentType<ComponentType.POSITION>,
+  placementPosition: PickComponentType<ComponentType.PLACEMENT>
 ) {
   return activePentomino.components
     .filter((component) => component.type !== ComponentType.IS_ACTIVE_TAG)
@@ -66,5 +67,16 @@ export function updateActiveEntityWhenPlacement(
         ? { ...component, ...currentPosition }
         : component
     )
-    .concat([{ type: ComponentType.IS_PLACEMENT_TAG }]);
+    .concat([{ ...placementPosition}]);
+}
+
+export function updatePlacementEntityWhenPlacement(
+  activePentomino: Entity,
+  currentPosition: PickComponentType<ComponentType.POSITION>
+) {
+  return activePentomino.components.map((component) =>
+    component.type === ComponentType.POSITION
+      ? { ...component, ...currentPosition }
+      : component
+  );
 }

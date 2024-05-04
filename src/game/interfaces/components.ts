@@ -31,8 +31,10 @@ interface MatrixComponent {
   matrix: number[][];
 }
 
-interface IsPlacementTag {
-  type: ComponentType.IS_PLACEMENT_TAG;
+interface PlacementComponent {
+  type: ComponentType.PLACEMENT;
+  cellX: number,
+  cellY: number
 }
 
 interface Ratio {
@@ -47,7 +49,7 @@ export type EntityComponents =
   | RotateComponent
   | IsActiveTag
   | MatrixComponent
-  | IsPlacementTag
+  | PlacementComponent
   | Ratio;
 
 type FilterUnionType<T, U> = T extends { type: U } ? T : never;

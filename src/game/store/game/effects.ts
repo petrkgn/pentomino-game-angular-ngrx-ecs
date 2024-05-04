@@ -32,7 +32,7 @@ export class GameEffects {
   });
 
   readonly resizeWindow$ = createEffect(() => {
-    return this.resizeService.calculateScaleRatio(20, 20).pipe(
+    return this.resizeService.calculateScaleRatio(32, 20).pipe(
       distinctUntilChanged(),
       map((e) => GameActions.ratioChanged({ ratio: Math.ceil(e) }))
     );

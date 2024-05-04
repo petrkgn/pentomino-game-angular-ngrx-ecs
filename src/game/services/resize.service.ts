@@ -26,7 +26,7 @@ export class ResizeService {
     return this.resizeEvent$.pipe(
       startWith(this.getWindowSize()),
       map(() => this.getRatio(baseCellSize, gridWidthInCells)),
-      tap((res) => console.log('RES', res))
+      // tap((res) => console.log('RES', res))
     );
   }
 

@@ -8,6 +8,6 @@ export enum ComponentType {
   RENDER,
   IS_ACTIVE_TAG,
   MATRIX,
-  IS_PLACEMENT_TAG,
+  PLACEMENT,
   RATIO
 }

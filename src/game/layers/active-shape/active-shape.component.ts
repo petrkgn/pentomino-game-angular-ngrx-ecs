@@ -26,22 +26,22 @@ import { tap } from 'rxjs';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div style='position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 100px'>
-      <pre>{{activeShapes() | json}}</pre>
+    <div
+      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 100px">
+      <pre>{{ activeShapes() | json }}</pre>
     </div>
     <!-- <div style='position:absolute; background-color: red; opacity: 0.8; color: white; width: 100vw; top: 0px; height: 348.875px'>    
     </div> -->
     <canvas #myCanvas></canvas>
     <img
       #myImg
-      src="https://github.com/petrkgn/katamino-game-angular/blob/main/wshape.png?raw=true"
-    />
+      src="https://github.com/petrkgn/katamino-game-angular/blob/main/wshape.png?raw=true" />
   `,
   styles: `
- img {
-   position: absolute;
-   top: -100%;
- }  
+  img {
+    position: absolute;
+    top: -100%;
+  }  
 `,
 })
 export class ActiveShapeComponent implements AfterViewInit {

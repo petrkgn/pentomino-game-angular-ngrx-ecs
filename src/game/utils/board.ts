@@ -2,7 +2,7 @@ import { ComponentType } from '../constants/component-type.enum';
 import { PickComponentType } from '../interfaces/components';
 import { Entity } from '../interfaces/entity';
 
-interface IPlacementData {
+interface PlacementData {
   ratio: number;
   boardMatrix: number[][];
   pentominoMatrix: number[][];
@@ -35,7 +35,7 @@ class BoardGame {
     const matrixComponent = entity.components.find(
       (component) => component.type === ComponentType.MATRIX
     ) as PickComponentType<ComponentType.MATRIX>;
-    return matrixComponent?.matrix || [];
+    return matrixComponent.matrix ?? [];
   }
 
   /**
@@ -47,7 +47,21 @@ class BoardGame {
     const ratioComponent = entity.components.find(
       (component) => component.type === ComponentType.RATIO
     ) as PickComponentType<ComponentType.RATIO>;
-    return ratioComponent?.ratio || 1;
+    return ratioComponent.ratio ?? 1;
+  }
+
+  /**
+   * Возвращает текущее местоположение сущности.
+   * @param entity Сущность для получения данных о местоположении.
+   * @returns Местоположение или null, если компонент местоположения отсутствует.
+   */
+  private getCurrentPlacement(
+    entity: Entity
+  ): PickComponentType<ComponentType.PLACEMENT> | null {
+    const placementComponent = entity.components.find(
+      (component) => component.type === ComponentType.PLACEMENT
+    ) as PickComponentType<ComponentType.PLACEMENT>;
+    return placementComponent ?? null;
   }
 
   /**
@@ -59,7 +73,7 @@ class BoardGame {
   private preparePlacementData(
     board: Entity,
     pentomino: Entity
-  ): IPlacementData | null {
+  ): PlacementData | null {
     const ratio = this.getCurrentRatio(pentomino);
     const boardMatrix = this.getMatrix(board);
     const pentominoMatrix = this.getMatrix(pentomino);
@@ -78,7 +92,7 @@ class BoardGame {
     ) as PickComponentType<ComponentType.POSITION>;
 
     if (!shapeMouseComponent || !boardPositionComponent) {
-      throw new Error('Critical components are missing');
+      return null;
     }
 
     return {
@@ -97,7 +111,7 @@ class BoardGame {
    * @param data Данные для проверки.
    * @returns true если координаты не определены, иначе false.
    */
-  private hasUndefinedCoordinates(data: IPlacementData): boolean {
+  private hasUndefinedCoordinates(data: PlacementData): boolean {
     return (
       data.shapeMouseComponent.mx === undefined ||
       data.shapeMouseComponent.my === undefined ||
@@ -111,7 +125,7 @@ class BoardGame {
    * @param data Данные для проверки.
    * @returns true если фигура выходит за границы, иначе false.
    */
-  private isOutOfBounds(data: IPlacementData): boolean {
+  private isOutOfBounds(data: PlacementData): boolean {
     const {
       shapeMouseComponent,
       boardPositionComponent,
@@ -142,7 +156,7 @@ class BoardGame {
    * @param data Данные для проверки.
    * @returns true если есть пересечения, иначе false.
    */
-  private intersectsOtherShapes(data: IPlacementData): boolean {
+  private intersectsOtherShapes(data: PlacementData): boolean {
     const {
       boardMatrix,
       pentominoMatrix,
@@ -209,15 +223,18 @@ class BoardGame {
   }
 
   /**
-   * Возвращает координаты для размещения фигуры на доске, если это возможно.
-   * @param board Доска, на которой предполагается разместить фигуру.
-   * @param pentomino Фигура, которую требуется разместить.
-   * @returns Координаты для размещения или null, если размещение невозможно.
+   * Получает позицию для размещения фигуры на доске. Определяет, можно ли разместить
+   * фигуру в заданной позиции на доске, и возвращает позиционный компонент, если размещение возможно.
+   *
+   * @param {Entity} board Доска, на которой нужно разместить фигуру.
+   * @param {Entity} pentomino Фигура, которую нужно разместить.
+   * @returns {PickComponentType<ComponentType.PLACEMENT> | null} Объект с типом размещения и координатами
+   * на доске, если размещение возможно, иначе null.
    */
-  public getPlacementCoordinates(
+  public getPlacementPosition(
     board: Entity,
     pentomino: Entity
-  ): PickComponentType<ComponentType.POSITION> | null {
+  ): PickComponentType<ComponentType.PLACEMENT> | null {
     if (this.canPlacePentomino(board, pentomino)) {
       const data = this.preparePlacementData(board, pentomino);
 
@@ -243,90 +260,46 @@ class BoardGame {
           (this.cellSize * ratio)
       );
 
-      const placementX =
-        boardPositionComponent.x +
-        centerShapePositionX +
-        cellX * this.cellSize * ratio;
-      const placementY =
-        boardPositionComponent.y +
-        centerShapePositionY +
-        cellY * this.cellSize * ratio;
-
       return {
-        type: ComponentType.POSITION,
-        x: placementX,
-        y: placementY,
+        type: ComponentType.PLACEMENT,
+        cellX,
+        cellY,
       };
     }
     return null;
   }
 
   /**
-   * Обновляет координаты фигуры на доске при изменении соотношения масштабирования.
-   * @param board Игровая доска с новыми значениями ratio.
-   * @param pentomino Фигура с текущими координатами.
-   * @param newRatio Новое значение ratio.
-   * @returns Новые координаты фигуры или null, если фигура не может быть размещена с новыми параметрами.
+   * Пересчитывает позицию фигуры на доске. Использует текущие данные размещения для определения новых
+   * координат фигуры с учетом её размера и позиции на доске.
+   *
+   * @param {Entity} board Доска, на которой размещена фигура.
+   * @param {Entity} pentomino Фигура, для которой необходимо пересчитать позицию.
+   * @param {PickComponentType<ComponentType.PLACEMENT> | null} placementPosition Текущее положение фигуры,
+   * используемое для пересчета. Если не задано, используется текущее положение фигуры.
+   * @returns {PickComponentType<ComponentType.POSITION> | null} Новый позиционный компонент с координатами x и y,
+   * если пересчет возможен, иначе null.
    */
-  public updatePentominoCoordinates(
+  public recalculateShapePosition(
     board: Entity,
     pentomino: Entity,
-    newRatio: number
+    placementPosition: PickComponentType<ComponentType.PLACEMENT> | null = null
   ): PickComponentType<ComponentType.POSITION> | null {
-    // Получаем текущие данные для размещения
     const currentData = this.preparePlacementData(board, pentomino);
-    if (!currentData) return null;
-
-    const {
-      shapeMouseComponent,
-      centerShapePositionX,
-      centerShapePositionY,
-      boardPositionComponent,
-    } = currentData;
-
-    // Рассчитываем текущие координаты центра фигуры на доске
-    const currentCenterX = shapeMouseComponent.mx;
-    const currentCenterY = shapeMouseComponent.my;
-
-    // Рассчитываем новые координаты центра фигуры с использованием нового ratio
-    const newCenterShapePositionX =
-      (currentData.pentominoMatrix[0].length * this.cellSize * newRatio) / 2;
-    const newCenterShapePositionY =
-      (currentData.pentominoMatrix.length * this.cellSize * newRatio) / 2;
-
-    // Новые абсолютные координаты на доске
-    const newPlacementX =
-      ((currentCenterX - boardPositionComponent.x - centerShapePositionX) /
-        currentData.ratio) *
-        newRatio +
-      boardPositionComponent.x +
-      newCenterShapePositionX;
-    const newPlacementY =
-      ((currentCenterY - boardPositionComponent.y - centerShapePositionY) /
-        currentData.ratio) *
-        newRatio +
-      boardPositionComponent.y +
-      newCenterShapePositionY;
-
-    // Проверяем, можно ли разместить фигуру на новом месте с новым ratio
-    const newPlacementData = {
-      ...currentData,
-      ratio: newRatio,
-      centerShapePositionX: newCenterShapePositionX,
-      centerShapePositionY: newCenterShapePositionY,
-      shapeMouseComponent: {
-        ...shapeMouseComponent,
-        mx: newPlacementX,
-        my: newPlacementY,
-      }, // Создаем копию с обновленными координатами
-    };
-
-    if (
-      this.isOutOfBounds(newPlacementData) ||
-      this.intersectsOtherShapes(newPlacementData)
-    ) {
+    const currentPlacement =
+      placementPosition ?? this.getCurrentPlacement(pentomino);
+    if (!currentData || !currentPlacement) {
       return null;
     }
+
+    const newPlacementX =
+      currentData.boardPositionComponent.x +
+      currentData.centerShapePositionX +
+      currentPlacement.cellX * this.cellSize * currentData.ratio;
+    const newPlacementY =
+      currentData.boardPositionComponent.y +
+      currentData.centerShapePositionY +
+      currentPlacement.cellY * this.cellSize * currentData.ratio;
 
     return {
       type: ComponentType.POSITION,

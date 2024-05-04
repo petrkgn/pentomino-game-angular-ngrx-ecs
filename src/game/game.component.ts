@@ -48,7 +48,7 @@ export class GameComponent implements OnInit {
   // entities2$ = this.store
   //   .select(
   //     gameSelectors.selectEntitiesWithFilteredComponents(
-  //       [ComponentType.IS_PLACEMENT_TAG],
+  //       [ComponentType.PLACEMENT],
   //       []
   //     )
   //   )
