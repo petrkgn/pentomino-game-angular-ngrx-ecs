@@ -1,6 +1,8 @@
+import { Injectable } from '@angular/core';
 import { ComponentType } from '../constants/component-type.enum';
 import { PickComponentType } from '../interfaces/components';
 import { Entity } from '../interfaces/entity';
+import { CELL_SIZE } from '../constants/cell-size';
 
 interface PlacementData {
   ratio: number;
@@ -16,15 +18,7 @@ interface PlacementData {
  * Класс для управления игровой доской и размещением фигур.
  */
 class BoardGame {
-  private cellSize: number;
-
-  /**
-   * Создает экземпляр игровой доски.
-   * @param cellSize Размер ячейки доски.
-   */
-  constructor(cellSize: number) {
-    this.cellSize = cellSize;
-  }
+  private cellSize = CELL_SIZE;
 
   /**
    * Извлекает матрицу из сущности.
@@ -133,6 +127,7 @@ class BoardGame {
       pentominoMatrix,
       ratio,
     } = data;
+    const diff = -10 * ratio;
     const boardWidth = boardMatrix[0].length * this.cellSize * ratio;
     const boardHeight = boardMatrix.length * this.cellSize * ratio;
     const shapeWidth = pentominoMatrix[0].length * this.cellSize * ratio;
@@ -144,10 +139,10 @@ class BoardGame {
     const shapeBottomY = shapeMouseComponent.my + shapeHeight / 2;
 
     return (
-      shapeLeftX < boardPositionComponent.x ||
-      shapeRightX > boardPositionComponent.x + boardWidth ||
-      shapeTopY < boardPositionComponent.y ||
-      shapeBottomY > boardPositionComponent.y + boardHeight
+      shapeLeftX - diff < boardPositionComponent.x ||
+      shapeRightX + diff > boardPositionComponent.x + boardWidth ||
+      shapeTopY - diff < boardPositionComponent.y ||
+      shapeBottomY + diff > boardPositionComponent.y + boardHeight
     );
   }
 

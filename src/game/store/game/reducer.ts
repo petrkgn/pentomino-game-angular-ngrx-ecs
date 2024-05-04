@@ -10,6 +10,8 @@ import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
 import * as utils from '../../utils';
 import BoardGame from '../../utils/board';
 
+const boardGame = new BoardGame();
+
 export const gameReducer = createReducer(
   initialGameEntitiesState,
   on(PentominoActions.addEntity, (state, { entity }) => {
@@ -65,9 +67,9 @@ export const gameReducer = createReducer(
         currentComponent === undefined ||
         changes === undefined
       ) {
-        return state; // Возвращаем исходное состояние, если не указаны все необходимые параметры
+        return state;
       }
-      // console.log(entityId, currentComponent, changes);
+
       const updatedPentominosState = entitiesAdapter.updateOne(
         {
           id: entityId,
@@ -127,7 +129,6 @@ export const gameReducer = createReducer(
       includedComponents
     )[0];
 
-    const boardGame = new BoardGame(32);
     const placementPosition = boardGame.getPlacementPosition(
       board,
       activeShape
@@ -179,7 +180,6 @@ export const gameReducer = createReducer(
       entities,
       includedComponents
     )[0];
-    const boardGame = new BoardGame(32);
 
     if (!board || !activeShape) {
       return { ...state };
