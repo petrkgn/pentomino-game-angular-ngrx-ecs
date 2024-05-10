@@ -37,8 +37,8 @@ import { GameActions } from './store/game/actions';
   template: ` <pre
       style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 50px"></pre>
     <game-board />
-    <game-placement-shapes [placementShapes]="placementShapes()" />
-    <game-active-shape [activeShapes]="activeShapes()" />`,
+    <game-placement-shapes />
+    <game-active-shape />`,
   styles: ``,
 })
 export class GameComponent implements OnInit {
@@ -61,14 +61,6 @@ export class GameComponent implements OnInit {
   //       }
   //     })
   //   );
-
-  activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
-    initialValue: [],
-  });
-
-  placementShapes = toSignal(this.gameFacade.selectPlacementShapes(), {
-    initialValue: [],
-  });
 
   ngOnInit() {
     // this.store.dispatch(GameActions.initWindowSize());

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ɵprovideZonelessChangeDetection } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import 'zone.js';
 import { provideState, provideStore } from '@ngrx/store';
@@ -23,6 +23,7 @@ export class App {
 
 bootstrapApplication(App, {
     providers: [
+      ɵprovideZonelessChangeDetection(),
       provideStore(), 
       provideState(gameFeature),
       provideEffects([GameEffects])

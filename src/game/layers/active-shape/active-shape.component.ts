@@ -19,6 +19,8 @@ import { PickComponentType } from '../../interfaces/components';
 import { isDefined } from '../../utils/filter-defined';
 import { ResizeService } from '../../services/resize.service';
 import { tap } from 'rxjs';
+import { GameFacade } from '../../game.facade';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'game-active-shape',
@@ -45,10 +47,10 @@ import { tap } from 'rxjs';
 `,
 })
 export class ActiveShapeComponent implements AfterViewInit {
-  activeShapes: InputSignal<Entity[] | null> = input.required();
-
   private readonly resizeService = inject(ResizeService);
   private readonly window = inject(WINDOW);
+  private readonly gameFacade = inject(GameFacade);
+
   private canvas!: HTMLCanvasElement;
   private ctx!: CanvasRenderingContext2D | null;
   private imgWidth = 96;
@@ -58,6 +60,10 @@ export class ActiveShapeComponent implements AfterViewInit {
   private readonly _canvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('myImg', { static: true })
   private readonly img!: ElementRef;
+
+  activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
+    initialValue: [],
+  });
 
   constructor() {
     effect((): any => {
