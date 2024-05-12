@@ -1,6 +1,9 @@
 import { createReducer, on } from '@ngrx/store';
 
-import { EntityComponents } from '../../interfaces/components';
+import {
+  EntityComponents,
+  PickComponentType,
+} from '../../interfaces/components';
 import { ComponentType } from '../../constants/component-type.enum';
 import { PentominoActions, PlayerActions, GameActions } from './actions';
 
@@ -90,16 +93,39 @@ export const gameReducer = createReducer(
     }
   ),
   on(PlayerActions.rotateShape, (state, { angle }) => {
-    const includedComponents: ComponentType[] = [ComponentType.ROTATE];
+    // Определяем компоненты, которые должны присутствовать и отсутствовать
+    const includedComponents: ComponentType[] = [
+      ComponentType.IS_ACTIVE_TAG,
+      ComponentType.ROTATE,
+      ComponentType.MATRIX,
+    ];
     const excludedComponents: ComponentType[] = [];
+
+    // Извлекаем активную форму, соответствующую фильтру компонентов
+    const entities = state.entities;
+    const activeShape = utils.selectEntitiesWithFilteredComponents(
+      entities,
+      includedComponents
+    )[0];
+
+    // Поворачиваем матрицу активной формы
+    const rotatedMatrix = utils.rotatePentomino(activeShape);
+
+    // Обновляем компоненты для активной формы
+    const updatedComponents = {
+      [ComponentType.ROTATE]: { angle },
+      [ComponentType.MATRIX]: rotatedMatrix,
+    };
+
+    // Получаем обновления для сущностей
     const updates = utils.updateEntitiesWithComponents(
       state,
       includedComponents,
       excludedComponents,
-      ComponentType.ROTATE,
-      { angle }
+      updatedComponents
     );
 
+    // Возвращаем обновленное состояние с примененными изменениями
     return entitiesAdapter.updateMany(updates, state);
   }),
   on(PlayerActions.mouseMove, (state, { mx, my }) => {
@@ -108,47 +134,66 @@ export const gameReducer = createReducer(
       ComponentType.IS_ACTIVE_TAG,
     ];
     const excludedComponents: ComponentType[] = [];
-
+    const updatedMousePosition = {
+      [ComponentType.MOUSE]: {
+        mx,
+        my,
+      } as PickComponentType<ComponentType.MOUSE>,
+    };
     const updates = utils.updateEntitiesWithComponents(
       state,
       includedComponents,
       excludedComponents,
-      ComponentType.MOUSE,
-      { mx, my }
+      updatedMousePosition
     );
 
     return entitiesAdapter.updateMany(updates, state);
   }),
   on(GameActions.shapePlacement, (state) => {
+    // Получаем игровую доску по её идентификатору
     const board = utils.getEntitiesById(GameObjectsIds.BOARD, state)[0];
+
+    // Устанавливаем компоненты, которые должны присутствовать у активной формы
     const includedComponents = [ComponentType.IS_ACTIVE_TAG];
 
+    // Извлекаем активную форму с указанными компонентами
     const entities = state.entities;
     const activeShape = utils.selectEntitiesWithFilteredComponents(
       entities,
       includedComponents
     )[0];
 
+    // Проверяем наличие доски и активной формы
+    if (!board || !activeShape) {
+      return { ...state };
+    }
+
+    // Определяем позицию для размещения активной формы на доске
     const placementPosition = boardGame.getPlacementPosition(
       board,
       activeShape
     );
+
+    // Пересчитываем координаты формы с учетом новой позиции
     const updatedShapeCoords = boardGame.recalculateShapePosition(
       board,
       activeShape,
       placementPosition
     );
 
-    if (!board || !activeShape || !placementPosition || !updatedShapeCoords) {
+    // Проверяем наличие позиции для размещения и пересчитанных координат
+    if (!placementPosition || !updatedShapeCoords) {
       return { ...state };
     }
 
+    // Обновляем компоненты активной формы с новыми координатами и позицией
     const updatedComponents = utils.updateActiveEntityWhenPlacement(
       activeShape,
       updatedShapeCoords,
       placementPosition
     );
 
+    // Возвращаем обновленное состояние с примененными изменениями
     return entitiesAdapter.updateOne(
       {
         id: activeShape.id,
@@ -161,12 +206,17 @@ export const gameReducer = createReducer(
     const includedComponents: ComponentType[] = [ComponentType.RATIO];
     const excludedComponents: ComponentType[] = [];
 
+    const updatedRatio = {
+      [ComponentType.RATIO]: {
+        ratio,
+      } as PickComponentType<ComponentType.RATIO>,
+    };
+
     const updates = utils.updateEntitiesWithComponents(
       state,
       includedComponents,
       excludedComponents,
-      ComponentType.RATIO,
-      { ratio }
+      updatedRatio
     );
 
     return entitiesAdapter.updateMany(updates, state);
@@ -194,8 +244,9 @@ export const gameReducer = createReducer(
       return { ...state };
     }
 
-    const updatedComponents = utils.updatePlacementEntityWhenPlacement(
+    const updatedComponents = utils.updateComponentInEntity(
       activeShape,
+      ComponentType.POSITION,
       placementPosition
     );
 

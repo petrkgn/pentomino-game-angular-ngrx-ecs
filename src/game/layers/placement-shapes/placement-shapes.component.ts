@@ -163,10 +163,10 @@ export class PlacementShapesComponent implements AfterViewInit {
           this.window.innerHeight
         );
         this.ctx.save();
-        // this.ctx.beginPath();
-        // this.ctx.translate(positionX, positionY);
-        // this.ctx.rotate((Math.PI / 180) * angle);
-        // this.ctx.translate(-positionX, -positionY);
+        this.ctx.beginPath();
+        this.ctx.translate(positionX, positionY);
+        this.ctx.rotate((Math.PI / 180) * angle);
+        this.ctx.translate(-positionX, -positionY);
         this.ctx.drawImage(
           shape,
           positionX - this.imgWidth / 2,

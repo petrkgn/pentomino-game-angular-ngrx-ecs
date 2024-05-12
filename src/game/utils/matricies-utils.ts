@@ -237,7 +237,9 @@ export function isBoardFilled(board: Entity): boolean {
  * @param pentomino Пентамино для вращения.
  * @returns Новый объект пентамино после вращения.
  */
-export function rotatePentomino(pentomino: Entity): Entity {
+export function rotatePentomino(
+  pentomino: Entity
+): PickComponentType<ComponentType.MATRIX> {
   const pentominoMatrix = getMatrix(pentomino);
 
   // Транспонируем матрицу пентамино
@@ -246,12 +248,8 @@ export function rotatePentomino(pentomino: Entity): Entity {
   );
 
   return {
-    ...pentomino,
-    components: pentomino.components.map((component) =>
-      component.type === ComponentType.MATRIX
-        ? { ...component, matrix: rotatedMatrix }
-        : component
-    ),
+    type: ComponentType.MATRIX,
+    matrix: rotatedMatrix,
   };
 }
 
