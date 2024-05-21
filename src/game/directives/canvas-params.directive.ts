@@ -34,7 +34,6 @@ export class CanvasParamsDirective implements AfterViewInit {
   private initCanvasParams(): void {
     this.canvas.style.cssText = `${this.canvasCss};`;
     const canvasParams: CanvasParams = {
-      layer: this.canvas,
       ctx: this.canvas.getContext("2d"),
       canvasPositionTop: 0,
       canvasPositionLeft: 0,

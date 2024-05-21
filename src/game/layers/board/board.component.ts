@@ -43,8 +43,8 @@ export class BoardComponent implements AfterViewInit {
   constructor() {}
 
   ngAfterViewInit() {
-    this.canvasParams.layer.width = this.numCols * this.cellSize;
-    this.canvasParams.layer.height = this.numRows * this.cellSize;
+    this.canvasParams.canvasEl.width = this.numCols * this.cellSize;
+    this.canvasParams.canvasEl.height = this.numRows * this.cellSize;
     // this.drawGrid();
 
     this.resizeService
@@ -53,8 +53,8 @@ export class BoardComponent implements AfterViewInit {
         tap((value) => {
           const ratio = Math.ceil(value);
           this.cellSize = 32 * ratio;
-          this.canvasParams.layer.width = this.numCols * this.cellSize;
-          this.canvasParams.layer.height = this.numRows * this.cellSize;
+          this.canvasParams.canvasEl.width = this.numCols * this.cellSize;
+          this.canvasParams.canvasEl.height = this.numRows * this.cellSize;
           this.getBoardPosition();
           this.drawGrid(ratio);
         })
@@ -67,8 +67,8 @@ export class BoardComponent implements AfterViewInit {
   }
 
   private getBoardPosition(): void {
-    this.boardTop = this.canvasParams.layer.getBoundingClientRect().top;
-    this.boardLeft = this.canvasParams.layer.getBoundingClientRect().left;
+    this.boardTop = this.canvasParams.canvasEl.getBoundingClientRect().top;
+    this.boardLeft = this.canvasParams.canvasEl.getBoundingClientRect().left;
     this.store.dispatch(
       PentominoActions.updateComponentData({
         entityId: GameObjectsIds.BOARD,
@@ -84,8 +84,8 @@ export class BoardComponent implements AfterViewInit {
     this.canvasParams.ctx.clearRect(
       0,
       0,
-      this.canvasParams.layer.width,
-      this.canvasParams.layer.height
+      this.canvasParams.canvasEl.width,
+      this.canvasParams.canvasEl.height
     );
     this.canvasParams.ctx.lineWidth = 0.6 * ratio;
     for (let i = 0; i <= this.numRows; i++) {
