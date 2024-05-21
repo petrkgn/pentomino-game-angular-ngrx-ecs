@@ -7,5 +7,5 @@ export interface CanvasParams {
   canvasPositionLeft: number;
   width: number;
   height: number;
-  canvasEl: ElementRef;
+  canvasEl: HTMLElement;
 }

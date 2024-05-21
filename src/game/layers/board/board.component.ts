@@ -1,36 +1,35 @@
 import {
   AfterViewInit,
+  ChangeDetectionStrategy,
   Component,
-  ElementRef,
   inject,
-  viewChild,
-} from '@angular/core';
-import { Store } from '@ngrx/store';
-import { tap } from 'rxjs';
-import { BonudsElementDirective } from '../../directives/bounds-element.directive';
-import { BoardsSize } from '../../constants/board-size';
-import { PentominoActions } from '../../store/game/actions';
-import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
-import { ComponentType } from '../../constants/component-type.enum';
-import { ResizeService } from '../../services/resize.service';
-import { CanvasParams } from '../../interfaces/canvas-params';
-import { CanvasParamsDirective } from '../../directives/canvas-params.directive';
-
+} from "@angular/core";
+import { Store } from "@ngrx/store";
+import { tap } from "rxjs";
+import { BonudsElementDirective } from "../../directives/bounds-element.directive";
+import { BoardsSize } from "../../constants/board-size";
+import { PentominoActions } from "../../store/game/actions";
+import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
+import { ComponentType } from "../../constants/component-type.enum";
+import { ResizeService } from "../../services/resize.service";
+import { CanvasParams } from "../../interfaces/canvas-params";
+import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 
 @Component({
-  selector: 'game-board',
-  templateUrl: './board.component.html',
-  styleUrls: ['./board.component.css'],
-  imports: [
-    BonudsElementDirective,
-    CanvasParamsDirective
-   ],
+  selector: "game-board",
+  imports: [CanvasParamsDirective],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: ` <canvas
+    canvasParams
+    [canvasCss]="canvasCss"
+    (canvasParams)="onCanvasParams($event)"
+    #canvas
+  ></canvas>`,
 })
 export class BoardComponent implements AfterViewInit {
   private readonly store = inject(Store);
   private readonly resizeService = inject(ResizeService);
-
 
   private canvasParams!: CanvasParams;
 
@@ -39,12 +38,12 @@ export class BoardComponent implements AfterViewInit {
   numCols = BoardsSize.firstLevel[0].length;
   boardTop = 0;
   boardLeft = 0;
+  canvasCss =
+    "top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: brown;";
 
   constructor() {}
 
   ngAfterViewInit() {
-  
-  
     this.canvasParams.layer.width = this.numCols * this.cellSize;
     this.canvasParams.layer.height = this.numRows * this.cellSize;
     // this.drawGrid();
@@ -83,7 +82,12 @@ export class BoardComponent implements AfterViewInit {
   private drawGrid(ratio: number): void {
     if (!this.canvasParams.ctx) return;
 
-    this.canvasParams.ctx.clearRect(0, 0, this.canvasParams.layer.width, this.canvasParams.layer.height);
+    this.canvasParams.ctx.clearRect(
+      0,
+      0,
+      this.canvasParams.layer.width,
+      this.canvasParams.layer.height
+    );
     this.canvasParams.ctx.lineWidth = 0.6 * ratio;
     for (let i = 0; i <= this.numRows; i++) {
       const y = i * this.cellSize;
