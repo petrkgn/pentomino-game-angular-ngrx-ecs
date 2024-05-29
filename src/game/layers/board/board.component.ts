@@ -5,7 +5,7 @@ import {
   inject,
 } from "@angular/core";
 import { Store } from "@ngrx/store";
-import { tap } from "rxjs";
+import { animationFrameScheduler, tap } from "rxjs";
 import { BoardsSize } from "../../constants/board-size";
 import { PentominoActions } from "../../store/game/actions";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
@@ -13,7 +13,14 @@ import { ComponentType } from "../../constants/component-type.enum";
 import { ResizeService } from "../../services/resize.service";
 import { CanvasParams } from "../../interfaces/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
+import { CELL_SIZE } from "../../constants/cell-size";
 
+export type BoardPositionParams = {
+  width: number;
+  height: number;
+  centerX: number;
+  centerY: number;
+};
 @Component({
   selector: "game-board",
   imports: [CanvasParamsDirective],
@@ -32,31 +39,34 @@ export class BoardComponent implements AfterViewInit {
 
   private canvasParams!: CanvasParams;
 
-  cellSize = 32;
+  cellSize = CELL_SIZE;
   numRows = BoardsSize.firstLevel.length;
   numCols = BoardsSize.firstLevel[0].length;
-  boardTop = 0;
-  boardLeft = 0;
-  canvasCss =
-    "top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: brown;";
+  canvasCss = "background-color: green; opacity: 0.5";
+  boardPosition: { topLeftX: number; topLeftY: number } = {
+    topLeftX: 0,
+    topLeftY: 0,
+  };
 
   constructor() {}
 
   ngAfterViewInit() {
-    this.canvasParams.canvasEl.width = this.numCols * this.cellSize;
-    this.canvasParams.canvasEl.height = this.numRows * this.cellSize;
-    // this.drawGrid();
-
+    this.getBoardPosition();
     this.resizeService
       .calculateScaleRatio(32, 20)
       .pipe(
         tap((value) => {
           const ratio = Math.ceil(value);
-          this.cellSize = 32 * ratio;
-          this.canvasParams.canvasEl.width = this.numCols * this.cellSize;
-          this.canvasParams.canvasEl.height = this.numRows * this.cellSize;
+          this.cellSize = CELL_SIZE * ratio;
           this.getBoardPosition();
-          this.drawGrid(ratio);
+
+          animationFrameScheduler.schedule(
+            function (actions) {
+              this.schedule(actions);
+            },
+            0,
+            this.drawGrid(ratio)
+          );
         })
       )
       .subscribe();
@@ -67,13 +77,20 @@ export class BoardComponent implements AfterViewInit {
   }
 
   private getBoardPosition(): void {
-    this.boardTop = this.canvasParams.canvasEl.getBoundingClientRect().top;
-    this.boardLeft = this.canvasParams.canvasEl.getBoundingClientRect().left;
+    this.boardPosition = this.getTopLeftCoordinates({
+      width: this.numCols * this.cellSize,
+      height: this.numRows * this.cellSize,
+      centerX: this.canvasParams.canvasCenter.x,
+      centerY: this.canvasParams.canvasCenter.y,
+    });
     this.store.dispatch(
       PentominoActions.updateComponentData({
         entityId: GameObjectsIds.BOARD,
         currentComponent: ComponentType.POSITION,
-        changes: { x: this.boardLeft, y: this.boardTop },
+        changes: {
+          x: this.boardPosition.topLeftX,
+          y: this.boardPosition.topLeftY,
+        },
       })
     );
   }
@@ -81,18 +98,19 @@ export class BoardComponent implements AfterViewInit {
   private drawGrid(ratio: number): void {
     if (!this.canvasParams.ctx) return;
 
-    this.canvasParams.ctx.clearRect(
-      0,
-      0,
-      this.canvasParams.canvasEl.width,
-      this.canvasParams.canvasEl.height
-    );
-    this.canvasParams.ctx.lineWidth = 0.6 * ratio;
+    this.canvasParams.ctx.lineWidth = 2 * ratio;
+
     for (let i = 0; i <= this.numRows; i++) {
       const y = i * this.cellSize;
       this.canvasParams.ctx.beginPath();
-      this.canvasParams.ctx.moveTo(0, y);
-      this.canvasParams.ctx.lineTo(this.canvasParams.width, y);
+      this.canvasParams.ctx.moveTo(
+        this.boardPosition.topLeftX,
+        this.boardPosition.topLeftY + y
+      );
+      this.canvasParams.ctx.lineTo(
+        this.boardPosition.topLeftX + this.numCols * this.cellSize,
+        this.boardPosition.topLeftY + y
+      );
       this.canvasParams.ctx.stroke();
     }
 
@@ -100,9 +118,24 @@ export class BoardComponent implements AfterViewInit {
     for (let i = 0; i <= this.numCols; i++) {
       const x = i * this.cellSize;
       this.canvasParams.ctx.beginPath();
-      this.canvasParams.ctx.moveTo(x, 0);
-      this.canvasParams.ctx.lineTo(x, this.canvasParams.height);
+      this.canvasParams.ctx.moveTo(
+        this.boardPosition.topLeftX + x,
+        this.boardPosition.topLeftY
+      );
+      this.canvasParams.ctx.lineTo(
+        this.boardPosition.topLeftX + x,
+        this.boardPosition.topLeftY + this.numRows * this.cellSize
+      );
       this.canvasParams.ctx.stroke();
     }
+  }
+
+  private getTopLeftCoordinates(params: BoardPositionParams): {
+    topLeftX: number;
+    topLeftY: number;
+  } {
+    const topLeftX = params.centerX - params.width / 2;
+    const topLeftY = params.centerY - params.height / 2;
+    return { topLeftX, topLeftY };
   }
 }

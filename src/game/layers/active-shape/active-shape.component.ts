@@ -8,36 +8,37 @@ import {
   input,
   InputSignal,
   ViewChild,
-} from '@angular/core';
+} from "@angular/core";
 
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
-import { WINDOW } from '@ng-web-apis/common';
-import { Entity } from '../../interfaces/entity';
-import { ComponentType } from '../../constants/component-type.enum';
-import { PickComponentType } from '../../interfaces/components';
-import { isDefined } from '../../utils/filter-defined';
-import { ResizeService } from '../../services/resize.service';
-import { tap } from 'rxjs';
-import { GameFacade } from '../../game.facade';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { WINDOW } from "@ng-web-apis/common";
+import { Entity } from "../../interfaces/entity";
+import { ComponentType } from "../../constants/component-type.enum";
+import { PickComponentType } from "../../interfaces/components";
+import { isDefined } from "../../utils/filter-defined";
+import { ResizeService } from "../../services/resize.service";
+import { tap } from "rxjs";
+import { GameFacade } from "../../game.facade";
+import { toSignal } from "@angular/core/rxjs-interop";
 
 @Component({
-  selector: 'game-active-shape',
+  selector: "game-active-shape",
   imports: [JsonPipe, NgIf, AsyncPipe],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div
-      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 100px">
-      <pre>{{ activeShapes() | json }}</pre>
-    </div>
+    <!-- <div
+      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 100px"> -->
+    <!-- <pre>{{ activeShapes() | json }}</pre> -->
+    <!-- </div> -->
     <!-- <div style='position:absolute; background-color: red; opacity: 0.8; color: white; width: 100vw; top: 0px; height: 348.875px'>    
     </div> -->
     <canvas #myCanvas></canvas>
     <img
       #myImg
-      src="https://github.com/petrkgn/katamino-game-angular/blob/main/wshape.png?raw=true" />
+      src="https://github.com/petrkgn/katamino-game-angular/blob/main/wshape.png?raw=true"
+    />
   `,
   styles: `
   img {
@@ -56,9 +57,9 @@ export class ActiveShapeComponent implements AfterViewInit {
   private imgWidth = 96;
   private imgHeight = 96;
 
-  @ViewChild('myCanvas', { static: true })
+  @ViewChild("myCanvas", { static: true })
   private readonly _canvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('myImg', { static: true })
+  @ViewChild("myImg", { static: true })
   private readonly img!: ElementRef;
 
   activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
@@ -91,7 +92,7 @@ export class ActiveShapeComponent implements AfterViewInit {
 
   initCanvas(): void {
     this.canvas = this._canvas.nativeElement;
-    this.ctx = this.canvas.getContext('2d');
+    this.ctx = this.canvas.getContext("2d");
     this.canvas.width = this.window.innerWidth;
     this.canvas.height = this.window.innerHeight;
   }
