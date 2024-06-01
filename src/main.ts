@@ -1,6 +1,9 @@
-import { Component, NgZone, ɵNoopNgZone } from "@angular/core";
+import {
+  Component,
+  provideExperimentalZonelessChangeDetection,
+} from "@angular/core";
 import { bootstrapApplication } from "@angular/platform-browser";
-import "zone.js";
+// import "zone.js";
 import { provideState, provideStore } from "@ngrx/store";
 import { provideEffects } from "@ngrx/effects";
 import { GameComponent } from "./game/game.component";
@@ -23,7 +26,7 @@ export class App {
 
 bootstrapApplication(App, {
   providers: [
-    { provide: NgZone, useClass: ɵNoopNgZone },
+    provideExperimentalZonelessChangeDetection(),
     provideStore(),
     provideState(gameFeature),
     provideEffects([GameEffects]),
