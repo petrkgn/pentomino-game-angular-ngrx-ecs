@@ -40,8 +40,8 @@ export class BoardComponent implements AfterViewInit {
   private canvasParams!: CanvasParams;
 
   cellSize = CELL_SIZE;
-  numRows = BoardsSize.firstLevel.length;
-  numCols = BoardsSize.firstLevel[0].length;
+  numRows = 5;
+  numCols = BoardsSize.firstLevel.length / this.numRows;
   canvasCss = "background-color: green; opacity: 0.5";
   boardPosition: { topLeftX: number; topLeftY: number } = {
     topLeftX: 0,

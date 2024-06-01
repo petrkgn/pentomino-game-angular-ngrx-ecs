@@ -1,16 +1,16 @@
-import { inject, Injectable, Signal } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { inject, Injectable, Signal } from "@angular/core";
+import { Store } from "@ngrx/store";
 
-import { GameActions, PentominoActions } from './store/game/actions';
-import { ComponentType } from './constants/component-type.enum';
-import * as utils from './utils/pentomino-factory';
-import { BoardsSize } from './constants/board-size';
-import { GameObjectsIds } from './constants/game-objects-ids.enum';
-import { ResizeService } from './services/resize.service';
-import { filter, map, Observable } from 'rxjs';
-import { gameFeature } from './store/game/state';
-import { Entity } from './interfaces/entity';
-import { areAllObjectsDefined } from './utils';
+import { GameActions, PentominoActions } from "./store/game/actions";
+import { ComponentType } from "./constants/component-type.enum";
+import * as utils from "./utils/pentomino-factory";
+import { BoardsSize } from "./constants/board-size";
+import { GameObjectsIds } from "./constants/game-objects-ids.enum";
+import { ResizeService } from "./services/resize.service";
+import { filter, map, Observable } from "rxjs";
+import { gameFeature } from "./store/game/state";
+import { Entity } from "./interfaces/entity";
+import { areAllObjectsDefined } from "./utils";
 
 @Injectable()
 export class GameFacade {
@@ -35,11 +35,8 @@ export class GameFacade {
     },
     {
       type: ComponentType.MATRIX,
-      matrix: [
-        [8, 0, 0],
-        [8, 8, 0],
-        [0, 8, 8],
-      ],
+      rows: 3,
+      matrix: [8, 0, 0, 8, 8, 0, 0, 8, 8],
     },
     {
       type: ComponentType.RATIO,
@@ -55,6 +52,7 @@ export class GameFacade {
     },
     {
       type: ComponentType.MATRIX,
+      rows: 5,
       matrix: BoardsSize.firstLevel,
     },
     {
@@ -68,7 +66,7 @@ export class GameFacade {
       .select(gameFeature.selectActiveShape)
       .pipe(map((entities) => this.handleEntitiesDefined(entities)));
   }
- 
+
   selectPlacementShapes(): Observable<Entity[]> {
     return this.store
       .select(gameFeature.selectPlacementShapes)

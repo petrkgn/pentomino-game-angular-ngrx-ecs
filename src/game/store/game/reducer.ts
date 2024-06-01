@@ -1,17 +1,17 @@
-import { createReducer, on } from '@ngrx/store';
+import { createReducer, on } from "@ngrx/store";
 
 import {
   EntityComponents,
   PickComponentType,
-} from '../../interfaces/components';
-import { ComponentType } from '../../constants/component-type.enum';
-import { PentominoActions, PlayerActions, GameActions } from './actions';
+} from "../../interfaces/components";
+import { ComponentType } from "../../constants/component-type.enum";
+import { PentominoActions, PlayerActions, GameActions } from "./actions";
 
-import { initialGameEntitiesState, entitiesAdapter } from './initial.state';
+import { initialGameEntitiesState, entitiesAdapter } from "./initial.state";
 
-import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
-import * as utils from '../../utils';
-import BoardGame from '../../utils/board';
+import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
+import * as utils from "../../utils";
+import BoardGame from "../../utils/board";
 
 const boardGame = new BoardGame();
 
@@ -53,7 +53,7 @@ export const gameReducer = createReducer(
           id: entityId,
           changes: {
             components: currentPentomino.components.filter(
-              (component) => component['type'] !== currentComponent
+              (component) => component["type"] !== currentComponent
             ),
           },
         },
@@ -169,11 +169,13 @@ export const gameReducer = createReducer(
     }
 
     // Определяем позицию для размещения активной формы на доске
+    const startTime = performance.now();
     const placementPosition = boardGame.getPlacementPosition(
       board,
       activeShape
     );
-
+    const elapsedTime = performance.now() - startTime;
+    console.log(`Placement time: ${elapsedTime.toFixed(2)} ms`);
     // Пересчитываем координаты формы с учетом новой позиции
     const updatedShapeCoords = boardGame.recalculateShapePosition(
       board,
@@ -235,10 +237,13 @@ export const gameReducer = createReducer(
       return { ...state };
     }
 
+    const startTime = performance.now();
     const placementPosition = boardGame.recalculateShapePosition(
       board,
       activeShape
     );
+    const elapsedTime = performance.now() - startTime;
+    console.log(`Recalculation time: ${elapsedTime.toFixed(2)} ms`);
 
     if (!placementPosition) {
       return { ...state };

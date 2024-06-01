@@ -1,4 +1,4 @@
-import { ComponentType } from '../constants/component-type.enum';
+import { ComponentType } from "../constants/component-type.enum";
 
 interface PositionComponent {
   type: ComponentType.POSITION;
@@ -28,13 +28,14 @@ interface IsActiveTag {
 
 interface MatrixComponent {
   type: ComponentType.MATRIX;
-  matrix: number[][];
+  rows: number;
+  matrix: number[];
 }
 
 interface PlacementComponent {
   type: ComponentType.PLACEMENT;
-  cellX: number,
-  cellY: number
+  cellX: number;
+  cellY: number;
 }
 
 interface Ratio {
