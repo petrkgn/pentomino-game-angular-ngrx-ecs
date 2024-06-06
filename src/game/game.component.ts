@@ -36,6 +36,7 @@ import { GameActions } from "./store/game/actions";
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: ` <!-- <pre
       style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 50px"></pre> -->
+    <game-background />
     <game-board />
     <game-placement-shapes />
     <game-active-shape />`,

@@ -1,23 +1,27 @@
-import { inject, Injectable } from '@angular/core';
-import { WINDOW } from '@ng-web-apis/common';
+import { inject, Injectable } from "@angular/core";
+import { WINDOW } from "@ng-web-apis/common";
 import {
+  combineLatestWith,
   delay,
   delayWhen,
   fromEvent,
   map,
   merge,
   Observable,
+  of,
   share,
   shareReplay,
   startWith,
+  switchMap,
   tap,
-} from 'rxjs';
+  withLatestFrom,
+} from "rxjs";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class ResizeService {
   private window = inject(WINDOW);
-  private resizeEvent$ = fromEvent(window, 'resize');
-  private loadEvent$ = fromEvent(window, 'load');
+  private resizeEvent$ = fromEvent(window, "resize");
+  private loadEvent$ = fromEvent(window, "load");
 
   calculateScaleRatio(
     baseCellSize: number,
@@ -25,8 +29,9 @@ export class ResizeService {
   ): Observable<number> {
     return this.resizeEvent$.pipe(
       startWith(this.getWindowSize()),
-      map(() => this.getRatio(baseCellSize, gridWidthInCells)),
-      // tap((res) => console.log('RES', res))
+      combineLatestWith(this.loadEvent$),
+      map(() => this.getRatio(baseCellSize, gridWidthInCells))
+      // tap((res) => console.log("RES", res))
     );
   }
 
@@ -37,6 +42,6 @@ export class ResizeService {
   getRatio(baseCellSize: number, gridWidthInCells: number): number {
     const windowWidth = this.window.innerWidth;
     const desiredCanvasWidth = baseCellSize * gridWidthInCells;
-    return windowWidth / desiredCanvasWidth;
+    return 2;
   }
 }

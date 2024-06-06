@@ -4,9 +4,9 @@ canvas {
   }
   
   body {
-    background-color: beige;
+    background-color: rgb(43, 20, 1);
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     overflow: clip;
-  }
+  }  

@@ -21,6 +21,7 @@ import { ResizeService } from "../../services/resize.service";
 import { tap } from "rxjs";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
+import { ComponentView } from "../../constants/view.enum";
 
 @Component({
   selector: "game-active-shape",
@@ -35,15 +36,11 @@ import { toSignal } from "@angular/core/rxjs-interop";
     <!-- <div style='position:absolute; background-color: red; opacity: 0.8; color: white; width: 100vw; top: 0px; height: 348.875px'>    
     </div> -->
     <canvas #myCanvas></canvas>
-    <img
-      #myImg
-      src="https://github.com/petrkgn/katamino-game-angular/blob/main/wshape.png?raw=true"
-    />
+    <img #myImg [src]="componentView.SHAPE_W" />
   `,
   styles: `
   img {
-    position: absolute;
-    top: -100%;
+   display: none;
   }  
 `,
 })
@@ -51,6 +48,8 @@ export class ActiveShapeComponent implements AfterViewInit {
   private readonly resizeService = inject(ResizeService);
   private readonly window = inject(WINDOW);
   private readonly gameFacade = inject(GameFacade);
+
+  readonly componentView = ComponentView;
 
   private canvas!: HTMLCanvasElement;
   private ctx!: CanvasRenderingContext2D | null;
@@ -80,7 +79,7 @@ export class ActiveShapeComponent implements AfterViewInit {
       .pipe(
         tap((value) => {
           const ratio = Math.ceil(value);
-          // console.log('ratio', ratio);
+
           this.imgWidth = 96 * ratio;
           this.imgHeight = 96 * ratio;
           this.canvas.width = this.window.innerWidth;

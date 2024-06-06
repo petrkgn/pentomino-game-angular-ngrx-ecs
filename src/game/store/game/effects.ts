@@ -1,11 +1,11 @@
-import { Inject, inject, Injectable } from '@angular/core';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { distinctUntilChanged, filter, map, Observable, tap } from 'rxjs';
+import { Inject, inject, Injectable } from "@angular/core";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
+import { distinctUntilChanged, filter, map, Observable, tap } from "rxjs";
 
-import { GameActions, PlayerActions } from './actions';
-import { KEY_PRESSED } from '../../tokens/key-pressed.token';
-import { MOUSE_MOVE } from '../../tokens/mouse-event.token';
-import { ResizeService } from '../../services/resize.service';
+import { GameActions, PlayerActions } from "./actions";
+import { KEY_PRESSED } from "../../tokens/key-pressed.token";
+import { MOUSE_MOVE } from "../../tokens/mouse-event.token";
+import { ResizeService } from "../../services/resize.service";
 
 @Injectable()
 export class GameEffects {
@@ -33,14 +33,14 @@ export class GameEffects {
 
   readonly resizeWindow$ = createEffect(() => {
     return this.resizeService.calculateScaleRatio(32, 20).pipe(
-      distinctUntilChanged(),
+      // distinctUntilChanged(),
       map((e) => GameActions.ratioChanged({ ratio: Math.ceil(e) }))
     );
   });
 
   readonly rotateShape$ = createEffect(() =>
     this.keyPressed$.pipe(
-      filter((e) => e === 'Space'),
+      filter((e) => e === "Space"),
       map((e) => {
         if (this.currentAngle >= 270) {
           this.currentAngle = 0;
@@ -55,7 +55,7 @@ export class GameEffects {
 
   readonly gameKeyEvent$ = createEffect(() =>
     this.keyPressed$.pipe(
-      filter((e) => e === 'KeyK'),
+      filter((e) => e === "KeyK"),
       map((e) => {
         return GameActions.shapePlacement();
       })

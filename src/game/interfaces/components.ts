@@ -1,47 +1,53 @@
 import { ComponentType } from "../constants/component-type.enum";
+import { GameObjectsIds } from "../constants/game-objects-ids.enum";
 
-interface PositionComponent {
+type PositionComponent = {
   type: ComponentType.POSITION;
   x: number;
   y: number;
-}
+};
 
-interface MouseComponent {
+type MouseComponent = {
   type: ComponentType.MOUSE;
   mx: number;
   my: number;
-}
+};
 
-interface RenderComponent {
+type RenderComponent = {
   type: ComponentType.RENDER;
   color: string;
-}
+};
 
-interface RotateComponent {
+type RotateComponent = {
   type: ComponentType.ROTATE;
   angle: number;
-}
+};
 
-interface IsActiveTag {
+type IsActiveTag = {
   type: ComponentType.IS_ACTIVE_TAG;
-}
+};
 
-interface MatrixComponent {
+type MatrixComponent = {
   type: ComponentType.MATRIX;
   rows: number;
   matrix: number[];
-}
+};
 
-interface PlacementComponent {
+type PlacementComponent = {
   type: ComponentType.PLACEMENT;
   cellX: number;
   cellY: number;
-}
+};
 
-interface Ratio {
+type Ratio = {
   type: ComponentType.RATIO;
   ratio: number;
-}
+};
+
+type view = {
+  type: ComponentType.VIEW;
+  view: GameObjectsIds;
+};
 
 export type EntityComponents =
   | PositionComponent
