@@ -6,8 +6,8 @@ import { ComponentType } from "./constants/component-type.enum";
 import * as utils from "./utils/pentomino-factory";
 import { BoardsSize } from "./constants/board-size";
 import { GameObjectsIds } from "./constants/game-objects-ids.enum";
-import { ResizeService } from "./services/resize.service";
-import { filter, map, Observable } from "rxjs";
+
+import { map, Observable } from "rxjs";
 import { gameFeature } from "./store/game/state";
 import { Entity } from "./interfaces/entity";
 import { areAllObjectsDefined } from "./utils";
@@ -15,7 +15,6 @@ import { areAllObjectsDefined } from "./utils";
 @Injectable()
 export class GameFacade {
   private readonly store = inject(Store);
-  private readonly resizeService = inject(ResizeService);
   private pentominoF = utils.createEntity(GameObjectsIds.SHAPE_F, [
     {
       type: ComponentType.POSITION,

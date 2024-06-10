@@ -1,12 +1,12 @@
-import { createActionGroup, props, emptyProps } from '@ngrx/store';
+import { createActionGroup, props, emptyProps } from "@ngrx/store";
 
-import { EntityComponents } from '../../interfaces/components';
-import { ComponentType } from '../../constants/component-type.enum';
-import { Entity } from '../../interfaces/entity';
-import { EntityId } from '../../types/entity-id.type';
+import { EntityComponents } from "../../interfaces/components";
+import { ComponentType } from "../../constants/component-type.enum";
+import { Entity } from "../../interfaces/entity";
+import { EntityId } from "../../types/entity-id.type";
 
 export const PentominoActions = createActionGroup({
-  source: 'Entity',
+  source: "Entity",
   events: {
     addEntity: props<{ entity: Entity }>(),
     updateEntity: props<{ id: EntityId; changes: Partial<Entity> }>(),
@@ -28,15 +28,16 @@ export const PentominoActions = createActionGroup({
 });
 
 export const PlayerActions = createActionGroup({
-  source: 'Control',
+  source: "Control",
   events: {
     mouseMove: props<{ mx: number; my: number }>(),
     rotateShape: props<{ angle: number }>(),
+    empty: emptyProps(),
   },
 });
 
 export const GameActions = createActionGroup({
-  source: 'Game',
+  source: "Game",
   events: {
     initRatio: emptyProps(),
     renderShape: props<{ ctx: CanvasRenderingContext2D }>(),

@@ -195,6 +195,10 @@ export const gameReducer = createReducer(
       placementPosition
     );
 
+    const newBoard = boardGame.updateBoardMatrix(board, activeShape);
+
+    console.log("AAAA", newBoard);
+
     // Возвращаем обновленное состояние с примененными изменениями
     return entitiesAdapter.updateOne(
       {

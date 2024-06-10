@@ -1,23 +1,50 @@
-import { Inject, inject, Injectable } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { distinctUntilChanged, filter, map, Observable, tap } from "rxjs";
+import { combineLatestWith, filter, map, tap } from "rxjs";
 
 import { GameActions, PlayerActions } from "./actions";
 import { KEY_PRESSED } from "../../tokens/key-pressed.token";
-import { MOUSE_MOVE } from "../../tokens/mouse-event.token";
+import { MOUSE_EVENT } from "../../tokens/mouse-event.token";
 import { ResizeService } from "../../services/resize.service";
+import { Store } from "@ngrx/store";
+import { gameFeature } from "./state";
 
 @Injectable()
 export class GameEffects {
   private readonly actions$ = inject(Actions);
   private readonly keyPressed$ = inject(KEY_PRESSED);
   private readonly resizeService = inject(ResizeService);
-  private readonly mouseMove$ = inject(MOUSE_MOVE);
+  private readonly mouseEvent$ = inject(MOUSE_EVENT);
+  private readonly store = inject(Store);
+  private readonly activeShapes$ = this.store.select(
+    gameFeature.selectActiveShape
+  );
+
   currentAngle = 0;
 
-  readonly mouseEvent$ = createEffect(() =>
-    this.mouseMove$.pipe(
+  readonly mouseMove$ = createEffect(() =>
+    this.mouseEvent$.pipe(
+      filter((e) => e.type === "mousemove"),
       map((e) => PlayerActions.mouseMove({ mx: e.x, my: e.y }))
+    )
+  );
+
+  readonly mouseLeftButtonClick$ = createEffect(() =>
+    this.mouseEvent$.pipe(
+      combineLatestWith(this.activeShapes$),
+      filter(
+        ([e, s]) =>
+          e.type === "mousedown" && e.button === 0 && !Boolean(s.length)
+      ),
+      tap(() => console.log("LEFT")),
+      map((e) => PlayerActions.empty())
+    )
+  );
+
+  readonly mouseRightButtonClick$ = createEffect(() =>
+    this.mouseEvent$.pipe(
+      filter((e) => e.type === "mousedown" && e.button === 2),
+      map((e) => GameActions.shapePlacement())
     )
   );
 
@@ -53,12 +80,12 @@ export class GameEffects {
     )
   );
 
-  readonly gameKeyEvent$ = createEffect(() =>
-    this.keyPressed$.pipe(
-      filter((e) => e === "KeyK"),
-      map((e) => {
-        return GameActions.shapePlacement();
-      })
-    )
-  );
+  // readonly gameKeyEvent$ = createEffect(() =>
+  //   this.keyPressed$.pipe(
+  //     filter((e) => e === "KeyK"),
+  //     map((e) => {
+  //       return GameActions.shapePlacement();
+  //     })
+  //   )
+  // );
 }

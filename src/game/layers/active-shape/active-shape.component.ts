@@ -101,7 +101,7 @@ export class ActiveShapeComponent implements AfterViewInit {
       this.ctx.clearRect(0, 0, this.window.innerWidth, this.window.innerHeight);
       return;
     }
-
+    console.log(activeShapes[0].id);
     activeShapes.forEach((shape) => {
       if (!this.ctx || !this.img) return;
 

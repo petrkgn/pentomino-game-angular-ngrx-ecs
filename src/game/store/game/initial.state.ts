@@ -1,5 +1,5 @@
-import { createEntityAdapter, EntityState } from '@ngrx/entity';
-import { Entity } from '../../interfaces/entity';
+import { createEntityAdapter, EntityState } from "@ngrx/entity";
+import { Entity } from "../../interfaces/entity";
 
 export interface GameObjects extends EntityState<Entity> {}
 

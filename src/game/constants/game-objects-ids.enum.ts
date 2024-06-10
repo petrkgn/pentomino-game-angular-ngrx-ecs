@@ -12,4 +12,5 @@ export enum GameObjectsIds {
   SHAPE_Y,
   SHAPE_Z,
   BOARD,
+  SHAPES_PACK,
 }

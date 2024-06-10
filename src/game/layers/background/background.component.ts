@@ -77,7 +77,7 @@ export class BackgroundComponent {
     if (!this.canvasParams.ctx || !this.bgImg) return;
     const { topLeftX, topLeftY } = this.getTopLeftCoordinates(
       1280,
-      900,
+      896,
       this.canvasParams.canvasCenter.x,
       this.canvasParams.canvasCenter.y
     );
@@ -87,8 +87,55 @@ export class BackgroundComponent {
       topLeftX,
       topLeftY,
       1280,
-      900
+      896
     );
+
+    this.canvasParams.ctx.fillStyle = "red";
+    this.canvasParams.ctx.strokeStyle = "green";
+    this.canvasParams.ctx.lineWidth = 1;
+
+    for (let i = 0; i <= 56; i++) {
+      const y = i * 16;
+      this.canvasParams.ctx.beginPath();
+      this.canvasParams.ctx.moveTo(topLeftX, topLeftY + y);
+      this.canvasParams.ctx.lineTo(topLeftX + 80 * 16, topLeftY + y);
+      this.canvasParams.ctx.stroke();
+    }
+
+    // Вертикальные линии
+    for (let i = 0; i <= 80; i++) {
+      const x = i * 16;
+      this.canvasParams.ctx.beginPath();
+      this.canvasParams.ctx.moveTo(topLeftX + x, topLeftY);
+      this.canvasParams.ctx.lineTo(topLeftX + x, topLeftY + 56 * 16);
+      this.canvasParams.ctx.stroke();
+    }
+
+    for (let i = 0; i <= 5; i++) {
+      const diff = i * 16 * 6;
+      // const shift = i * 22;
+      const shift = 22 * i + (i * (i - 1)) / 2;
+
+      this.canvasParams.ctx.fillRect(
+        topLeftX + 6 * 16,
+        topLeftY + diff + shift + 10 * 16,
+        6 * 16,
+        6 * 16
+      );
+    }
+
+    for (let i = 0; i <= 5; i++) {
+      const diff = i * 16 * 6;
+      const shift = 22 * i + (i * (i - 1)) / 2;
+      const topLeftDiff = 62 * 16;
+
+      this.canvasParams.ctx.fillRect(
+        topLeftX + topLeftDiff + 6 * 16,
+        topLeftY + diff + shift + 10 * 16,
+        6 * 16,
+        6 * 16
+      );
+    }
   }
 
   private getTopLeftCoordinates(

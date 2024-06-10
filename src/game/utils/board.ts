@@ -210,9 +210,9 @@ class BoardGame {
   }
 
   /**
-   * Проверяет, пересекается ли фигура с другими фигурами на доске.
-   * @param data Данные для проверки.
-   * @returns true если есть пересечения, иначе false.
+   * Checks if the shape intersects with other shapes on the board.
+   * @param data Data for the check.
+   * @returns True if there are intersections, otherwise false.
    */
   private intersectsOtherShapes(data: PlacementData): boolean {
     const { boardMatrix, pentominoMatrix } = data;
@@ -221,25 +221,25 @@ class BoardGame {
     const { rows: pentominoRows, columns: pentominoColumns } =
       this.getRowAndColumn(pentominoMatrix);
 
-    for (let i = 0; i < pentominoRows; i++) {
-      for (let j = 0; j < pentominoColumns; j++) {
-        if (pentominoMatrix.matrix[i * pentominoColumns + j] !== 0) {
+    for (let row = 0; row < pentominoRows; row++) {
+      for (let col = 0; col < pentominoColumns; col++) {
+        const pentominoValue =
+          pentominoMatrix.matrix[row * pentominoColumns + col];
+        if (pentominoValue !== 0) {
           const { cellX, cellY } = this.getBoardCellPosition(data);
-          const placementX = cellX + j;
-          const placementY = cellY + i;
+          const boardX = cellX + col;
+          const boardY = cellY + row;
 
           if (
-            placementY < 0 ||
-            placementY >= boardRows ||
-            placementX < 0 ||
-            placementX >= boardColumns
+            boardX < 0 ||
+            boardX >= boardColumns ||
+            boardY < 0 ||
+            boardY >= boardRows
           ) {
-            continue; // Пропустить несуществующие индексы, чтобы избежать ошибок времени выполнения
+            continue;
           }
 
-          if (
-            boardMatrix.matrix[placementY * boardColumns + placementX] !== 0
-          ) {
+          if (boardMatrix.matrix[boardY * boardColumns + boardX] !== 0) {
             return true;
           }
         }
@@ -335,6 +335,44 @@ class BoardGame {
       x: newPlacementX,
       y: newPlacementY,
     };
+  }
+
+  /**
+   * Updates the board matrix component after placing a pentomino.
+   * @param board The board to update.
+   * @param pentomino The pentomino to place.
+   * @returns The updated board matrix or null if the pentomino cannot be placed.
+   */
+  public updateBoardMatrix(board: Entity, pentomino: Entity): number[] | null {
+    const placementData = this.preparePlacementData(board, pentomino);
+
+    if (!placementData || !this.canPlacePentomino(board, pentomino)) {
+      return null;
+    }
+
+    const { cellX, cellY } = this.getBoardCellPosition(placementData);
+
+    const { boardMatrix, pentominoMatrix } = placementData;
+    const boardMatrixUpdated = [...boardMatrix.matrix];
+    const pentominoMatrixCopy = [...pentominoMatrix.matrix];
+
+    const { rows: pentominoRows, columns: pentominoColumns } =
+      this.getRowAndColumn(pentominoMatrix);
+
+    const { columns: boardCols } = this.getRowAndColumn(boardMatrix);
+
+    for (let row = 0; row < pentominoRows; row++) {
+      for (let col = 0; col < pentominoColumns; col++) {
+        const pentominoValue =
+          pentominoMatrixCopy[row * pentominoColumns + col];
+        if (pentominoValue !== 0) {
+          const boardIndex = (cellY + row) * boardCols + (cellX + col);
+          boardMatrixUpdated[boardIndex] = pentominoValue;
+        }
+      }
+    }
+
+    return boardMatrixUpdated;
   }
 }
 

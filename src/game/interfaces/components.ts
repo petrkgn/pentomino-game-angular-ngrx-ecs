@@ -1,24 +1,24 @@
 import { ComponentType } from "../constants/component-type.enum";
 import { GameObjectsIds } from "../constants/game-objects-ids.enum";
 
-type PositionComponent = {
+type Position = {
   type: ComponentType.POSITION;
   x: number;
   y: number;
 };
 
-type MouseComponent = {
+type Mouse = {
   type: ComponentType.MOUSE;
   mx: number;
   my: number;
 };
 
-type RenderComponent = {
+type Render = {
   type: ComponentType.RENDER;
   color: string;
 };
 
-type RotateComponent = {
+type Rotate = {
   type: ComponentType.ROTATE;
   angle: number;
 };
@@ -27,13 +27,13 @@ type IsActiveTag = {
   type: ComponentType.IS_ACTIVE_TAG;
 };
 
-type MatrixComponent = {
+type Matrix = {
   type: ComponentType.MATRIX;
   rows: number;
   matrix: number[];
 };
 
-type PlacementComponent = {
+type Placement = {
   type: ComponentType.PLACEMENT;
   cellX: number;
   cellY: number;
@@ -44,20 +44,41 @@ type Ratio = {
   ratio: number;
 };
 
-type view = {
+type View = {
   type: ComponentType.VIEW;
   view: GameObjectsIds;
 };
 
+type IsPackTag = {
+  type: ComponentType.IS_PACK_TAG;
+};
+
+type Size = {
+  type: ComponentType.SIZE;
+  width: number;
+  height: number;
+};
+
+type HintBox = {
+  type: ComponentType.HINT_BOX;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
 export type EntityComponents =
-  | PositionComponent
-  | RenderComponent
-  | MouseComponent
-  | RotateComponent
+  | Position
+  | Render
+  | Mouse
+  | Rotate
   | IsActiveTag
-  | MatrixComponent
-  | PlacementComponent
-  | Ratio;
+  | Matrix
+  | Placement
+  | Ratio
+  | View
+  | IsPackTag
+  | Size;
 
 type FilterUnionType<T, U> = T extends { type: U } ? T : never;
 

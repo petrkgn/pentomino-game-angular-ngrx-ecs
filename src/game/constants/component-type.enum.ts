@@ -9,5 +9,8 @@ export enum ComponentType {
   IS_ACTIVE_TAG,
   MATRIX,
   PLACEMENT,
-  RATIO
+  RATIO,
+  IS_PACK_TAG,
+  SIZE,
+  HINT_BOX,
 }
