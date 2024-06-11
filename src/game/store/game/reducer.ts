@@ -12,6 +12,8 @@ import { initialGameEntitiesState, entitiesAdapter } from "./initial.state";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import * as utils from "../../utils";
 import BoardGame from "../../utils/board";
+import { EntityId } from "../../types/entity-id.type";
+import { Entity } from "../../interfaces/entity";
 
 const boardGame = new BoardGame();
 
@@ -127,6 +129,40 @@ export const gameReducer = createReducer(
 
     // Возвращаем обновленное состояние с примененными изменениями
     return entitiesAdapter.updateMany(updates, state);
+  }),
+
+  on(PlayerActions.chooseShape, (state, { mx, my }) => {
+    const includedComponents: ComponentType[] = [ComponentType.HINT_BOX];
+    // const excludedComponents: ComponentType[] = [];
+    const entities = state.entities;
+    const shapes = utils.selectEntitiesWithFilteredComponents(
+      entities,
+      includedComponents
+    );
+
+    const shapesId = findEntityWithPoint(shapes, { mx, my });
+
+    if (!shapesId) return state;
+    const currentEntity = utils
+      .entitiesMapper(entities)
+      .find((entity) => entity.id === shapesId)!;
+
+    const updatedComponents = [
+      ...currentEntity?.components.filter(
+        (component) => component.type !== ComponentType.MOUSE
+      ),
+      { type: ComponentType.IS_ACTIVE_TAG },
+      { type: ComponentType.MOUSE, mx, my },
+    ] as EntityComponents[];
+
+    console.log("!!!!!!!!!!", updatedComponents);
+    return entitiesAdapter.updateOne(
+      {
+        id: shapesId,
+        changes: { components: updatedComponents },
+      },
+      state
+    );
   }),
   on(PlayerActions.mouseMove, (state, { mx, my }) => {
     const includedComponents: ComponentType[] = [
@@ -268,3 +304,27 @@ export const gameReducer = createReducer(
     );
   })
 );
+function findEntityWithPoint(
+  entities: Entity[],
+  mouse: { mx: number; my: number }
+): EntityId | null {
+  const { mx, my } = mouse;
+
+  for (const entity of entities) {
+    for (const component of entity.components) {
+      if (component.type === ComponentType.HINT_BOX) {
+        const hintBox = component;
+        const withinXBounds =
+          mx >= hintBox.x && mx <= hintBox.x + hintBox.width;
+        const withinYBounds =
+          my >= hintBox.y && my <= hintBox.y + hintBox.height;
+
+        if (withinXBounds && withinYBounds) {
+          return entity.id;
+        }
+      }
+    }
+  }
+
+  return null;
+}

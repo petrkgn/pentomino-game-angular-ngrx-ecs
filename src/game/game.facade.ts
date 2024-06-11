@@ -106,7 +106,7 @@ export class GameFacade {
     store.dispatch(
       PentominoActions.addComponentToEntity({
         entityId: GameObjectsIds.SHAPE_W,
-        component: { type: ComponentType.IS_ACTIVE_TAG },
+        component: { type: ComponentType.IS_PACK_TAG },
       })
     );
 

@@ -36,8 +36,7 @@ export class GameEffects {
         ([e, s]) =>
           e.type === "mousedown" && e.button === 0 && !Boolean(s.length)
       ),
-      tap(() => console.log("LEFT")),
-      map((e) => PlayerActions.empty())
+      map(([e, _s]) => PlayerActions.chooseShape({ mx: e.x, my: e.y }))
     )
   );
 

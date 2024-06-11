@@ -12,6 +12,10 @@ import { ComponentView } from "../../constants/view.enum";
 import { CELL_SIZE } from "../../constants/cell-size";
 import { animationFrameScheduler, tap } from "rxjs";
 import { BoardsSize } from "../../constants/board-size";
+import { Store } from "@ngrx/store";
+import { PentominoActions } from "../../store/game/actions";
+import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
+import { ComponentType } from "../../constants/component-type.enum";
 
 @Component({
   selector: "game-background",
@@ -31,6 +35,7 @@ import { BoardsSize } from "../../constants/board-size";
 })
 export class BackgroundComponent {
   private readonly resizeService = inject(ResizeService);
+  private readonly store = inject(Store);
 
   readonly componentView = ComponentView;
 
@@ -115,6 +120,21 @@ export class BackgroundComponent {
       const diff = i * 16 * 6;
       // const shift = i * 22;
       const shift = 22 * i + (i * (i - 1)) / 2;
+
+      if (i === 0) {
+        this.store.dispatch(
+          PentominoActions.addComponentToEntity({
+            entityId: GameObjectsIds.SHAPE_W,
+            component: {
+              type: ComponentType.HINT_BOX,
+              x: topLeftX + 6 * 16,
+              y: topLeftY + diff + shift + 10 * 16,
+              width: 6 * 16,
+              height: 6 * 16,
+            },
+          })
+        );
+      }
 
       this.canvasParams.ctx.fillRect(
         topLeftX + 6 * 16,

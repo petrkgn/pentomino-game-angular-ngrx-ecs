@@ -78,7 +78,8 @@ export type EntityComponents =
   | Ratio
   | View
   | IsPackTag
-  | Size;
+  | Size
+  | HintBox;
 
 type FilterUnionType<T, U> = T extends { type: U } ? T : never;
 
