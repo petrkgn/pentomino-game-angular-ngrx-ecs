@@ -9,7 +9,7 @@ import {
 } from "@angular/core";
 import { WINDOW } from "@ng-web-apis/common";
 
-import { CanvasParams } from "../interfaces/canvas-params";
+import { CanvasParams } from "../types/canvas-params";
 import { ResizeService } from "../services/resize.service";
 import { tap } from "rxjs";
 

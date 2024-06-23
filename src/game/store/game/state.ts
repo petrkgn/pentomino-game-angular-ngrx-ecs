@@ -1,38 +1,51 @@
-import { createFeature, createReducer, createSelector, on } from '@ngrx/store';
+import { createFeature, createReducer, createSelector, on } from "@ngrx/store";
 
-import { Entity } from '../../interfaces/entity';
-import { ComponentType } from '../../constants/component-type.enum';
-import { PlayerActions, GameActions, PentominoActions } from './actions';
-import { initialGameEntitiesState, entitiesAdapter } from './initial.state';
-import { GameObjectsIds } from '../../constants/game-objects-ids.enum';
-import * as utils from '../../utils';
-import { gameReducer } from './reducer';
+import { Entity } from "../../types/entity";
+import { ComponentType } from "../../constants/component-type.enum";
+import { PlayerActions, GameActions, PentominoActions } from "./actions";
+import {
+  initialGameEntitiesState,
+  entitiesAdapter,
+  componentsAdapter,
+} from "./initial.state";
+import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
+import * as utils from "../../utils";
+import { gameReducer } from "./reducer";
+import EntitiesManager from "../../utils/entitiesManager";
+import ComponentsManager from "../../utils/componentsManager";
+import { EntityState } from "@ngrx/entity";
+
+const entitiesManager = new EntitiesManager(entitiesAdapter);
+const componentsManager = new ComponentsManager(
+  entitiesAdapter,
+  componentsAdapter
+);
 
 export const gameFeature = createFeature({
-  name: 'Game',
+  name: "Game",
   reducer: gameReducer,
   extraSelectors: ({ selectGameState, selectEntities }) => ({
     ...entitiesAdapter.getSelectors(selectGameState),
-    selectActiveShape: createSelector(selectEntities, (entities): Entity[] => {
-      const includedComponents = [ComponentType.IS_ACTIVE_TAG];
+    selectActiveShape: createSelector(selectGameState, (state): Entity[] => {
+      const includeComponents = [ComponentType.IS_ACTIVE_TAG];
 
-      return utils.selectEntitiesWithFilteredComponents(
-        entities,
-        includedComponents
-      );
+      return componentsManager.getEntitiesWithComponents({
+        state,
+        includeComponents,
+      });
     }),
     selectBoard: createSelector(selectGameState, (state) =>
-      utils.getEntitiesById(GameObjectsIds.BOARD, state)
+      entitiesManager.getEntity({ state, entityId: GameObjectsIds.BOARD })
     ),
     selectPlacementShapes: createSelector(
-      selectEntities,
-      (entities): Entity[] => {
-        const includedComponents = [ComponentType.PLACEMENT];
+      selectGameState,
+      (state): Entity[] => {
+        const includeComponents = [ComponentType.PLACEMENT];
 
-        return utils.selectEntitiesWithFilteredComponents(
-          entities,
-          includedComponents
-        );
+        return componentsManager.getEntitiesWithComponents({
+          state,
+          includeComponents,
+        });
       }
     ),
   }),

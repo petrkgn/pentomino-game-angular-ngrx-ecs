@@ -1,14 +1,18 @@
 import { createActionGroup, props, emptyProps } from "@ngrx/store";
 
-import { EntityComponents } from "../../interfaces/components";
+import { EntityComponents } from "../../types/components";
 import { ComponentType } from "../../constants/component-type.enum";
-import { Entity } from "../../interfaces/entity";
+import { Entity } from "../../types/entity";
 import { EntityId } from "../../types/entity-id.type";
+import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 
 export const PentominoActions = createActionGroup({
   source: "Entity",
   events: {
-    addEntity: props<{ entity: Entity }>(),
+    addEntity: props<{
+      entityId: GameObjectsIds;
+      components: EntityComponents[];
+    }>(),
     updateEntity: props<{ id: EntityId; changes: Partial<Entity> }>(),
     deleteEntity: props<{ id: EntityId }>(),
     addComponentToEntity: props<{
@@ -17,11 +21,11 @@ export const PentominoActions = createActionGroup({
     }>(),
     removeComponentFromEntity: props<{
       entityId: EntityId;
-      currentComponent: ComponentType;
+      currentComponentType: ComponentType;
     }>(),
     updateComponentData: props<{
       entityId: EntityId;
-      currentComponent: ComponentType;
+      componentType: ComponentType;
       changes: Partial<EntityComponents>;
     }>(),
   },
@@ -42,7 +46,7 @@ export const GameActions = createActionGroup({
   events: {
     initRatio: emptyProps(),
     renderShape: props<{ ctx: CanvasRenderingContext2D }>(),
-    createBoard: props<{ currentComponents: EntityComponents[] }>(),
+    changeBoard: props<{ changes: Partial<EntityComponents> }>(),
     shapePlacement: emptyProps(),
     ratioChanged: props<{ ratio: number }>(),
   },

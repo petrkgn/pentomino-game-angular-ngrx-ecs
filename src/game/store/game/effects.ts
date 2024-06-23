@@ -47,15 +47,15 @@ export class GameEffects {
     )
   );
 
-  readonly initRatio$ = createEffect(() => {
-    return this.actions$.pipe(
-      ofType(GameActions.initRatio),
-      map(() => {
-        const ratio = this.resizeService.getRatio(32, 20);
-        return GameActions.ratioChanged({ ratio: Math.ceil(ratio) });
-      })
-    );
-  });
+  // readonly initRatio$ = createEffect(() => {
+  //   return this.actions$.pipe(
+  //     ofType(GameActions.initRatio),
+  //     map(() => {
+  //       const ratio = this.resizeService.getRatio(32, 20);
+  //       // return GameActions.ratioChanged({ ratio: Math.ceil(ratio) });
+  //     })
+  //   );
+  // });
 
   readonly resizeWindow$ = createEffect(() => {
     return this.resizeService.calculateScaleRatio(32, 20).pipe(

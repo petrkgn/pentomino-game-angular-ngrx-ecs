@@ -1,6 +1,5 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   ElementRef,
   ViewChild,
@@ -9,11 +8,9 @@ import {
 import { Store } from "@ngrx/store";
 import { animationFrameScheduler, tap } from "rxjs";
 import { BoardsSize } from "../../constants/board-size";
-import { PentominoActions } from "../../store/game/actions";
-import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
-import { ComponentType } from "../../constants/component-type.enum";
+import { GameActions } from "../../store/game/actions";
 import { ResizeService } from "../../services/resize.service";
-import { CanvasParams } from "../../interfaces/canvas-params";
+import { CanvasParams } from "../../types/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CELL_SIZE } from "../../constants/cell-size";
 import { ComponentView } from "../../constants/view.enum";
@@ -57,6 +54,7 @@ export class BoardComponent implements AfterViewInit {
     topLeftX: 0,
     topLeftY: 0,
   };
+  ratio = 1;
 
   @ViewChild("boardImg", { static: true })
   private readonly boardImg!: ElementRef;
@@ -69,8 +67,8 @@ export class BoardComponent implements AfterViewInit {
       .calculateScaleRatio(32, 20)
       .pipe(
         tap((value) => {
-          const ratio = Math.ceil(value);
-          this.cellSize = CELL_SIZE * ratio;
+          this.ratio = Math.ceil(value);
+          this.cellSize = CELL_SIZE * this.ratio;
           this.getBoardPosition();
 
           animationFrameScheduler.schedule(
@@ -78,7 +76,7 @@ export class BoardComponent implements AfterViewInit {
               this.schedule(actions);
             },
             0,
-            this.drawGrid(ratio)
+            this.drawGrid(this.ratio)
           );
         })
       )
@@ -96,10 +94,9 @@ export class BoardComponent implements AfterViewInit {
       centerX: this.canvasParams.canvasCenter.x,
       centerY: this.canvasParams.canvasCenter.y + 80,
     });
+
     this.store.dispatch(
-      PentominoActions.updateComponentData({
-        entityId: GameObjectsIds.BOARD,
-        currentComponent: ComponentType.POSITION,
+      GameActions.changeBoard({
         changes: {
           x: this.boardPosition.topLeftX,
           y: this.boardPosition.topLeftY,

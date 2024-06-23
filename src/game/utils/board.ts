@@ -1,6 +1,6 @@
 import { ComponentType } from "../constants/component-type.enum";
-import { PickComponentType } from "../interfaces/components";
-import { Entity } from "../interfaces/entity";
+import { PickComponentType } from "../types/components";
+import { Entity } from "../types/entity";
 import { CELL_SIZE } from "../constants/cell-size";
 
 interface PlacementData {
@@ -9,7 +9,7 @@ interface PlacementData {
   pentominoMatrix: PickComponentType<ComponentType.MATRIX>;
   centerShapePositionX: number;
   centerShapePositionY: number;
-  shapeMouseComponent: PickComponentType<ComponentType.MOUSE>;
+  shapePositionComponent: PickComponentType<ComponentType.POSITION>;
   boardPositionComponent: PickComponentType<ComponentType.POSITION>;
 }
 
@@ -18,16 +18,15 @@ interface PlacementData {
  */
 class BoardGame {
   private cellSize = CELL_SIZE;
-
   /**
    * Извлекает матрицу из сущности.
    * @param entity Сущность для получения матрицы.
    * @returns Матрица или пустой массив, если компонент матрицы отсутствует.
    */
   private getMatrix(entity: Entity): PickComponentType<ComponentType.MATRIX> {
-    const matrixComponent = entity.components.find(
-      (component) => component.type === ComponentType.MATRIX
-    ) as PickComponentType<ComponentType.MATRIX>;
+    const matrixComponent = entity.components.entities[
+      ComponentType.MATRIX
+    ] as PickComponentType<ComponentType.MATRIX>;
     return {
       type: ComponentType.MATRIX,
       rows: matrixComponent?.rows ?? 0,
@@ -41,10 +40,10 @@ class BoardGame {
    * @returns Соотношение или 1, если компонент соотношения отсутствует.
    */
   private getCurrentRatio(entity: Entity): number {
-    const ratioComponent = entity.components.find(
-      (component) => component.type === ComponentType.RATIO
-    ) as PickComponentType<ComponentType.RATIO>;
-    return ratioComponent.ratio ?? 1;
+    const ratioComponent = entity.components.entities[
+      ComponentType.RATIO
+    ] as PickComponentType<ComponentType.RATIO>;
+    return ratioComponent?.ratio ?? 1;
   }
 
   /**
@@ -55,9 +54,9 @@ class BoardGame {
   private getCurrentPlacement(
     entity: Entity
   ): PickComponentType<ComponentType.PLACEMENT> | null {
-    const placementComponent = entity.components.find(
-      (component) => component.type === ComponentType.PLACEMENT
-    ) as PickComponentType<ComponentType.PLACEMENT>;
+    const placementComponent = entity.components.entities[
+      ComponentType.PLACEMENT
+    ] as PickComponentType<ComponentType.PLACEMENT>;
     return placementComponent ?? null;
   }
 
@@ -80,15 +79,14 @@ class BoardGame {
     const centerShapePositionX = columns * this.cellSize * ratio * 0.5;
     const centerShapePositionY = rows * this.cellSize * ratio * 0.5;
 
-    const shapeMouseComponent = pentomino.components.find(
-      (component) => component.type === ComponentType.MOUSE
-    ) as PickComponentType<ComponentType.MOUSE>;
+    const shapePositionComponent = pentomino.components.entities[
+      ComponentType.POSITION
+    ] as PickComponentType<ComponentType.POSITION>;
+    const boardPositionComponent = board.components.entities[
+      ComponentType.POSITION
+    ] as PickComponentType<ComponentType.POSITION>;
 
-    const boardPositionComponent = board.components.find(
-      (component) => component.type === ComponentType.POSITION
-    ) as PickComponentType<ComponentType.POSITION>;
-
-    if (!shapeMouseComponent || !boardPositionComponent) {
+    if (!shapePositionComponent || !boardPositionComponent) {
       return null;
     }
 
@@ -98,7 +96,7 @@ class BoardGame {
       pentominoMatrix,
       centerShapePositionX,
       centerShapePositionY,
-      shapeMouseComponent,
+      shapePositionComponent,
       boardPositionComponent,
     };
   }
@@ -110,8 +108,8 @@ class BoardGame {
    */
   private hasUndefinedCoordinates(data: PlacementData): boolean {
     return (
-      data.shapeMouseComponent.mx === undefined ||
-      data.shapeMouseComponent.my === undefined ||
+      data.shapePositionComponent.x === undefined ||
+      data.shapePositionComponent.y === undefined ||
       data.boardPositionComponent.x === undefined ||
       data.boardPositionComponent.y === undefined
     );
@@ -130,20 +128,20 @@ class BoardGame {
     cellY: number;
   } {
     const {
-      shapeMouseComponent,
+      shapePositionComponent,
       centerShapePositionX,
       centerShapePositionY,
       boardPositionComponent,
       ratio,
     } = data;
     const cellX = Math.round(
-      (shapeMouseComponent.mx -
+      (shapePositionComponent.x -
         centerShapePositionX -
         boardPositionComponent.x) /
         (this.cellSize * ratio)
     );
     const cellY = Math.round(
-      (shapeMouseComponent.my -
+      (shapePositionComponent.y -
         centerShapePositionY -
         boardPositionComponent.y) /
         (this.cellSize * ratio)
@@ -159,7 +157,7 @@ class BoardGame {
    * @property {number} rows - Количество строк.
    * @property {number} columns - Количество столбцов.
    */
-  private getRowAndColumn(
+  private getRowsAndColumns(
     matrixData: PickComponentType<ComponentType.MATRIX>
   ): {
     rows: number;
@@ -178,7 +176,7 @@ class BoardGame {
    */
   private isOutOfBounds(data: PlacementData): boolean {
     const {
-      shapeMouseComponent,
+      shapePositionComponent,
       boardPositionComponent,
       boardMatrix,
       pentominoMatrix,
@@ -187,19 +185,19 @@ class BoardGame {
     const diff = -10 * ratio;
 
     const { rows: boardRows, columns: boardColumns } =
-      this.getRowAndColumn(boardMatrix);
+      this.getRowsAndColumns(boardMatrix);
     const { rows: pentominoRows, columns: pentominoColumns } =
-      this.getRowAndColumn(pentominoMatrix);
+      this.getRowsAndColumns(pentominoMatrix);
 
     const boardWidth = boardColumns * this.cellSize * ratio;
     const boardHeight = boardRows * this.cellSize * ratio;
     const shapeWidth = pentominoColumns * this.cellSize * ratio;
     const shapeHeight = pentominoRows * this.cellSize * ratio;
 
-    const shapeLeftX = shapeMouseComponent.mx - shapeWidth / 2;
-    const shapeRightX = shapeMouseComponent.mx + shapeWidth / 2;
-    const shapeTopY = shapeMouseComponent.my - shapeHeight / 2;
-    const shapeBottomY = shapeMouseComponent.my + shapeHeight / 2;
+    const shapeLeftX = shapePositionComponent.x - shapeWidth / 2;
+    const shapeRightX = shapePositionComponent.x + shapeWidth / 2;
+    const shapeTopY = shapePositionComponent.y - shapeHeight / 2;
+    const shapeBottomY = shapePositionComponent.y + shapeHeight / 2;
 
     return (
       shapeLeftX - diff < boardPositionComponent.x ||
@@ -217,9 +215,9 @@ class BoardGame {
   private intersectsOtherShapes(data: PlacementData): boolean {
     const { boardMatrix, pentominoMatrix } = data;
     const { rows: boardRows, columns: boardColumns } =
-      this.getRowAndColumn(boardMatrix);
+      this.getRowsAndColumns(boardMatrix);
     const { rows: pentominoRows, columns: pentominoColumns } =
-      this.getRowAndColumn(pentominoMatrix);
+      this.getRowsAndColumns(pentominoMatrix);
 
     for (let row = 0; row < pentominoRows; row++) {
       for (let col = 0; col < pentominoColumns; col++) {
@@ -357,9 +355,9 @@ class BoardGame {
     const pentominoMatrixCopy = [...pentominoMatrix.matrix];
 
     const { rows: pentominoRows, columns: pentominoColumns } =
-      this.getRowAndColumn(pentominoMatrix);
+      this.getRowsAndColumns(pentominoMatrix);
 
-    const { columns: boardCols } = this.getRowAndColumn(boardMatrix);
+    const { columns: boardCols } = this.getRowsAndColumns(boardMatrix);
 
     for (let row = 0; row < pentominoRows; row++) {
       for (let col = 0; col < pentominoColumns; col++) {
@@ -373,6 +371,24 @@ class BoardGame {
     }
 
     return boardMatrixUpdated;
+  }
+
+  /**
+   * Проверяет, полностью ли заполнена доска пентамино.
+   * @param board Доска для проверки.
+   * @returns true, если доска полностью заполнена; иначе false.
+   */
+  public isBoardFilled(board: Entity): boolean {
+    const matrixComponent = board.components.entities[
+      ComponentType.MATRIX
+    ] as PickComponentType<ComponentType.MATRIX>;
+
+    if (!matrixComponent) {
+      return false;
+    }
+
+    const matrix = matrixComponent.matrix;
+    return matrix.every((cell) => cell === 1);
   }
 }
 

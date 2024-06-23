@@ -16,21 +16,13 @@ import { GameFacade } from "./game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { areAllObjectsDefined } from "./utils/filter-defined";
 import { filter, map } from "rxjs";
-import { Entity } from "./interfaces/entity";
+import { Entity } from "./types/entity";
 import { PlacementShapesComponent } from "./layers/placement-shapes/placement-shapes.component";
 import { GameActions } from "./store/game/actions";
+import { EffectsComponent } from "./layers/effects/effects.component";
 
 @Component({
   selector: "katamino-game",
-  imports: [
-    BackgroundComponent,
-    ActiveShapeComponent,
-    PlacementShapesComponent,
-    BoardComponent,
-    JsonPipe,
-    NgIf,
-    AsyncPipe,
-  ],
   standalone: true,
   providers: [GameFacade],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,8 +31,19 @@ import { GameActions } from "./store/game/actions";
     <game-background />
     <game-board />
     <game-placement-shapes />
-    <game-active-shape />`,
+    <game-active-shape />
+    <game-effects />`,
   styles: ``,
+  imports: [
+    BackgroundComponent,
+    ActiveShapeComponent,
+    PlacementShapesComponent,
+    BoardComponent,
+    JsonPipe,
+    NgIf,
+    AsyncPipe,
+    EffectsComponent,
+  ],
 })
 export class GameComponent implements OnInit {
   private readonly gameFacade = inject(GameFacade);

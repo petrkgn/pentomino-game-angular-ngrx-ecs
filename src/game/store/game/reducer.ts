@@ -1,205 +1,175 @@
 import { createReducer, on } from "@ngrx/store";
 
-import {
-  EntityComponents,
-  PickComponentType,
-} from "../../interfaces/components";
+import { EntityComponents, PickComponentType } from "../../types/components";
 import { ComponentType } from "../../constants/component-type.enum";
 import { PentominoActions, PlayerActions, GameActions } from "./actions";
 
-import { initialGameEntitiesState, entitiesAdapter } from "./initial.state";
+import {
+  initialGameEntitiesState,
+  entitiesAdapter,
+  componentsAdapter,
+  GameObjects,
+} from "./initial.state";
 
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import * as utils from "../../utils";
 import BoardGame from "../../utils/board";
 import { EntityId } from "../../types/entity-id.type";
-import { Entity } from "../../interfaces/entity";
+import { Entity } from "../../types/entity";
+import ComponentsManager from "../../utils/componentsManager";
+import EntitiesManager from "../../utils/entitiesManager";
+import { EntityState } from "@ngrx/entity";
 
 const boardGame = new BoardGame();
+const entitiesManager = new EntitiesManager(entitiesAdapter);
+const componentsManager = new ComponentsManager(
+  entitiesAdapter,
+  componentsAdapter
+);
 
 export const gameReducer = createReducer(
   initialGameEntitiesState,
-  on(PentominoActions.addEntity, (state, { entity }) => {
-    return entitiesAdapter.addOne(entity, state);
+  on(PentominoActions.addEntity, (state, { entityId, components }) => {
+    state = entitiesManager.createEntity({
+      state,
+      entityId,
+      components,
+    });
+
+    return state;
   }),
-  on(PentominoActions.updateEntity, (state, { id, changes }) => {
-    return entitiesAdapter.updateOne({ id, changes }, state);
-  }),
-  on(PentominoActions.deleteEntity, (state, { id }) => {
-    return entitiesAdapter.removeOne(id, state);
-  }),
+  // on(PentominoActions.updateEntity, (state, { id, changes }) => {
+  //   return entitiesAdapter.updateOne({ id, changes }, state);
+  // }),
+  // on(PentominoActions.deleteEntity, (state, { id }) => {
+  //   return entitiesAdapter.removeOne(id, state);
+  // }),
   on(
     PentominoActions.addComponentToEntity,
     (state, { entityId, component }) => {
-      const currentPentomino = state.entities[entityId];
-      if (!currentPentomino) return state;
-
-      return entitiesAdapter.updateOne(
-        {
-          id: entityId,
-          changes: {
-            components: [...currentPentomino.components, component],
-          },
-        },
-        state
-      );
+      return componentsManager.addComponentToEntity({
+        state,
+        entityId,
+        component,
+      });
     }
   ),
-  on(
-    PentominoActions.removeComponentFromEntity,
-    (state, { entityId, currentComponent }) => {
-      const currentPentomino = state.entities[entityId];
-      if (!currentPentomino) return state;
-      const updatedEntity = entitiesAdapter.updateOne(
-        {
-          id: entityId,
-          changes: {
-            components: currentPentomino.components.filter(
-              (component) => component["type"] !== currentComponent
-            ),
-          },
-        },
-        state
-      );
-      return updatedEntity;
-    }
-  ),
+  // on(
+  //   PentominoActions.removeComponentFromEntity,
+  //   (state, { entityId, currentComponent }) => {
+  //     const currentPentomino = state.entities[entityId];
+  //     const componentsState = currentPentomino?.components;
+  //     if (!currentPentomino || !componentsState) return state;
+  //     const updatedEntity = entitiesAdapter.updateOne(
+  //       {
+  //         id: entityId,
+  //         changes: {
+  //           components: componentsAdapter.removeOne(
+  //             currentComponent,
+  //             componentsState
+  //           ),
+  //         },
+  //       },
+  //       state
+  //     );
+  //     return updatedEntity;
+  //   }
+  // ),
   on(
     PentominoActions.updateComponentData,
-    (state, { entityId, currentComponent, changes }) => {
-      if (
-        entityId === undefined ||
-        currentComponent === undefined ||
-        changes === undefined
-      ) {
+    (state, { entityId, componentType, changes }) => {
+      if (entityId === undefined || componentType === undefined || !changes) {
         return state;
       }
 
-      const updatedPentominosState = entitiesAdapter.updateOne(
-        {
-          id: entityId,
-          changes: {
-            components: (state.entities[entityId]?.components || []).map(
-              (component) => {
-                if (component.type === currentComponent) {
-                  return { ...component, ...changes } as EntityComponents;
-                }
-                return component as EntityComponents;
-              }
-            ),
-          },
-        },
-        state
-      );
-      return updatedPentominosState;
+      return componentsManager.updateComponentData({
+        state,
+        entityId,
+        componentType,
+        changes,
+      });
     }
   ),
   on(PlayerActions.rotateShape, (state, { angle }) => {
-    // Определяем компоненты, которые должны присутствовать и отсутствовать
-    const includedComponents: ComponentType[] = [
-      ComponentType.IS_ACTIVE_TAG,
-      ComponentType.ROTATE,
-      ComponentType.MATRIX,
-    ];
-    const excludedComponents: ComponentType[] = [];
+    const includeComponents: ComponentType[] = [ComponentType.IS_ACTIVE_TAG];
 
-    // Извлекаем активную форму, соответствующую фильтру компонентов
-    const entities = state.entities;
-    const activeShape = utils.selectEntitiesWithFilteredComponents(
-      entities,
-      includedComponents
-    )[0];
+    const activeShape = componentsManager.getEntitiesWithComponents({
+      state,
+      includeComponents,
+    })[0];
 
-    // Поворачиваем матрицу активной формы
     const rotatedMatrix = utils.rotatePentomino(activeShape);
 
-    // Обновляем компоненты для активной формы
-    const updatedComponents = {
-      [ComponentType.ROTATE]: { angle },
-      [ComponentType.MATRIX]: rotatedMatrix,
-    };
+    const updatedComponents = [
+      { componentType: ComponentType.ROTATE, changes: { angle } },
+      { componentType: ComponentType.MATRIX, changes: rotatedMatrix },
+    ];
 
-    // Получаем обновления для сущностей
-    const updates = utils.updateEntitiesWithComponents(
-      state,
-      includedComponents,
-      excludedComponents,
+    return componentsManager.updateMultipleComponentsDataForEntities(
+      { state, includeComponents },
       updatedComponents
     );
-
-    // Возвращаем обновленное состояние с примененными изменениями
-    return entitiesAdapter.updateMany(updates, state);
   }),
 
   on(PlayerActions.chooseShape, (state, { mx, my }) => {
-    const includedComponents: ComponentType[] = [ComponentType.HINT_BOX];
-    // const excludedComponents: ComponentType[] = [];
-    const entities = state.entities;
-    const shapes = utils.selectEntitiesWithFilteredComponents(
-      entities,
-      includedComponents
-    );
+    const includeComponents: ComponentType[] = [ComponentType.HINT_BOX];
 
-    const shapesId = findEntityWithPoint(shapes, { mx, my });
+    const shapes = componentsManager.getEntitiesWithComponents({
+      state,
+      includeComponents,
+    });
+
+    const shapesId = findEntityWithPoint(state, { x: mx, y: my });
 
     if (!shapesId) return state;
-    const currentEntity = utils
-      .entitiesMapper(entities)
-      .find((entity) => entity.id === shapesId)!;
 
-    const updatedComponents = [
-      ...currentEntity?.components.filter(
-        (component) => component.type !== ComponentType.MOUSE
-      ),
-      { type: ComponentType.IS_ACTIVE_TAG },
-      { type: ComponentType.MOUSE, mx, my },
-    ] as EntityComponents[];
+    let newState = state;
 
-    console.log("!!!!!!!!!!", updatedComponents);
-    return entitiesAdapter.updateOne(
-      {
-        id: shapesId,
-        changes: { components: updatedComponents },
-      },
-      state
-    );
+    // newState = componentsManager.removeComponentForEntities({
+    //   state,
+    //   includeComponents,
+    //   componentType: ComponentType.IS_PACK_TAG,
+    // });
+
+    newState = componentsManager.addComponentToEntity({
+      state: newState,
+      entityId: shapesId,
+      component: { type: ComponentType.IS_ACTIVE_TAG },
+    });
+
+    newState = componentsManager.updateComponentData({
+      state: newState,
+      entityId: shapesId,
+      componentType: ComponentType.POSITION,
+      changes: { x: mx, y: my },
+    });
+
+    return newState;
   }),
   on(PlayerActions.mouseMove, (state, { mx, my }) => {
-    const includedComponents: ComponentType[] = [
-      ComponentType.MOUSE,
-      ComponentType.IS_ACTIVE_TAG,
-    ];
-    const excludedComponents: ComponentType[] = [];
-    const updatedMousePosition = {
-      [ComponentType.MOUSE]: {
-        mx,
-        my,
-      } as PickComponentType<ComponentType.MOUSE>,
-    };
-    const updates = utils.updateEntitiesWithComponents(
-      state,
-      includedComponents,
-      excludedComponents,
-      updatedMousePosition
-    );
+    const includeComponents: ComponentType[] = [ComponentType.IS_ACTIVE_TAG];
 
-    return entitiesAdapter.updateMany(updates, state);
+    return componentsManager.updateComponentDataForEntities({
+      state,
+      includeComponents,
+      componentType: ComponentType.POSITION,
+      changes: { x: mx, y: my },
+    });
   }),
   on(GameActions.shapePlacement, (state) => {
-    // Получаем игровую доску по её идентификатору
-    const board = utils.getEntitiesById(GameObjectsIds.BOARD, state)[0];
+    const board = entitiesManager.getEntity({
+      state,
+      entityId: GameObjectsIds.BOARD,
+    });
 
-    // Устанавливаем компоненты, которые должны присутствовать у активной формы
-    const includedComponents = [ComponentType.IS_ACTIVE_TAG];
+    const includeComponents = [ComponentType.IS_ACTIVE_TAG];
 
-    // Извлекаем активную форму с указанными компонентами
-    const entities = state.entities;
-    const activeShape = utils.selectEntitiesWithFilteredComponents(
-      entities,
-      includedComponents
-    )[0];
+    const activeShapes = componentsManager.getEntitiesWithComponents({
+      state,
+      includeComponents,
+    });
+    const activeShape = activeShapes.length > 0 ? activeShapes[0] : null;
 
-    // Проверяем наличие доски и активной формы
     if (!board || !activeShape) {
       return { ...state };
     }
@@ -212,6 +182,7 @@ export const gameReducer = createReducer(
     );
     const elapsedTime = performance.now() - startTime;
     console.log(`Placement time: ${elapsedTime.toFixed(2)} ms`);
+
     // Пересчитываем координаты формы с учетом новой позиции
     const updatedShapeCoords = boardGame.recalculateShapePosition(
       board,
@@ -221,108 +192,150 @@ export const gameReducer = createReducer(
 
     // Проверяем наличие позиции для размещения и пересчитанных координат
     if (!placementPosition || !updatedShapeCoords) {
-      return { ...state };
+      return state;
     }
 
-    // Обновляем компоненты активной формы с новыми координатами и позицией
-    const updatedComponents = utils.updateActiveEntityWhenPlacement(
-      activeShape,
-      updatedShapeCoords,
-      placementPosition
-    );
+    let newState = { ...state };
 
+    // Удаляем компонент активной формы
+    newState = componentsManager.removeComponentFromEntity({
+      state: newState,
+      entityId: activeShape.id,
+      componentType: ComponentType.IS_ACTIVE_TAG,
+    });
+
+    // Добавляем компонент что была размещена форма
+    newState = componentsManager.addComponentToEntity({
+      state: newState,
+      entityId: activeShape.id,
+      component: {
+        type: ComponentType.PLACEMENT,
+        cellX: placementPosition.cellX,
+        cellY: placementPosition.cellY,
+      },
+    });
+
+    // Обновляем позицию формы
+    newState = componentsManager.updateComponentData({
+      state: newState,
+      entityId: activeShape.id,
+      componentType: ComponentType.POSITION,
+      changes: { x: updatedShapeCoords.x, y: updatedShapeCoords.y },
+    });
+
+    // Обновляем матрицу доски с учетом новой позиции формы
     const newBoard = boardGame.updateBoardMatrix(board, activeShape);
 
-    console.log("AAAA", newBoard);
-
     // Возвращаем обновленное состояние с примененными изменениями
-    return entitiesAdapter.updateOne(
-      {
-        id: activeShape.id,
-        changes: { components: updatedComponents },
-      },
-      state
-    );
+    return newState;
   }),
   on(GameActions.ratioChanged, (state, { ratio }) => {
     const includedComponents: ComponentType[] = [ComponentType.RATIO];
-    const excludedComponents: ComponentType[] = [];
 
-    const updatedRatio = {
-      [ComponentType.RATIO]: {
-        ratio,
-      } as PickComponentType<ComponentType.RATIO>,
-    };
-
-    const updates = utils.updateEntitiesWithComponents(
+    return componentsManager.updateComponentDataForEntities({
       state,
-      includedComponents,
-      excludedComponents,
-      updatedRatio
-    );
-
-    return entitiesAdapter.updateMany(updates, state);
+      includeComponents: includedComponents,
+      componentType: ComponentType.RATIO,
+      changes: { ratio },
+    });
   }),
-  on(GameActions.ratioChanged, (state) => {
-    const board = utils.getEntitiesById(GameObjectsIds.BOARD, state)[0];
-    const includedComponents = [ComponentType.PLACEMENT];
+  on(GameActions.changeBoard, (state, { changes }) => {
+    const newState = componentsManager.updateComponentData({
+      state,
+      entityId: GameObjectsIds.BOARD,
+      componentType: ComponentType.POSITION,
+      changes,
+    });
 
-    const entities = state.entities;
-    const activeShape = utils.selectEntitiesWithFilteredComponents(
-      entities,
-      includedComponents
-    )[0];
+    const board = entitiesManager.getEntity({
+      state: newState,
+      entityId: GameObjectsIds.BOARD,
+    });
 
-    if (!board || !activeShape) {
-      return { ...state };
+    const placementShape = componentsManager.getEntitiesWithComponents({
+      state: newState,
+      includeComponents: [ComponentType.PLACEMENT],
+    })[0];
+
+    if (!board || !placementShape) {
+      return newState;
     }
 
-    const startTime = performance.now();
     const placementPosition = boardGame.recalculateShapePosition(
       board,
-      activeShape
+      placementShape
     );
-    const elapsedTime = performance.now() - startTime;
-    console.log(`Recalculation time: ${elapsedTime.toFixed(2)} ms`);
 
     if (!placementPosition) {
-      return { ...state };
+      return newState;
     }
 
-    const updatedComponents = utils.updateComponentInEntity(
-      activeShape,
-      ComponentType.POSITION,
-      placementPosition
-    );
-
-    return entitiesAdapter.updateOne(
-      {
-        id: activeShape.id,
-        changes: { components: updatedComponents },
-      },
-      state
-    );
+    return componentsManager.updateComponentData({
+      state: newState,
+      entityId: placementShape.id,
+      componentType: ComponentType.POSITION,
+      changes: { x: placementPosition.x, y: placementPosition.y },
+    });
   })
 );
+// function findEntityWithPoint(
+//   entities: Entity[],
+//   mouse: { mx: number; my: number }
+// ): EntityId | null {
+//   const { mx, my } = mouse;
+
+//   for (const entity of entities) {
+//     for (const component of entity.components) {
+//       if (component.type === ComponentType.HINT_BOX) {
+//         const hintBox = component;
+//         const withinXBounds =
+//           mx >= hintBox.x && mx <= hintBox.x + hintBox.width;
+//         const withinYBounds =
+//           my >= hintBox.y && my <= hintBox.y + hintBox.height;
+
+//         if (withinXBounds && withinYBounds) {
+//           return entity.id;
+//         }
+//       }
+//     }
+//   }
+
+//   return null;
+// }
+
+/**
+ * Finds the entity containing a point within its hint box component.
+ * @param {EntityState<Entity>} entities - The state of the entities.
+ * @param {number} pointX - The x-coordinate of the point.
+ * @param {number} pointY - The y-coordinate of the point.
+ * @returns {EntityId | null} The ID of the entity containing the point, or null if none found.
+ */
 function findEntityWithPoint(
-  entities: Entity[],
-  mouse: { mx: number; my: number }
+  entities: EntityState<Entity>,
+  { x: pointX, y: pointY }: { x: number; y: number }
 ): EntityId | null {
-  const { mx, my } = mouse;
+  for (const entityId of entities.ids) {
+    const entity = entities.entities[entityId];
+    if (
+      !entity ||
+      !entity.components.entities ||
+      !entity.components.entities[ComponentType.HINT_BOX]
+    ) {
+      continue;
+    }
 
-  for (const entity of entities) {
-    for (const component of entity.components) {
-      if (component.type === ComponentType.HINT_BOX) {
-        const hintBox = component;
-        const withinXBounds =
-          mx >= hintBox.x && mx <= hintBox.x + hintBox.width;
-        const withinYBounds =
-          my >= hintBox.y && my <= hintBox.y + hintBox.height;
+    const hintBox = entity.components.entities[
+      ComponentType.HINT_BOX
+    ] as PickComponentType<ComponentType.HINT_BOX>;
 
-        if (withinXBounds && withinYBounds) {
-          return entity.id;
-        }
-      }
+    const isPointWithinBox =
+      pointX >= hintBox.x &&
+      pointX <= hintBox.x + hintBox.width &&
+      pointY >= hintBox.y &&
+      pointY <= hintBox.y + hintBox.height;
+
+    if (isPointWithinBox) {
+      return entity.id;
     }
   }
 

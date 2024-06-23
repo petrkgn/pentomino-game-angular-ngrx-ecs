@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
-import { ComponentType } from '../constants/component-type.enum';
-import { PickComponentType } from '../interfaces/components';
-import { Entity } from '../interfaces/entity';
+import { Injectable } from "@angular/core";
+import { ComponentType } from "../constants/component-type.enum";
+import { PickComponentType } from "../types/components";
+import { Entity } from "../types/entity";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class PentominoService {
   constructor() {}

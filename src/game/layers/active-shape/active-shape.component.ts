@@ -13,9 +13,9 @@ import {
 import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
 import { WINDOW } from "@ng-web-apis/common";
-import { Entity } from "../../interfaces/entity";
+import { Entity } from "../../types/entity";
 import { ComponentType } from "../../constants/component-type.enum";
-import { PickComponentType } from "../../interfaces/components";
+import { PickComponentType } from "../../types/components";
 import { isDefined } from "../../utils/filter-defined";
 import { ResizeService } from "../../services/resize.service";
 import { tap } from "rxjs";
@@ -101,24 +101,22 @@ export class ActiveShapeComponent implements AfterViewInit {
       this.ctx.clearRect(0, 0, this.window.innerWidth, this.window.innerHeight);
       return;
     }
-    console.log(activeShapes[0].id);
+
     activeShapes.forEach((shape) => {
       if (!this.ctx || !this.img) return;
 
-      const rotateComponent = shape.components.find(
-        (component): component is PickComponentType<ComponentType.ROTATE> =>
-          component.type === ComponentType.ROTATE
-      );
+      const rotateComponent = shape.components.entities[
+        ComponentType.ROTATE
+      ] as PickComponentType<ComponentType.ROTATE>;
 
-      const mouseComponent = shape.components.find(
-        (component): component is PickComponentType<ComponentType.MOUSE> =>
-          component.type === ComponentType.MOUSE
-      );
+      const positionComponent = shape.components.entities[
+        ComponentType.POSITION
+      ] as PickComponentType<ComponentType.POSITION>;
 
-      if (mouseComponent && rotateComponent) {
+      if (positionComponent && rotateComponent) {
         const angle = rotateComponent.angle;
-        const x = mouseComponent.mx;
-        const y = mouseComponent.my;
+        const x = positionComponent.x;
+        const y = positionComponent.y;
         const shape = this.img.nativeElement;
         const positionX = x - this.canvas.getBoundingClientRect().left;
         const positionY = y - this.canvas.getBoundingClientRect().top;

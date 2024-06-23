@@ -11,15 +11,15 @@ import {
 import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
 import { WINDOW } from "@ng-web-apis/common";
-import { Entity } from "../../interfaces/entity";
+import { Entity } from "../../types/entity";
 import { ComponentType } from "../../constants/component-type.enum";
-import { PickComponentType } from "../../interfaces/components";
+import { PickComponentType } from "../../types/components";
 import { isDefined } from "../../utils/filter-defined";
 import { ResizeService } from "../../services/resize.service";
 import { animationFrameScheduler, switchMap, tap } from "rxjs";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { CanvasParams } from "../../interfaces/canvas-params";
+import { CanvasParams } from "../../types/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 
 @Component({
@@ -103,27 +103,20 @@ export class PlacementShapesComponent implements AfterViewInit {
   render(placementShapes: Entity[]): void {
     const ctx = this.canvasParams.ctx;
     if (!placementShapes?.length && ctx) {
-      ctx.clearRect(
-        0,
-        0,
-        this.canvasParams.canvasEl.width,
-        this.canvasParams.canvasEl.height
-      );
+      this.clearCanvas();
       return;
     }
 
     placementShapes.forEach((shape) => {
       if (!ctx || !this.img) return;
 
-      const rotateComponent = shape.components.find(
-        (component): component is PickComponentType<ComponentType.ROTATE> =>
-          component.type === ComponentType.ROTATE
-      );
+      const rotateComponent = shape.components.entities[
+        ComponentType.ROTATE
+      ] as PickComponentType<ComponentType.ROTATE>;
 
-      const positionComponent = shape.components.find(
-        (component): component is PickComponentType<ComponentType.POSITION> =>
-          component.type === ComponentType.POSITION
-      );
+      const positionComponent = shape.components.entities[
+        ComponentType.POSITION
+      ] as PickComponentType<ComponentType.POSITION>;
 
       if (positionComponent && rotateComponent) {
         const angle = rotateComponent.angle;
@@ -132,7 +125,7 @@ export class PlacementShapesComponent implements AfterViewInit {
         const shape = this.img.nativeElement;
 
         ctx.save();
-        ctx.beginPath();
+        this.clearCanvas();
         ctx.translate(x, y);
         ctx.rotate((Math.PI / 180) * angle);
         ctx.translate(-x, -y);
@@ -147,5 +140,16 @@ export class PlacementShapesComponent implements AfterViewInit {
         ctx.restore();
       }
     });
+  }
+
+  private clearCanvas(): void {
+    if (this.canvasParams.ctx) {
+      this.canvasParams.ctx.clearRect(
+        0,
+        0,
+        this.canvasParams.canvasEl.width,
+        this.canvasParams.canvasEl.height
+      );
+    }
   }
 }

@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { ResizeService } from "../../services/resize.service";
-import { CanvasParams } from "../../interfaces/canvas-params";
+import { CanvasParams } from "../../types/canvas-params";
 import { ComponentView } from "../../constants/view.enum";
 import { CELL_SIZE } from "../../constants/cell-size";
 import { animationFrameScheduler, tap } from "rxjs";
@@ -101,19 +101,19 @@ export class BackgroundComponent {
 
     for (let i = 0; i <= 56; i++) {
       const y = i * 16;
-      this.canvasParams.ctx.beginPath();
-      this.canvasParams.ctx.moveTo(topLeftX, topLeftY + y);
-      this.canvasParams.ctx.lineTo(topLeftX + 80 * 16, topLeftY + y);
-      this.canvasParams.ctx.stroke();
+      // this.canvasParams.ctx.beginPath();
+      // this.canvasParams.ctx.moveTo(topLeftX, topLeftY + y);
+      // this.canvasParams.ctx.lineTo(topLeftX + 80 * 16, topLeftY + y);
+      // this.canvasParams.ctx.stroke();
     }
 
     // Вертикальные линии
     for (let i = 0; i <= 80; i++) {
       const x = i * 16;
-      this.canvasParams.ctx.beginPath();
-      this.canvasParams.ctx.moveTo(topLeftX + x, topLeftY);
-      this.canvasParams.ctx.lineTo(topLeftX + x, topLeftY + 56 * 16);
-      this.canvasParams.ctx.stroke();
+      // this.canvasParams.ctx.beginPath();
+      // this.canvasParams.ctx.moveTo(topLeftX + x, topLeftY);
+      // this.canvasParams.ctx.lineTo(topLeftX + x, topLeftY + 56 * 16);
+      // this.canvasParams.ctx.stroke();
     }
 
     for (let i = 0; i <= 5; i++) {
@@ -123,9 +123,10 @@ export class BackgroundComponent {
 
       if (i === 0) {
         this.store.dispatch(
-          PentominoActions.addComponentToEntity({
+          PentominoActions.updateComponentData({
             entityId: GameObjectsIds.SHAPE_W,
-            component: {
+            componentType: ComponentType.HINT_BOX,
+            changes: {
               type: ComponentType.HINT_BOX,
               x: topLeftX + 6 * 16,
               y: topLeftY + diff + shift + 10 * 16,
@@ -136,12 +137,12 @@ export class BackgroundComponent {
         );
       }
 
-      this.canvasParams.ctx.fillRect(
-        topLeftX + 6 * 16,
-        topLeftY + diff + shift + 10 * 16,
-        6 * 16,
-        6 * 16
-      );
+      // this.canvasParams.ctx.fillRect(
+      //   topLeftX + 6 * 16,
+      //   topLeftY + diff + shift + 10 * 16,
+      //   6 * 16,
+      //   6 * 16
+      // );
     }
 
     for (let i = 0; i <= 5; i++) {
@@ -149,12 +150,12 @@ export class BackgroundComponent {
       const shift = 22 * i + (i * (i - 1)) / 2;
       const topLeftDiff = 62 * 16;
 
-      this.canvasParams.ctx.fillRect(
-        topLeftX + topLeftDiff + 6 * 16,
-        topLeftY + diff + shift + 10 * 16,
-        6 * 16,
-        6 * 16
-      );
+      // this.canvasParams.ctx.fillRect(
+      //   topLeftX + topLeftDiff + 6 * 16,
+      //   topLeftY + diff + shift + 10 * 16,
+      //   6 * 16,
+      //   6 * 16
+      // );
     }
   }
 
