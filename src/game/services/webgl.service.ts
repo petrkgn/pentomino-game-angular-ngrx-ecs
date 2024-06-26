@@ -28,9 +28,9 @@ export class WebGLService {
 
   async loadFragmentShader(url: string): Promise<void> {
     try {
-      console.log("Fetching shader from URL:", url);
+      // console.log("Fetching shader from URL:", url);
       const response = await fetch(url);
-      console.log("Response received:", response);
+      // console.log("Response received:", response);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -38,7 +38,7 @@ export class WebGLService {
 
       // Directly fetch the text content without checking content type
       const text = await response.text();
-      console.log("Shader source loaded successfully:", text);
+      // console.log("Shader source loaded successfully:", text);
       this.fragmentShaderSource = text;
     } catch (error) {
       console.error("Failed to load shader source:", error);
