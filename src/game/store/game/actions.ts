@@ -46,7 +46,7 @@ export const GameActions = createActionGroup({
   events: {
     initRatio: emptyProps(),
     renderShape: props<{ ctx: CanvasRenderingContext2D }>(),
-    changeBoard: props<{ changes: Partial<EntityComponents> }>(),
+    changeScene: props<{ changes: Partial<EntityComponents> }>(),
     shapePlacement: emptyProps(),
     ratioChanged: props<{ ratio: number }>(),
   },

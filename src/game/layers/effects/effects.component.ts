@@ -31,7 +31,7 @@ export class EffectsComponent {
   private readonly webGLService = inject(WebGLService);
 
   ngAfterViewInit(): void {
-    this.webGLService.loadFragmentShader("/assets/shader.frag").then(() => {
+    this.webGLService.loadFragmentShader("/assets/fire.frag").then(() => {
       this.webGLService.initWebGL(this.fire1.nativeElement);
       this.webGLService.initWebGL(this.fire2.nativeElement);
       this.setAnimationCoordinates(this.fire1.nativeElement, 65, 210); // example coordinates for canvas1

@@ -18,7 +18,7 @@ import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import { ComponentType } from "../../constants/component-type.enum";
 
 @Component({
-  selector: "game-background",
+  selector: "game-scene",
   imports: [CanvasParamsDirective],
   standalone: true,
   template: ` <canvas
@@ -33,7 +33,7 @@ import { ComponentType } from "../../constants/component-type.enum";
   }  
 `,
 })
-export class BackgroundComponent {
+export class SceneComponent {
   private readonly resizeService = inject(ResizeService);
   private readonly store = inject(Store);
 
