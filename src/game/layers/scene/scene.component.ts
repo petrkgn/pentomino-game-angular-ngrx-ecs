@@ -16,9 +16,10 @@ import { Store } from "@ngrx/store";
 import { PentominoActions } from "../../store/game/actions";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import { ComponentType } from "../../constants/component-type.enum";
+import { RectService } from "../../services/rect.service";
 
 @Component({
-  selector: "game-background",
+  selector: "game-scene",
   imports: [CanvasParamsDirective],
   standalone: true,
   template: ` <canvas
@@ -33,8 +34,9 @@ import { ComponentType } from "../../constants/component-type.enum";
   }  
 `,
 })
-export class BackgroundComponent {
+export class SceneComponent {
   private readonly resizeService = inject(ResizeService);
+  private readonly rectService = inject(RectService);
   private readonly store = inject(Store);
 
   readonly componentView = ComponentView;
@@ -80,7 +82,7 @@ export class BackgroundComponent {
 
   render(ratio: number): void {
     if (!this.canvasParams.ctx || !this.bgImg) return;
-    const { topLeftX, topLeftY } = this.getTopLeftCoordinates(
+    const { topLeftX, topLeftY } = this.rectService.getTopLeftCoordinates(
       1280,
       896,
       this.canvasParams.canvasCenter.x,
@@ -157,19 +159,5 @@ export class BackgroundComponent {
       //   6 * 16
       // );
     }
-  }
-
-  private getTopLeftCoordinates(
-    width: number,
-    height: number,
-    centerX: number,
-    centerY: number
-  ): {
-    topLeftX: number;
-    topLeftY: number;
-  } {
-    const topLeftX = centerX - width / 2;
-    const topLeftY = centerY - height / 2;
-    return { topLeftX, topLeftY };
   }
 }

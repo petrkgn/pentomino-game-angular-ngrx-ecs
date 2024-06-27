@@ -239,7 +239,7 @@ export const gameReducer = createReducer(
       changes: { ratio },
     });
   }),
-  on(GameActions.changeBoard, (state, { changes }) => {
+  on(GameActions.changeScene, (state, { changes }) => {
     const newState = componentsManager.updateComponentData({
       state,
       entityId: GameObjectsIds.BOARD,
@@ -278,30 +278,6 @@ export const gameReducer = createReducer(
     });
   })
 );
-// function findEntityWithPoint(
-//   entities: Entity[],
-//   mouse: { mx: number; my: number }
-// ): EntityId | null {
-//   const { mx, my } = mouse;
-
-//   for (const entity of entities) {
-//     for (const component of entity.components) {
-//       if (component.type === ComponentType.HINT_BOX) {
-//         const hintBox = component;
-//         const withinXBounds =
-//           mx >= hintBox.x && mx <= hintBox.x + hintBox.width;
-//         const withinYBounds =
-//           my >= hintBox.y && my <= hintBox.y + hintBox.height;
-
-//         if (withinXBounds && withinYBounds) {
-//           return entity.id;
-//         }
-//       }
-//     }
-//   }
-
-//   return null;
-// }
 
 /**
  * Finds the entity containing a point within its hint box component.

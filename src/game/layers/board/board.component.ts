@@ -96,7 +96,7 @@ export class BoardComponent implements AfterViewInit {
     });
 
     this.store.dispatch(
-      GameActions.changeBoard({
+      GameActions.changeScene({
         changes: {
           x: this.boardPosition.topLeftX,
           y: this.boardPosition.topLeftY,

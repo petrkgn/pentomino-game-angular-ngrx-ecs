@@ -1,47 +1,28 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from "@angular/core";
+import { Component, inject, OnInit } from "@angular/core";
 import { Store } from "@ngrx/store";
-import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
-import { ComponentType } from "./constants/component-type.enum";
-import { BackgroundComponent } from "./layers/background/background.component";
+import { SceneComponent } from "./layers/scene/scene.component";
 import { ActiveShapeComponent } from "./layers/active-shape/active-shape.component";
 import { BoardComponent } from "./layers/board/board.component";
-import { GameFacade } from "./game.facade";
-// import * as gameSelectors from './store/game/selectors';
-import { toSignal } from "@angular/core/rxjs-interop";
-import { areAllObjectsDefined } from "./utils/filter-defined";
-import { filter, map } from "rxjs";
-import { Entity } from "./types/entity";
 import { PlacementShapesComponent } from "./layers/placement-shapes/placement-shapes.component";
-import { GameActions } from "./store/game/actions";
 import { EffectsComponent } from "./layers/effects/effects.component";
+import { GameFacade } from "./game.facade";
 
 @Component({
   selector: "katamino-game",
   standalone: true,
   providers: [GameFacade],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ` <!-- <pre
-      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 50px"></pre> -->
-    <game-background />
+  template: ` <game-scene />
     <game-board />
     <game-placement-shapes />
     <game-active-shape />
     <game-effects />`,
   styles: ``,
   imports: [
-    BackgroundComponent,
+    SceneComponent,
     ActiveShapeComponent,
     PlacementShapesComponent,
     BoardComponent,
-    JsonPipe,
-    NgIf,
-    AsyncPipe,
     EffectsComponent,
   ],
 })

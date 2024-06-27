@@ -1,16 +1,11 @@
 import {
   AfterViewInit,
-  ChangeDetectionStrategy,
   Component,
   effect,
   ElementRef,
   inject,
-  input,
-  InputSignal,
   ViewChild,
 } from "@angular/core";
-
-import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
 import { WINDOW } from "@ng-web-apis/common";
 import { Entity } from "../../types/entity";
@@ -25,24 +20,12 @@ import { ComponentView } from "../../constants/view.enum";
 
 @Component({
   selector: "game-active-shape",
-  imports: [JsonPipe, NgIf, AsyncPipe],
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- <div
-      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 100px"> -->
-    <!-- <pre>{{ activeShapes() | json }}</pre> -->
-    <!-- </div> -->
-    <!-- <div style='position:absolute; background-color: red; opacity: 0.8; color: white; width: 100vw; top: 0px; height: 348.875px'>    
-    </div> -->
     <canvas #myCanvas></canvas>
-    <img #myImg [src]="componentView.SHAPE_W" />
+    <img #myImg class="assets" [src]="componentView.SHAPE_W" />
   `,
-  styles: `
-  img {
-   display: none;
-  }  
-`,
+  styles: ``,
 })
 export class ActiveShapeComponent implements AfterViewInit {
   private readonly resizeService = inject(ResizeService);

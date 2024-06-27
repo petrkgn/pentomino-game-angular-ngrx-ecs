@@ -10,11 +10,9 @@ import {
 
 import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
-import { WINDOW } from "@ng-web-apis/common";
 import { Entity } from "../../types/entity";
 import { ComponentType } from "../../constants/component-type.enum";
 import { PickComponentType } from "../../types/components";
-import { isDefined } from "../../utils/filter-defined";
 import { ResizeService } from "../../services/resize.service";
 import { animationFrameScheduler, switchMap, tap } from "rxjs";
 import { GameFacade } from "../../game.facade";
@@ -26,13 +24,7 @@ import { CanvasParamsDirective } from "../../directives/canvas-params.directive"
   selector: "game-placement-shapes",
   imports: [CanvasParamsDirective, JsonPipe, NgIf, AsyncPipe],
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- <div
-      style="position:absolute; background-color: darkblue; opacity: 0.8; color: white; width: 200px; top: 300px"
-    > -->
-    <!-- <pre>{{activeShapes() | json}}</pre> -->
-    <!-- </div> -->
     <canvas
       canvasParams
       [canvasCss]="''"
