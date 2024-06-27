@@ -1,13 +1,15 @@
 import { inject, Injectable } from "@angular/core";
-import { Actions, createEffect, ofType } from "@ngrx/effects";
-import { combineLatestWith, filter, map, tap } from "rxjs";
+import { Actions, createEffect } from '@ngrx/effects';
+import { combineLatestWith, filter, map } from "rxjs";
 
 import { GameActions, PlayerActions } from "./actions";
-import { KEY_PRESSED } from "../../tokens/key-pressed.token";
-import { MOUSE_EVENT } from "../../tokens/mouse-event.token";
+
+
 import { ResizeService } from "../../services/resize.service";
 import { Store } from "@ngrx/store";
 import { gameFeature } from "./state";
+import { KEY_PRESSED } from "../../tokens/key-pressed.token";
+import { MOUSE_EVENT } from "../../tokens/mouse-event.token";
 
 @Injectable()
 export class GameEffects {
