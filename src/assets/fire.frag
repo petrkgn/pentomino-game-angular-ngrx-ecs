@@ -7,8 +7,6 @@ uniform vec2 u_mouse;
 uniform float u_time;
 
 #define SMOOTH 1
-#define MULTIPLE 0
-#define DEBUG_LINE 0
 
 #if SMOOTH
 #define FLAME_BASE_WIDTH .012
@@ -16,103 +14,69 @@ uniform float u_time;
 #define FLAME_BASE_WIDTH .0
 #endif
 
-// https://gist.github.com/patriciogonzalezvivo/670c22f3966e662d2f83
-float rand(float n){return fract(sin(n) * 43758.5453123);}
-
-float noise(float r, float x, const float n)
-{
-    r *= 1337.;
-    float noise0 = rand(r + floor(n * x));
-    float noise1 = rand(r + floor(n * x + 1.));
-    float t = fract(n * x);
-    return t * noise1 + (1. - t) * noise0;
+float rand(float n) {
+    return fract(sin(n) * 43758.5453);
 }
 
-float line(vec2 uv)
-{
-#if MULTIPLE
-    // uv = vec2(mod(uv.x + .25, .6) - .25, uv.y + floor((uv.x - .2) / .5));
-#endif
-    
-    float center = .1 * (noise(1., uv.y, 5.) + .8 * noise(2., uv.y, 10.) - .2);
-    float width = FLAME_BASE_WIDTH + .04 * (noise(3., uv.y, 3.) + .8 * noise(4., uv.y, 10.));    
-#if SMOOTH
-    //return sin(3.14 * clamp(.5 + (uv.x - center) / width, 0., 1.));
-    if (uv.x < center - width)
-        return 0.;
-    if (uv.x < center)
-        return smoothstep(center - width, center - .7 * width, uv.x);
-    if (uv.x < center + width)
-        return 1. - smoothstep(center + .7 * width, center + width, uv.x);
-    return 0.;
-#else
-    return float(uv.x > center - width && uv.x < center + width);
-#endif
+float noise(float seed, float x, float frequency) {
+    seed *= 1337.0;
+    float i = floor(frequency * x);
+    float f = fract(frequency * x);
+    float u = f * f * (3.0 - 2.0 * f);
+    return mix(rand(seed + i), rand(seed + i + 1.0), u);
 }
 
-vec2 rot(vec2 uv, float a)
-{
-    return uv * mat2(cos(a), -sin(a), sin(a), cos(a));
+float line(vec2 uv) {
+    float center = 0.1 * (noise(1.0, uv.y, 5.0) + 0.8 * noise(2.0, uv.y, 10.0) - 0.2);
+    float width = FLAME_BASE_WIDTH + 0.04 * (noise(3.0, uv.y, 3.0) + 0.8 * noise(4.0, uv.y, 10.0));
+
+    #if SMOOTH
+    if (uv.x < center - width) return 0.0;
+    if (uv.x < center) return smoothstep(center - width, center - 0.7 * width, uv.x);
+    if (uv.x < center + width) return 1.0 - smoothstep(center + 0.7 * width, center + width, uv.x);
+    return 0.0;
+    #else
+    return step(center - width, uv.x) - step(center + width, uv.x);
+    #endif
 }
 
-float flame(vec2 uv, float spread, float p)
-{
-    float col = 1.;
-    col *= line(rot(uv, 3.14 - spread) + vec2(0., p + u_time));
-    col *= line(rot(uv, 3.14 + spread) + vec2(0., p + u_time));
-    return col;
+vec2 rot(vec2 uv, float angle) {
+    float c = cos(angle);
+    float s = sin(angle);
+    return uv * mat2(c, -s, s, c);
 }
 
-vec3 fire_color(float x)
-{
-    return
-        // red
-        vec3(1., 0., 0.) * x
-        // yellow
-        + vec3(1., 1., 0.) * clamp(x - .5, 0., 1.)
-        // white
-        + vec3(1., 1., 1.) * clamp(x - .7, 0., 1.);
+float flame(vec2 uv, float spread, float p) {
+    return line(rot(uv, 3.14 - spread) + vec2(0.0, p + u_time)) *
+           line(rot(uv, 3.14 + spread) + vec2(0.0, p + u_time));
 }
 
-vec3 smoke_color(float x)
-{
-    return vec3(.5, .5, .5) * x;
+vec3 fire_color(float intensity) {
+    return vec3(1.0, 0.0, 0.0) * intensity +
+           vec3(1.0, 1.0, 0.0) * clamp(intensity - 0.5, 0.0, 1.0) +
+           vec3(1.0, 1.0, 1.0) * clamp(intensity - 0.7, 0.0, 1.0);
 }
 
-void mainImage(out vec4 fragColor, in vec2 fragCoord)
-{
-    vec2 uv = (fragCoord - vec2(.5 * u_resolution.x, 0.)) / u_resolution.y
-        - vec2(0., .5);
-    
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    vec2 uv = (fragCoord - vec2(0.5 * u_resolution.x, 0.0)) / u_resolution.y - vec2(0.0, 0.5);
     vec2 mouse_uv = u_mouse / u_resolution;
-
-    // Modify uv based on mouse_uv
     uv += mouse_uv - 0.5;
 
-    // uv *= 3. + 2. * cos(-u_time);
-   // uv *= step(0.2, 0.3);
-#if DEBUG_LINE
-    fragColor = vec4(vec3(1., 1., 0.) * line(uv + vec2(0., u_time)), 1.0);
-#else
     const int fire_n = 30;
     float fire_intensity = 0.5;
     for (int i = 0; i < fire_n; ++i) {
-        float t = float(i)/ float(fire_n) - .5;
-        fire_intensity += flame(uv + vec2(0., .08 + .3 * t), .15 + .1 * t, 273. * float(i));
+        float t = float(i) / float(fire_n) - 0.5;
+        fire_intensity += flame(uv + vec2(0.0, 0.08 + 0.3 * t), 0.15 + 0.1 * t, 273.0 * float(i));
     }
 
-    vec3 color = fire_color(2. * fire_intensity / float(fire_n));
+    vec3 color = fire_color(2.0 * fire_intensity / float(fire_n));
     float alpha = fire_intensity / float(fire_n);
 
-    // Set background color here
-    vec3 backgroundColor = vec3(0.0, 0.0, 0.0); // Change this to your desired background color
-
-    // Mix fire color with background color based on alpha
+    vec3 backgroundColor = vec3(0.0, 0.0, 0.0);
     vec3 finalColor = mix(backgroundColor, color, alpha);
     fragColor = vec4(finalColor, alpha);
-#endif
 }
 
 void main() {
-  mainImage(gl_FragColor, gl_FragCoord.xy);     
+    mainImage(gl_FragColor, gl_FragCoord.xy);
 }
