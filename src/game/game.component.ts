@@ -15,8 +15,7 @@ import { GameFacade } from "./game.facade";
   template: ` <game-scene />
     <game-board />
     <game-placement-shapes />
-    <game-active-shape />
-    <game-effects />`,
+    <game-active-shape />`,
   styles: ``,
   imports: [
     SceneComponent,

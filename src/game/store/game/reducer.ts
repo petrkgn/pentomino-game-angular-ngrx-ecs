@@ -98,6 +98,8 @@ export const gameReducer = createReducer(
       includeComponents,
     })[0];
 
+    if (!activeShape) return state;
+
     const rotatedMatrix = utils.rotatePentomino(activeShape);
 
     const updatedComponents = [
@@ -119,31 +121,70 @@ export const gameReducer = createReducer(
       includeComponents,
     });
 
+    const board = entitiesManager.getEntity({
+      state,
+      entityId: GameObjectsIds.BOARD,
+    });
+
     const shapesId = findEntityWithPoint(state, { x: mx, y: my });
 
-    if (!shapesId) return state;
-
+    if (!shapesId && !board) return state;
     let newState = state;
 
-    // newState = componentsManager.removeComponentForEntities({
-    //   state,
-    //   includeComponents,
-    //   componentType: ComponentType.IS_PACK_TAG,
-    // });
+    if (board) {
+      const cellValue = boardGame.getCellValueAtMousePosition(mx, my, board);
+      // console.log("AAAAAAAAAAAAAAcellValue", cellValue);
 
-    newState = componentsManager.addComponentToEntity({
-      state: newState,
-      entityId: shapesId,
-      component: { type: ComponentType.IS_ACTIVE_TAG },
-    });
+      if (cellValue) {
+        const newBoard = boardGame.replaceCellValue(board, cellValue);
+        // newState = componentsManager.removeComponentFromEntity({
+        //   state: newState,
+        //   entityId: cellValue,
+        //   componentType: ComponentType.IS_PACK_TAG,
+        // });
 
-    newState = componentsManager.updateComponentData({
-      state: newState,
-      entityId: shapesId,
-      componentType: ComponentType.POSITION,
-      changes: { x: mx, y: my },
-    });
+        newState = componentsManager.addComponentToEntity({
+          state: newState,
+          entityId: cellValue,
+          component: { type: ComponentType.IS_ACTIVE_TAG },
+        });
 
+        newState = componentsManager.updateComponentData({
+          state: newState,
+          entityId: cellValue,
+          componentType: ComponentType.POSITION,
+          changes: { x: mx, y: my },
+        });
+
+        newState = componentsManager.updateComponentData({
+          state: newState,
+          entityId: GameObjectsIds.BOARD,
+          componentType: ComponentType.MATRIX,
+          changes: { matrix: newBoard },
+        });
+      }
+    }
+
+    if (shapesId) {
+      // newState = componentsManager.removeComponentForEntities({
+      //   state,
+      //   includeComponents,
+      //   componentType: ComponentType.IS_PACK_TAG,
+      // });
+
+      newState = componentsManager.addComponentToEntity({
+        state: newState,
+        entityId: shapesId,
+        component: { type: ComponentType.IS_ACTIVE_TAG },
+      });
+
+      newState = componentsManager.updateComponentData({
+        state: newState,
+        entityId: shapesId,
+        componentType: ComponentType.POSITION,
+        changes: { x: mx, y: my },
+      });
+    }
     return newState;
   }),
   on(PlayerActions.mouseMove, (state, { mx, my }) => {
@@ -195,7 +236,20 @@ export const gameReducer = createReducer(
       return state;
     }
 
+    // Получаем матрицу доски с учетом новой позиции формы
+    const newBoard = boardGame.updateBoardMatrix(board, activeShape);
+
     let newState = { ...state };
+
+    if (newBoard) {
+      // Обновляем матрицу доски
+      newState = componentsManager.updateComponentData({
+        state: newState,
+        entityId: GameObjectsIds.BOARD,
+        componentType: ComponentType.MATRIX,
+        changes: { matrix: newBoard },
+      });
+    }
 
     // Удаляем компонент активной формы
     newState = componentsManager.removeComponentFromEntity({
@@ -222,9 +276,6 @@ export const gameReducer = createReducer(
       componentType: ComponentType.POSITION,
       changes: { x: updatedShapeCoords.x, y: updatedShapeCoords.y },
     });
-
-    // Обновляем матрицу доски с учетом новой позиции формы
-    const newBoard = boardGame.updateBoardMatrix(board, activeShape);
 
     // Возвращаем обновленное состояние с примененными изменениями
     return newState;

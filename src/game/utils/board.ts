@@ -35,6 +35,21 @@ class BoardGame {
   }
 
   /**
+   * Извлекает компонент позиционирования из сущности.
+   * @param entity Сущность для получения компонента позиционирования.
+   * @returns Компонент позиционирования или null, если компонент отсутствует.
+   */
+  private getPosition(
+    entity: Entity
+  ): PickComponentType<ComponentType.POSITION> | null {
+    const positionComponent = entity.components.entities[
+      ComponentType.POSITION
+    ] as PickComponentType<ComponentType.POSITION>;
+
+    return positionComponent ?? null;
+  }
+
+  /**
    * Возвращает текущее соотношение сущности.
    * @param entity Сущность для получения соотношения.
    * @returns Соотношение или 1, если компонент соотношения отсутствует.
@@ -371,6 +386,70 @@ class BoardGame {
     }
 
     return boardMatrixUpdated;
+  }
+
+  /**
+   * Получает число из ячейки доски по координатам мыши.
+   * @param mouseX Координата X мыши.
+   * @param mouseY Координата Y мыши.
+   * @param board Доска для проверки.
+   * @returns Число в ячейке или null, если координаты не попадают в ячейку.
+   */
+  public getCellValueAtMousePosition(
+    mouseX: number,
+    mouseY: number,
+    board: Entity
+  ): number | null {
+    const matrixComponent = this.getMatrix(board);
+    const positionComponent = this.getPosition(board);
+    const ratio = this.getCurrentRatio(board);
+
+    if (!matrixComponent || !positionComponent) {
+      return null;
+    }
+
+    const { matrix, rows } = matrixComponent;
+    const { x: boardX, y: boardY } = positionComponent;
+    const columns = matrix.length / rows;
+
+    // Вычисляем размеры доски с учетом соотношения
+    const boardWidth = columns * this.cellSize * ratio;
+    const boardHeight = rows * this.cellSize * ratio;
+
+    // Проверяем, попадают ли координаты мыши в размеры поля
+    if (
+      mouseX < boardX ||
+      mouseX >= boardX + boardWidth ||
+      mouseY < boardY ||
+      mouseY >= boardY + boardHeight
+    ) {
+      return null;
+    }
+
+    // Вычисляем координаты ячейки с учетом соотношения
+    const cellX = Math.floor((mouseX - boardX) / (this.cellSize * ratio));
+    const cellY = Math.floor((mouseY - boardY) / (this.cellSize * ratio));
+
+    if (cellX >= 0 && cellX < columns && cellY >= 0 && cellY < rows) {
+      const index = cellY * columns + cellX;
+      return matrix[index];
+    }
+
+    return null;
+  }
+
+  public replaceCellValue(board: Entity, value: number): number[] {
+    const matrixComponent = this.getMatrix(board);
+
+    if (!matrixComponent) {
+      throw new Error("Matrix component is missing.");
+    }
+
+    const updatedMatrix = matrixComponent.matrix.map((cell) =>
+      cell === value ? 0 : cell
+    );
+
+    return updatedMatrix;
   }
 
   /**
