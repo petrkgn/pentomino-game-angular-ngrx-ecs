@@ -438,7 +438,14 @@ class BoardGame {
     return null;
   }
 
-  public replaceCellValue(board: Entity, value: number): number[] {
+  /**
+   * Очищает ячейки доски, которые были заняты указанной фигурой.
+   * @param board Сущность доски.
+   * @param shapeId Идентификатор фигуры, которая была взята с доски.
+   * @returns Обновленная матрица доски, в которой очищены ячейки, занятые фигурой.
+   * @throws Ошибка, если компонент матрицы отсутствует.
+   */
+  public clearShapeCellsOnBoard(board: Entity, shapeId: number): number[] {
     const matrixComponent = this.getMatrix(board);
 
     if (!matrixComponent) {
@@ -446,7 +453,7 @@ class BoardGame {
     }
 
     const updatedMatrix = matrixComponent.matrix.map((cell) =>
-      cell === value ? 0 : cell
+      cell === shapeId ? 0 : cell
     );
 
     return updatedMatrix;

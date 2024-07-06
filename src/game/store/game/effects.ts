@@ -1,7 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { Actions, createEffect } from "@ngrx/effects";
 import {
-  combineLatestWith,
   debounceTime,
   filter,
   map,
@@ -19,7 +18,6 @@ import { Store } from "@ngrx/store";
 import { gameFeature } from "./state";
 import { KEY_PRESSED } from "../../tokens/key-pressed.token";
 import { MOUSE_EVENT } from "../../tokens/mouse-event.token";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Injectable()
 export class GameEffects {
@@ -31,58 +29,65 @@ export class GameEffects {
   private readonly activeShapes$ = this.store.select(
     gameFeature.selectActiveShape
   );
-  private destroyClick1$$ = new Subject();
-  private destroyClick2$$ = new Subject();
+
+  // Subjects to control the completion of click streams
+  private stopClickWithoutActiveShape$$ = new Subject<void>();
+  private stopClickWithActiveShape$$ = new Subject<void>();
+
   currentAngle = 0;
 
+  // Effect to handle mouse move events
   readonly mouseMove$ = createEffect(() =>
     this.mouseEvent$.pipe(
       filter((e) => e.type === "mousemove"),
       map((e) => PlayerActions.mouseMove({ mx: e.x, my: e.y }))
     )
   );
+
+  // Effect to handle clicks without an active shape
   readonly clickWithoutActiveShape$ = createEffect(() =>
     this.mouseEvent$.pipe(
-      takeUntil(this.destroyClick2$$),
+      takeUntil(this.stopClickWithActiveShape$$), // Stop this effect when the other effect is triggered
       filter((e) => e.type === "mousedown" && e.button === 0),
-      debounceTime(10), // Добавим небольшую задержку
+      debounceTime(10), // Small delay to avoid double clicks
       withLatestFrom(this.activeShapes$),
       filter(([_, activeShapes]) => !activeShapes.length),
-      tap(() => this.destroyClick1$$.next("")),
+      tap(() => this.stopClickWithoutActiveShape$$.next()), // Trigger the stop signal for the other effect
       map(([e, _]) => PlayerActions.chooseShape({ mx: e.x, my: e.y })),
-      repeat()
+      repeat() // Ensure the stream continues after being stopped
     )
   );
 
+  // Effect to handle clicks with an active shape
   readonly clickWithActiveShape$ = createEffect(() =>
     this.mouseEvent$.pipe(
-      takeUntil(this.destroyClick1$$),
-      filter((e) => e.type === "mousedown" && e.button === 0), // Добавим небольшую задержку
+      takeUntil(this.stopClickWithoutActiveShape$$), // Stop this effect when the other effect is triggered
+      filter((e) => e.type === "mousedown" && e.button === 0), // Small delay to avoid double clicks
       withLatestFrom(this.activeShapes$),
       filter(([_, activeShapes]) => activeShapes.length > 0),
-      tap(() => this.destroyClick2$$.next("")),
+      tap(() => this.stopClickWithActiveShape$$.next()), // Trigger the stop signal for the other effect
       map(() => GameActions.shapePlacement()),
-      repeat()
+      repeat() // Ensure the stream continues after being stopped
     )
   );
 
-  readonly resizeWindow$ = createEffect(() => {
-    return this.resizeService.calculateScaleRatio(32, 20).pipe(
-      // distinctUntilChanged(),
-      map((e) => GameActions.ratioChanged({ ratio: Math.ceil(e) }))
-    );
-  });
+  // Effect to handle window resize events
+  readonly resizeWindow$ = createEffect(() =>
+    this.resizeService
+      .calculateScaleRatio(32, 20)
+      .pipe(map((e) => GameActions.ratioChanged({ ratio: Math.ceil(e) })))
+  );
 
+  // Effect to handle shape rotation
   readonly rotateShape$ = createEffect(() =>
     this.keyPressed$.pipe(
       filter((e) => e === "Space"),
-      map((e) => {
+      map(() => {
         if (this.currentAngle >= 270) {
           this.currentAngle = 0;
         } else {
           this.currentAngle += 90;
         }
-
         return PlayerActions.rotateShape({ angle: this.currentAngle });
       })
     )
