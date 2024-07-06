@@ -131,17 +131,17 @@ export const gameReducer = createReducer(
     if (!shapesId && !board) return state;
     let newState = state;
 
+    // Берем фигуру с доски
     if (board) {
       const cellValue = boardGame.getCellValueAtMousePosition(mx, my, board);
-      // console.log("AAAAAAAAAAAAAAcellValue", cellValue);
 
       if (cellValue) {
         const newBoard = boardGame.replaceCellValue(board, cellValue);
-        // newState = componentsManager.removeComponentFromEntity({
-        //   state: newState,
-        //   entityId: cellValue,
-        //   componentType: ComponentType.IS_PACK_TAG,
-        // });
+        newState = componentsManager.removeComponentFromEntity({
+          state: newState,
+          entityId: cellValue,
+          componentType: ComponentType.IS_PACK_TAG,
+        });
 
         newState = componentsManager.addComponentToEntity({
           state: newState,
@@ -164,13 +164,13 @@ export const gameReducer = createReducer(
         });
       }
     }
-
+    // Берем фигуру из доступных вне доски
     if (shapesId) {
-      // newState = componentsManager.removeComponentForEntities({
-      //   state,
-      //   includeComponents,
-      //   componentType: ComponentType.IS_PACK_TAG,
-      // });
+      newState = componentsManager.removeComponentForEntities({
+        state,
+        includeComponents,
+        componentType: ComponentType.IS_PACK_TAG,
+      });
 
       newState = componentsManager.addComponentToEntity({
         state: newState,
@@ -231,55 +231,85 @@ export const gameReducer = createReducer(
       placementPosition
     );
 
-    // Проверяем наличие позиции для размещения и пересчитанных координат
-    if (!placementPosition || !updatedShapeCoords) {
-      return state;
-    }
-
-    // Получаем матрицу доски с учетом новой позиции формы
-    const newBoard = boardGame.updateBoardMatrix(board, activeShape);
-
     let newState = { ...state };
 
-    if (newBoard) {
-      // Обновляем матрицу доски
+    // Проверяем наличие позиции для размещения и пересчитанных координат
+    if (!placementPosition || !updatedShapeCoords) {
+      // Удаляем компонент активной формы и добавляем компонент IS_PACK_TAG если фигуру нельзя поставить на поле
+      newState = componentsManager.removeComponentFromEntity({
+        state: newState,
+        entityId: activeShape.id,
+        componentType: ComponentType.IS_ACTIVE_TAG,
+      });
+
+      newState = componentsManager.addComponentToEntity({
+        state: newState,
+        entityId: activeShape.id,
+        component: {
+          type: ComponentType.IS_PACK_TAG,
+        },
+      });
+
+      newState = componentsManager.removeComponentFromEntity({
+        state: newState,
+        entityId: activeShape.id,
+        componentType: ComponentType.PLACEMENT,
+      });
+
       newState = componentsManager.updateComponentData({
         state: newState,
-        entityId: GameObjectsIds.BOARD,
-        componentType: ComponentType.MATRIX,
-        changes: { matrix: newBoard },
+        entityId: activeShape.id,
+        componentType: ComponentType.ROTATE,
+        changes: { angle: 0 },
       });
+
+      return newState;
+    }
+    if (placementPosition && updatedShapeCoords) {
+      // Получаем матрицу доски с учетом новой позиции формы
+      const newBoard = boardGame.updateBoardMatrix(board, activeShape);
+
+      if (newBoard) {
+        // Обновляем матрицу доски
+        newState = componentsManager.updateComponentData({
+          state: newState,
+          entityId: GameObjectsIds.BOARD,
+          componentType: ComponentType.MATRIX,
+          changes: { matrix: newBoard },
+        });
+      }
+
+      // Удаляем компонент активной формы
+      newState = componentsManager.removeComponentFromEntity({
+        state: newState,
+        entityId: activeShape.id,
+        componentType: ComponentType.IS_ACTIVE_TAG,
+      });
+
+      // Добавляем компонент, что форма была размещена
+      newState = componentsManager.addComponentToEntity({
+        state: newState,
+        entityId: activeShape.id,
+        component: {
+          type: ComponentType.PLACEMENT,
+          cellX: placementPosition.cellX,
+          cellY: placementPosition.cellY,
+        },
+      });
+
+      // Обновляем позицию формы
+      newState = componentsManager.updateComponentData({
+        state: newState,
+        entityId: activeShape.id,
+        componentType: ComponentType.POSITION,
+        changes: { x: updatedShapeCoords.x, y: updatedShapeCoords.y },
+      });
+      return newState;
     }
 
-    // Удаляем компонент активной формы
-    newState = componentsManager.removeComponentFromEntity({
-      state: newState,
-      entityId: activeShape.id,
-      componentType: ComponentType.IS_ACTIVE_TAG,
-    });
-
-    // Добавляем компонент что была размещена форма
-    newState = componentsManager.addComponentToEntity({
-      state: newState,
-      entityId: activeShape.id,
-      component: {
-        type: ComponentType.PLACEMENT,
-        cellX: placementPosition.cellX,
-        cellY: placementPosition.cellY,
-      },
-    });
-
-    // Обновляем позицию формы
-    newState = componentsManager.updateComponentData({
-      state: newState,
-      entityId: activeShape.id,
-      componentType: ComponentType.POSITION,
-      changes: { x: updatedShapeCoords.x, y: updatedShapeCoords.y },
-    });
-
-    // Возвращаем обновленное состояние с примененными изменениями
-    return newState;
+    return state;
   }),
+
   on(GameActions.ratioChanged, (state, { ratio }) => {
     const includedComponents: ComponentType[] = [ComponentType.RATIO];
 

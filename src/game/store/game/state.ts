@@ -37,6 +37,14 @@ export const gameFeature = createFeature({
     selectBoard: createSelector(selectGameState, (state) =>
       entitiesManager.getEntity({ state, entityId: GameObjectsIds.BOARD })
     ),
+    selectShapesPack: createSelector(selectGameState, (state): Entity[] => {
+      const includeComponents = [ComponentType.IS_PACK_TAG];
+
+      return componentsManager.getEntitiesWithComponents({
+        state,
+        includeComponents,
+      });
+    }),
     selectPlacementShapes: createSelector(
       selectGameState,
       (state): Entity[] => {

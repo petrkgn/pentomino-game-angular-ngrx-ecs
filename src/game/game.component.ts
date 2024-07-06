@@ -7,6 +7,7 @@ import { BoardComponent } from "./layers/board/board.component";
 import { PlacementShapesComponent } from "./layers/placement-shapes/placement-shapes.component";
 import { EffectsComponent } from "./layers/effects/effects.component";
 import { GameFacade } from "./game.facade";
+import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack";
 
 @Component({
   selector: "katamino-game",
@@ -15,6 +16,7 @@ import { GameFacade } from "./game.facade";
   template: ` <game-scene />
     <game-board />
     <game-placement-shapes />
+    <game-shapes-pack />
     <game-active-shape />`,
   styles: ``,
   imports: [
@@ -23,6 +25,7 @@ import { GameFacade } from "./game.facade";
     PlacementShapesComponent,
     BoardComponent,
     EffectsComponent,
+    ShapesPackComponent,
   ],
 })
 export class GameComponent implements OnInit {

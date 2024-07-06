@@ -46,9 +46,9 @@ export class GameFacade {
         type: ComponentType.RATIO,
         ratio: 1,
       },
-      // {
-      //   type: ComponentType.IS_ACTIVE_TAG,
-      // },
+      {
+        type: ComponentType.IS_PACK_TAG,
+      },
       {
         type: ComponentType.HINT_BOX,
         x: 0,
@@ -97,6 +97,12 @@ export class GameFacade {
   selectPlacementShapes(): Observable<Entity[]> {
     return this.store
       .select(gameFeature.selectPlacementShapes)
+      .pipe(map((entities) => this.handleEntitiesDefined(entities)));
+  }
+
+  selectShapesPack(): Observable<Entity[]> {
+    return this.store
+      .select(gameFeature.selectShapesPack)
       .pipe(map((entities) => this.handleEntitiesDefined(entities)));
   }
 

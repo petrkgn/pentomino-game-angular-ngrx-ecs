@@ -111,7 +111,6 @@ export class ActiveShapeComponent implements AfterViewInit {
           this.window.innerHeight
         );
         this.ctx.save();
-
         this.ctx.translate(positionX, positionY);
         this.ctx.rotate((Math.PI / 180) * angle);
         this.ctx.translate(-positionX, -positionY);

@@ -1,15 +1,25 @@
 import { inject, Injectable } from "@angular/core";
-import { Actions, createEffect } from '@ngrx/effects';
-import { combineLatestWith, filter, map } from "rxjs";
+import { Actions, createEffect } from "@ngrx/effects";
+import {
+  combineLatestWith,
+  debounceTime,
+  filter,
+  map,
+  repeat,
+  Subject,
+  takeUntil,
+  tap,
+  withLatestFrom,
+} from "rxjs";
 
 import { GameActions, PlayerActions } from "./actions";
-
 
 import { ResizeService } from "../../services/resize.service";
 import { Store } from "@ngrx/store";
 import { gameFeature } from "./state";
 import { KEY_PRESSED } from "../../tokens/key-pressed.token";
 import { MOUSE_EVENT } from "../../tokens/mouse-event.token";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 @Injectable()
 export class GameEffects {
@@ -21,7 +31,8 @@ export class GameEffects {
   private readonly activeShapes$ = this.store.select(
     gameFeature.selectActiveShape
   );
-
+  private destroyClick1$$ = new Subject();
+  private destroyClick2$$ = new Subject();
   currentAngle = 0;
 
   readonly mouseMove$ = createEffect(() =>
@@ -30,34 +41,30 @@ export class GameEffects {
       map((e) => PlayerActions.mouseMove({ mx: e.x, my: e.y }))
     )
   );
-
-  readonly mouseLeftButtonClick$ = createEffect(() =>
+  readonly clickWithoutActiveShape$ = createEffect(() =>
     this.mouseEvent$.pipe(
-      combineLatestWith(this.activeShapes$),
-      filter(
-        ([e, s]) =>
-          e.type === "mousedown" && e.button === 0 && !Boolean(s.length)
-      ),
-      map(([e, _s]) => PlayerActions.chooseShape({ mx: e.x, my: e.y }))
+      takeUntil(this.destroyClick2$$),
+      filter((e) => e.type === "mousedown" && e.button === 0),
+      debounceTime(10), // Добавим небольшую задержку
+      withLatestFrom(this.activeShapes$),
+      filter(([_, activeShapes]) => !activeShapes.length),
+      tap(() => this.destroyClick1$$.next("")),
+      map(([e, _]) => PlayerActions.chooseShape({ mx: e.x, my: e.y })),
+      repeat()
     )
   );
 
-  readonly mouseRightButtonClick$ = createEffect(() =>
+  readonly clickWithActiveShape$ = createEffect(() =>
     this.mouseEvent$.pipe(
-      filter((e) => e.type === "mousedown" && e.button === 2),
-      map((e) => GameActions.shapePlacement())
+      takeUntil(this.destroyClick1$$),
+      filter((e) => e.type === "mousedown" && e.button === 0), // Добавим небольшую задержку
+      withLatestFrom(this.activeShapes$),
+      filter(([_, activeShapes]) => activeShapes.length > 0),
+      tap(() => this.destroyClick2$$.next("")),
+      map(() => GameActions.shapePlacement()),
+      repeat()
     )
   );
-
-  // readonly initRatio$ = createEffect(() => {
-  //   return this.actions$.pipe(
-  //     ofType(GameActions.initRatio),
-  //     map(() => {
-  //       const ratio = this.resizeService.getRatio(32, 20);
-  //       // return GameActions.ratioChanged({ ratio: Math.ceil(ratio) });
-  //     })
-  //   );
-  // });
 
   readonly resizeWindow$ = createEffect(() => {
     return this.resizeService.calculateScaleRatio(32, 20).pipe(
@@ -80,13 +87,4 @@ export class GameEffects {
       })
     )
   );
-
-  // readonly gameKeyEvent$ = createEffect(() =>
-  //   this.keyPressed$.pipe(
-  //     filter((e) => e === "KeyK"),
-  //     map((e) => {
-  //       return GameActions.shapePlacement();
-  //     })
-  //   )
-  // );
 }
