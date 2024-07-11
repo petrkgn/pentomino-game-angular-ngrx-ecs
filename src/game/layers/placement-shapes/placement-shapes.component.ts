@@ -116,8 +116,8 @@ export class PlacementShapesComponent implements AfterViewInit {
         const y = positionComponent.y;
         const shape = this.img.nativeElement;
 
-        ctx.save();
         this.clearCanvas();
+        ctx.save();
         ctx.translate(x, y);
         ctx.rotate((Math.PI / 180) * angle);
         ctx.translate(-x, -y);
@@ -128,7 +128,7 @@ export class PlacementShapesComponent implements AfterViewInit {
           this.imgWidth,
           this.imgHeight
         );
-        ctx.fill();
+
         ctx.restore();
       }
     });

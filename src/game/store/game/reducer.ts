@@ -49,16 +49,57 @@ export const gameReducer = createReducer(
     })[0];
     if (!activeShape) return state;
 
+    let newState = { ...state };
+
     const rotatedMatrix = utils.rotatePentomino(activeShape);
     const updatedComponents = [
       { componentType: ComponentType.ROTATE, changes: { angle } },
       { componentType: ComponentType.MATRIX, changes: rotatedMatrix },
     ];
 
-    return componentsManager.updateMultipleComponentsDataForEntities(
+    newState = componentsManager.updateMultipleComponentsDataForEntities(
       { state, includeComponents: [ComponentType.IS_ACTIVE_TAG] },
       updatedComponents
     );
+
+    return newState;
+  }),
+  on(PlayerActions.mirrorShape, (state) => {
+    console.log("mirrorShape");
+    const activeShape = componentsManager.getEntitiesWithComponents({
+      state,
+      includeComponents: [ComponentType.IS_ACTIVE_TAG],
+    })[0];
+
+    if (!activeShape) return state;
+
+    const isMirror =
+      activeShape.components.entities[ComponentType.IS_MIRROR_TAG];
+
+    let newState = { ...state };
+    if (isMirror) {
+      newState = componentsManager.removeComponentFromEntity({
+        state: newState,
+        entityId: activeShape.id,
+        componentType: ComponentType.IS_MIRROR_TAG,
+      });
+    } else {
+      newState = componentsManager.addComponentToEntity({
+        state: newState,
+        entityId: activeShape.id,
+        component: { type: ComponentType.IS_MIRROR_TAG },
+      });
+    }
+    const mirroredMatrix = utils.mirrorPentomino(activeShape);
+    console.log(mirroredMatrix.matrix);
+    newState = componentsManager.updateComponentData({
+      state: newState,
+      entityId: activeShape.id,
+      componentType: ComponentType.MATRIX,
+      changes: { matrix: mirroredMatrix.matrix },
+    });
+
+    return newState;
   }),
   on(PlayerActions.chooseShape, (state, { mx, my }) => {
     const board = entitiesManager.getEntity({
@@ -265,7 +306,15 @@ function handleShapePlacementFailure(
   state: EntityState<Entity>,
   activeShape: Entity
 ) {
+  const isMirror = activeShape.components.entities[ComponentType.IS_MIRROR_TAG];
   let newState = state;
+  if (isMirror) {
+    newState = componentsManager.removeComponentFromEntity({
+      state: newState,
+      entityId: activeShape.id,
+      componentType: ComponentType.IS_MIRROR_TAG,
+    });
+  }
   newState = componentsManager.removeComponentFromEntity({
     state: newState,
     entityId: activeShape.id,
@@ -300,7 +349,6 @@ function handleShapePlacementSuccess(
 ) {
   let newState = state;
   const newBoard = boardGame.updateBoardMatrix(board, activeShape);
-
   if (newBoard) {
     newState = componentsManager.updateComponentData({
       state: newState,

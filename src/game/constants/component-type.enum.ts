@@ -13,4 +13,5 @@ export enum ComponentType {
   IS_PACK_TAG,
   SIZE,
   HINT_BOX,
+  IS_MIRROR_TAG,
 }

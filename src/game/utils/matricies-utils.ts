@@ -13,37 +13,17 @@ function getMatrix(entity: Entity): number[] {
   ] as PickComponentType<ComponentType.MATRIX>;
   return matrixComponent?.matrix || [];
 }
-
-// /**
-//  * Проверяет, полностью ли заполнена доска пентамино.
-//  * @param board Доска для проверки.
-//  * @returns true, если доска полностью заполнена; иначе false.
-//  */
-// export function isBoardFilled(board: Entity): boolean {
-//   const matrix = getMatrix(board);
-//   return matrix.every((row) => row.every((cell) => cell === 1));
-// }
-
-// /**
-//  * Вращает пентамино на 90 градусов по часовой стрелке.
-//  * @param pentomino Пентамино для вращения.
-//  * @returns Новый объект пентамино после вращения.
-//  */
-// export function rotatePentomino(
-//   pentomino: Entity
-// ): PickComponentType<ComponentType.MATRIX> {
-//   const pentominoMatrix = getMatrix(pentomino);
-
-//   // Транспонируем матрицу пентамино
-//   const rotatedMatrix = pentominoMatrix[0].map((_, i) =>
-//     pentominoMatrix.map((row) => row[i]).reverse()
-//   );
-
-//   return {
-//     type: ComponentType.MATRIX,
-//     matrix: rotatedMatrix,
-//   };
-// }
+/**
+ * Возвращает количество строк в матрице компонента типа MATRIX из сущности.
+ * @param {Entity} entity - Сущность, количество строк матрицы которой будет возвращено.
+ * @returns {number} Количество строк в матрице компонента или 1, если компонент не найден.
+ */
+function getRows(entity: Entity): number {
+  const matrixComponent = entity.components.entities[
+    ComponentType.MATRIX
+  ] as PickComponentType<ComponentType.MATRIX>;
+  return matrixComponent?.rows || 1;
+}
 
 /**
  * Вращает пентамино на 90 градусов по часовой стрелке.
@@ -54,7 +34,7 @@ export function rotatePentomino(
   pentomino: Entity
 ): PickComponentType<ComponentType.MATRIX> {
   const pentominoMatrix = getMatrix(pentomino);
-  const rows = 3; // Количество строк в pentominoMatrix
+  const rows = getRows(pentomino); // Количество строк в pentominoMatrix
   const columns = pentominoMatrix.length / rows; // Количество столбцов в pentominoMatrix
   const rotatedMatrix = new Array(pentominoMatrix.length).fill(0);
 
@@ -67,28 +47,34 @@ export function rotatePentomino(
 
   return {
     type: ComponentType.MATRIX,
-    rows: 3,
+    rows: rows,
     matrix: rotatedMatrix,
   };
 }
 
-// /**
-//  * Создает зеркальное отображение пентамино.
-//  * @param pentomino Пентамино для зеркального отображения.
-//  * @returns Новый объект пентамино после зеркального отображения.
-//  */
-// export function mirrorPentomino(pentomino: Entity): Entity {
-//   const pentominoMatrix = getMatrix(pentomino);
+/**
+ * Зеркально отображает пентомино по вертикальной оси.
+ * @param pentomino Пентомино для отображения.
+ * @returns Новый объект пентомино после зеркального отображения.
+ */
+export function mirrorPentomino(
+  pentomino: Entity
+): PickComponentType<ComponentType.MATRIX> {
+  const pentominoMatrix = getMatrix(pentomino);
+  const rows = getRows(pentomino); // Количество строк в pentominoMatrix
+  const columns = pentominoMatrix.length / rows; // Количество столбцов в pentominoMatrix
+  const mirroredMatrix = new Array(pentominoMatrix.length).fill(0);
 
-//   // Зеркально отображаем матрицу пентамино
-//   const mirroredMatrix = pentominoMatrix.map((row) => row.reverse());
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < columns; j++) {
+      mirroredMatrix[i * columns + (columns - 1 - j)] =
+        pentominoMatrix[i * columns + j];
+    }
+  }
 
-//   return {
-//     ...pentomino,
-//     components: pentomino.components.map((component) =>
-//       component.type === ComponentType.MATRIX
-//         ? { ...component, matrix: mirroredMatrix }
-//         : component
-//     ),
-//   };
-// }
+  return {
+    type: ComponentType.MATRIX,
+    rows: rows,
+    matrix: mirroredMatrix,
+  };
+}

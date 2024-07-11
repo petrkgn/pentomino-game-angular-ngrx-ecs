@@ -36,7 +36,6 @@ export class GameEffects {
 
   currentAngle = 0;
 
-  // Effect to handle mouse move events
   readonly mouseMove$ = createEffect(() =>
     this.mouseEvent$.pipe(
       filter((e) => e.type === "mousemove"),
@@ -44,41 +43,47 @@ export class GameEffects {
     )
   );
 
-  // Effect to handle clicks without an active shape
   readonly clickWithoutActiveShape$ = createEffect(() =>
     this.mouseEvent$.pipe(
-      takeUntil(this.stopClickWithActiveShape$$), // Stop this effect when the other effect is triggered
       filter((e) => e.type === "mousedown" && e.button === 0),
-      debounceTime(10), // Small delay to avoid double clicks
+      debounceTime(50),
       withLatestFrom(this.activeShapes$),
       filter(([_, activeShapes]) => !activeShapes.length),
-      tap(() => this.stopClickWithoutActiveShape$$.next()), // Trigger the stop signal for the other effect
+      tap(() => this.stopClickWithoutActiveShape$$.next()),
       map(([e, _]) => PlayerActions.chooseShape({ mx: e.x, my: e.y })),
-      repeat() // Ensure the stream continues after being stopped
+      takeUntil(this.stopClickWithActiveShape$$),
+      repeat()
     )
   );
 
-  // Effect to handle clicks with an active shape
   readonly clickWithActiveShape$ = createEffect(() =>
     this.mouseEvent$.pipe(
-      takeUntil(this.stopClickWithoutActiveShape$$), // Stop this effect when the other effect is triggered
-      filter((e) => e.type === "mousedown" && e.button === 0), // Small delay to avoid double clicks
+      filter((e) => e.type === "mousedown" && e.button === 0),
+      debounceTime(50),
       withLatestFrom(this.activeShapes$),
       filter(([_, activeShapes]) => activeShapes.length > 0),
-      tap(() => this.stopClickWithActiveShape$$.next()), // Trigger the stop signal for the other effect
+      tap(() => this.stopClickWithActiveShape$$.next()),
       map(() => GameActions.shapePlacement()),
-      repeat() // Ensure the stream continues after being stopped
+      takeUntil(this.stopClickWithoutActiveShape$$),
+      repeat()
     )
   );
 
-  // Effect to handle window resize events
+  readonly clickForMirrorActiveShape$ = createEffect(() =>
+    this.mouseEvent$.pipe(
+      filter((e) => e.type === "mousedown" && e.button === 2),
+      withLatestFrom(this.activeShapes$),
+      filter(([_, activeShapes]) => activeShapes.length > 0),
+      map(() => PlayerActions.mirrorShape())
+    )
+  );
+
   readonly resizeWindow$ = createEffect(() =>
     this.resizeService
       .calculateScaleRatio(32, 20)
       .pipe(map((e) => GameActions.ratioChanged({ ratio: Math.ceil(e) })))
   );
 
-  // Effect to handle shape rotation
   readonly rotateShape$ = createEffect(() =>
     this.keyPressed$.pipe(
       filter((e) => e === "Space"),

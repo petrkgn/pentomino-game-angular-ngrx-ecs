@@ -10,6 +10,7 @@ import { EntityComponents } from "../types/components";
 interface EntitiesManagerParams {
   state: GameObjects;
   entityId?: EntityId;
+  entity?: Entity;
   components?: EntityComponents[];
 }
 
@@ -72,6 +73,21 @@ class EntitiesManager {
     if (!entityId) return undefined;
 
     return state.entities[entityId];
+  }
+
+  /**
+   * Updates an entity with specified components.
+   * @param {EntitiesManagerParams} params - The parameters for the method.
+   * @returns {GameObjects} The new state of the game objects.
+   */
+  updateEntity(params: EntitiesManagerParams): GameObjects {
+    const { state, entityId, entity } = params;
+    if (!entityId || !entity) return state;
+
+    return this.entitiesAdapter.updateOne(
+      { id: entityId, changes: entity },
+      state
+    );
   }
 }
 

@@ -50,8 +50,9 @@ export class ActiveShapeComponent implements AfterViewInit {
 
   constructor() {
     effect((): any => {
-      if (isDefined(this.activeShapes()))
+      if (isDefined(this.activeShapes())) {
         this.render(this.activeShapes() as Entity[]);
+      }
     });
   }
 
@@ -86,7 +87,14 @@ export class ActiveShapeComponent implements AfterViewInit {
     }
 
     activeShapes.forEach((shape) => {
-      if (!this.ctx || !this.img) return;
+      if (this.ctx) {
+        // Очистка всего холста перед рисованием
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      }
+
+      if (!activeShapes.length || !this.ctx) {
+        return;
+      }
 
       const rotateComponent = shape.components.entities[
         ComponentType.ROTATE
@@ -111,13 +119,15 @@ export class ActiveShapeComponent implements AfterViewInit {
           this.window.innerHeight
         );
         this.ctx.save();
+
         this.ctx.translate(positionX, positionY);
+
         this.ctx.rotate((Math.PI / 180) * angle);
-        this.ctx.translate(-positionX, -positionY);
+
         this.ctx.drawImage(
           shape,
-          positionX - this.imgWidth / 2,
-          positionY - this.imgHeight / 2,
+          -this.imgWidth / 2,
+          -this.imgHeight / 2,
           this.imgWidth,
           this.imgHeight
         );

@@ -67,6 +67,10 @@ type HintBox = {
   height: number;
 };
 
+type IsMirrorTag = {
+  type: ComponentType.IS_MIRROR_TAG;
+};
+
 export type EntityComponents =
   | Position
   | Render
@@ -79,7 +83,8 @@ export type EntityComponents =
   | View
   | IsPackTag
   | Size
-  | HintBox;
+  | HintBox
+  | IsMirrorTag;
 
 type FilterUnionType<T, U> = T extends { type: U } ? T : never;
 

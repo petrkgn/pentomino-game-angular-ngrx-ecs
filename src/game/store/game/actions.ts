@@ -38,6 +38,7 @@ export const PlayerActions = createActionGroup({
     rotateShape: props<{ angle: number }>(),
     chooseShape: props<{ mx: number; my: number }>(),
     empty: emptyProps(),
+    mirrorShape: emptyProps(),
   },
 });
 

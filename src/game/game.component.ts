@@ -13,11 +13,13 @@ import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack";
   selector: "katamino-game",
   standalone: true,
   providers: [GameFacade],
-  template: ` <game-scene />
+  template: `
+    <game-scene />
     <game-board />
     <game-placement-shapes />
     <game-shapes-pack />
-    <game-active-shape />`,
+    <game-active-shape />
+  `,
   styles: ``,
   imports: [
     SceneComponent,
@@ -26,6 +28,7 @@ import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack";
     BoardComponent,
     EffectsComponent,
     ShapesPackComponent,
+    EffectsComponent,
   ],
 })
 export class GameComponent implements OnInit {
