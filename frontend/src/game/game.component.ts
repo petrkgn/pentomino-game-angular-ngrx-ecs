@@ -18,6 +18,7 @@ import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack";
     <game-board />
     <game-placement-shapes />
     <game-shapes-pack />
+    <game-effects />
     <game-active-shape />
   `,
   styles: ``,
