@@ -88,12 +88,7 @@ export class GameEffects {
     this.keyPressed$.pipe(
       filter((e) => e === "Space"),
       map(() => {
-        if (this.currentAngle >= 270) {
-          this.currentAngle = 0;
-        } else {
-          this.currentAngle += 90;
-        }
-        return PlayerActions.rotateShape({ angle: this.currentAngle });
+        return PlayerActions.rotateShape();
       })
     )
   );

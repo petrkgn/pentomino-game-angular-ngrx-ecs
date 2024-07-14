@@ -12,6 +12,7 @@ import { GameComponent } from "./game/game.component";
 import { GameEffects } from "./game/store/game/effects";
 import { gameFeature } from "./game/store/game/state";
 import { provideStoreDevtools } from "@ngrx/store-devtools";
+import { provideHttpClient } from "@angular/common/http";
 
 @Component({
   selector: "app-root",
@@ -28,6 +29,7 @@ export class App {
 
 bootstrapApplication(App, {
   providers: [
+    provideHttpClient(),
     provideExperimentalZonelessChangeDetection(),
     provideStore(),
     provideState(gameFeature),

@@ -35,8 +35,8 @@ export const PlayerActions = createActionGroup({
   source: "Control",
   events: {
     mouseMove: props<{ mx: number; my: number }>(),
-    rotateShape: props<{ angle: number }>(),
     chooseShape: props<{ mx: number; my: number }>(),
+    rotateShape: emptyProps(),
     empty: emptyProps(),
     mirrorShape: emptyProps(),
   },
