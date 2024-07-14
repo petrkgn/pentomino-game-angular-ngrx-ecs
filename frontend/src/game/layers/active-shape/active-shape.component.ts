@@ -1,6 +1,7 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
@@ -13,16 +14,18 @@ import { ComponentType } from "../../constants/component-type.enum";
 import { PickComponentType } from "../../types/components";
 import { isDefined } from "../../utils/filter-defined";
 import { ResizeService } from "../../services/resize.service";
-import { tap } from "rxjs";
+
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { ComponentView } from "../../constants/view.enum";
+import { AssetsStore } from "../../store/assets/assets-srore";
+import { tap } from "rxjs/internal/operators/tap";
 
 @Component({
   selector: "game-active-shape",
   standalone: true,
   template: `
-    <canvas #myCanvas></canvas>
+    <canvas #myCanvas style="background-color: green; opacity: 0.5"></canvas>
     <img #myImg class="assets" [src]="componentView.SHAPE_W" />
   `,
   styles: ``,
@@ -31,6 +34,7 @@ export class ActiveShapeComponent implements AfterViewInit {
   private readonly resizeService = inject(ResizeService);
   private readonly window = inject(WINDOW);
   private readonly gameFacade = inject(GameFacade);
+  private readonly assetsStore = inject(AssetsStore);
 
   readonly componentView = ComponentView;
 
@@ -43,6 +47,8 @@ export class ActiveShapeComponent implements AfterViewInit {
   private readonly _canvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild("myImg", { static: true })
   private readonly img!: ElementRef;
+
+  // img = computed(() => this.assetsStore.entityMap()["wshape"]);
 
   activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
     initialValue: [],
@@ -81,21 +87,22 @@ export class ActiveShapeComponent implements AfterViewInit {
   }
 
   render(activeShapes: Entity[]): void {
-    if (!activeShapes.length && this.ctx) {
-      this.ctx.clearRect(0, 0, this.window.innerWidth, this.window.innerHeight);
+    // Ensure we have a valid rendering context
+    if (!this.ctx) {
       return;
     }
 
-    activeShapes.forEach((shape) => {
-      if (this.ctx) {
-        // Очистка всего холста перед рисованием
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      }
+    if (!activeShapes.length) {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      return;
+    }
 
-      if (!activeShapes.length || !this.ctx) {
+    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    activeShapes.forEach((shape) => {
+      if (!this.ctx || !this.img) {
         return;
       }
-
       const rotateComponent = shape.components.entities[
         ComponentType.ROTATE
       ] as PickComponentType<ComponentType.ROTATE>;
@@ -104,34 +111,60 @@ export class ActiveShapeComponent implements AfterViewInit {
         ComponentType.POSITION
       ] as PickComponentType<ComponentType.POSITION>;
 
+      const isMirror = shape.components.entities[
+        ComponentType.IS_MIRROR_TAG
+      ] as PickComponentType<ComponentType.IS_MIRROR_TAG>;
+
       if (positionComponent && rotateComponent) {
-        const angle = rotateComponent.angle;
+        let angle = rotateComponent.angle;
         const x = positionComponent.x;
         const y = positionComponent.y;
-        const shape = this.img.nativeElement;
+        const shapeImage = this.img.nativeElement;
+
         const positionX = x - this.canvas.getBoundingClientRect().left;
         const positionY = y - this.canvas.getBoundingClientRect().top;
 
-        this.ctx.clearRect(
-          0,
-          0,
-          this.window.innerWidth,
-          this.window.innerHeight
-        );
-        this.ctx.save();
+        if (angle === 90 || angle === 270) {
+          this.canvas.width = this.window.innerHeight * 2;
+          this.canvas.height = this.window.innerWidth / 2;
+        } else {
+          this.canvas.width = this.window.innerWidth;
+          this.canvas.height = this.window.innerHeight;
+        }
 
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        this.ctx.save();
         this.ctx.translate(positionX, positionY);
 
-        this.ctx.rotate((Math.PI / 180) * angle);
+        this.ctx.rotate((angle * Math.PI) / 180);
 
-        this.ctx.drawImage(
-          shape,
-          -this.imgWidth / 2,
-          -this.imgHeight / 2,
-          this.imgWidth,
-          this.imgHeight
-        );
-        this.ctx.fill();
+        if (isMirror) {
+          if (angle === 0 || angle === 180) {
+            this.ctx.scale(-1, 1);
+          } else {
+            this.ctx.scale(1, -1);
+          }
+        }
+
+        if (angle === 90 || angle === 270) {
+          this.ctx.drawImage(
+            shapeImage,
+            -this.imgHeight / 2,
+            -this.imgWidth / 2,
+            this.imgHeight,
+            this.imgWidth
+          );
+        } else {
+          this.ctx.drawImage(
+            shapeImage,
+            -this.imgWidth / 2,
+            -this.imgHeight / 2,
+            this.imgWidth,
+            this.imgHeight
+          );
+        }
+
         this.ctx.restore();
       }
     });
