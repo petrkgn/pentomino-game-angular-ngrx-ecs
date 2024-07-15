@@ -19,6 +19,8 @@ import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { CanvasParams } from "../../types/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
+import { RenderService } from "../../services/render.service";
+import { RenderParams } from "../../types/render-params";
 
 @Component({
   selector: "game-placement-shapes",
@@ -48,6 +50,7 @@ import { CanvasParamsDirective } from "../../directives/canvas-params.directive"
 export class PlacementShapesComponent implements AfterViewInit {
   private readonly resizeService = inject(ResizeService);
   private readonly gameFacade = inject(GameFacade);
+  private readonly renderService = inject(RenderService);
 
   @ViewChild("myImg", { static: true })
   private readonly img!: ElementRef;
@@ -64,13 +67,13 @@ export class PlacementShapesComponent implements AfterViewInit {
   private canvasParams!: CanvasParams;
 
   constructor() {
-    effect((): any => {
+    effect((): void => {
       animationFrameScheduler.schedule(
         function (actions) {
           this.schedule(actions);
         },
         0,
-        this.render(this.placementShapes())
+        this.renderShapes()
       );
     });
   }
@@ -92,56 +95,16 @@ export class PlacementShapesComponent implements AfterViewInit {
     this.canvasParams = params;
   }
 
-  render(placementShapes: Entity[]): void {
-    const ctx = this.canvasParams.ctx;
-    if (!placementShapes?.length && ctx) {
-      this.clearCanvas();
-      return;
-    }
-
-    placementShapes.forEach((shape) => {
-      if (!ctx || !this.img) return;
-
-      const rotateComponent = shape.components.entities[
-        ComponentType.ROTATE
-      ] as PickComponentType<ComponentType.ROTATE>;
-
-      const positionComponent = shape.components.entities[
-        ComponentType.POSITION
-      ] as PickComponentType<ComponentType.POSITION>;
-
-      if (positionComponent && rotateComponent) {
-        const angle = rotateComponent.angle;
-        const x = positionComponent.x;
-        const y = positionComponent.y;
-        const shape = this.img.nativeElement;
-
-        this.clearCanvas();
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate((Math.PI / 180) * angle);
-        ctx.translate(-x, -y);
-        ctx.drawImage(
-          shape,
-          x - this.imgWidth / 2,
-          y - this.imgHeight / 2,
-          this.imgWidth,
-          this.imgHeight
-        );
-
-        ctx.restore();
-      }
-    });
-  }
-
-  private clearCanvas(): void {
-    if (this.canvasParams.ctx) {
-      this.canvasParams.ctx.clearRect(
-        0,
-        0,
-        this.canvasParams.canvasEl.width,
-        this.canvasParams.canvasEl.height
-      );
-    }
+  renderShapes(): void {
+    if (!this.canvasParams.ctx) return;
+    const params: RenderParams = {
+      ctx: this.canvasParams.ctx,
+      canvas: this.canvasParams?.canvasEl || null,
+      shapes: this.placementShapes() as Entity[],
+      img: this.img.nativeElement,
+      imgWidth: this.imgWidth,
+      imgHeight: this.imgHeight,
+    };
+    this.renderService.render(params);
   }
 }
