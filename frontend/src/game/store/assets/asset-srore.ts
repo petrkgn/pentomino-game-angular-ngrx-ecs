@@ -17,11 +17,11 @@ import { tap } from "rxjs/internal/operators/tap";
 import { pipe } from "rxjs/internal/util/pipe";
 import { map } from "rxjs/internal/operators/map";
 
-import { AssetsService } from "../../services/assets.service";
+import { AssetService } from "../../services/asset.service";
 import { AssetImg } from "../../types/asset-img";
 import { createMirrorImage } from "../../utils/flip-img";
 
-export const AssetsStore = signalStore(
+export const AssetStore = signalStore(
   { providedIn: "root" },
   withState({
     loadingStatus: LoadingStatus.IDLE,
@@ -46,7 +46,7 @@ export const AssetsStore = signalStore(
       },
     };
   }),
-  withMethods((store, assetsService = inject(AssetsService)) => ({
+  withMethods((store, assetService = inject(AssetService)) => ({
     loadAssets: rxMethod<void>(
       pipe(
         tap(() => {
@@ -61,7 +61,7 @@ export const AssetsStore = signalStore(
           );
         }),
         switchMap(() =>
-          assetsService.loadAssetsFromServer().pipe(
+          assetService.loadAssetsFromServer().pipe(
             map((images) =>
               images.map((img) => ({
                 ...img,

@@ -11,10 +11,8 @@ import {
 import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
 import { Entity } from "../../types/entity";
-import { ComponentType } from "../../constants/component-type.enum";
-import { PickComponentType } from "../../types/components";
 import { ResizeService } from "../../services/resize.service";
-import { animationFrameScheduler, switchMap, tap } from "rxjs";
+import { animationFrameScheduler, tap } from "rxjs";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { CanvasParams } from "../../types/canvas-params";

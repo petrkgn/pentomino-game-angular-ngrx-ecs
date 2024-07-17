@@ -8,8 +8,7 @@ import { PlacementShapesComponent } from "./layers/placement-shapes/placement-sh
 import { EffectsComponent } from "./layers/effects/effects.component";
 import { GameFacade } from "./game.facade";
 import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack";
-import { AssetsService } from "./services/assets.service";
-import { AssetsStore } from "./store/assets/assets-srore";
+import { AssetStore } from "./store/assets/asset-srore";
 
 @Component({
   selector: "katamino-game",
@@ -36,10 +35,10 @@ import { AssetsStore } from "./store/assets/assets-srore";
 export class GameComponent implements OnInit {
   private readonly gameFacade = inject(GameFacade);
   private readonly store = inject(Store);
-  private readonly assetsStore = inject(AssetsStore);
+  private readonly assetStore = inject(AssetStore);
 
   ngOnInit() {
-    this.assetsStore.loadAssets();
+    this.assetStore.loadAssets();
 
     this.gameFacade.initGameState(this.store);
   }

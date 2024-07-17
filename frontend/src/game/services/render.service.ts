@@ -4,12 +4,14 @@ import { WINDOW } from "@ng-web-apis/common";
 import { RenderParams } from "../types/render-params";
 import { PickComponentType } from "../types/components";
 import { ComponentType } from "../constants/component-type.enum";
+import { AssetService } from "./asset.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class RenderService {
   private readonly window = inject(WINDOW);
+  private readonly assetService = inject(AssetService)
 
   render(params: RenderParams): void {
     const { ctx, canvas, shapes, img, imgWidth, imgHeight } = params;

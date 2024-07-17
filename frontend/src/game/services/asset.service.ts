@@ -17,7 +17,7 @@ import { AssetImg } from "../types/asset-img";
 @Injectable({
   providedIn: "root",
 })
-export class AssetsService {
+export class AssetService {
   private successCount = new BehaviorSubject<number>(0);
   private errorCount = new BehaviorSubject<number>(0);
   private readonly concurrentDownloads = 5;
