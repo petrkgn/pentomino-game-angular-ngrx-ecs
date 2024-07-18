@@ -1,4 +1,4 @@
-export enum ComponentView {
+export enum EntityView {
   // SHAPE_F,
   // SHAPE_I,
   // SHAPE_L,
@@ -7,7 +7,7 @@ export enum ComponentView {
   // SHAPE_T,
   // SHAPE_U,
   // SHAPE_V,
-  SHAPE_W = "/assets/wshape.png",
+  SHAPE_W = "wshape",
   // SHAPE_W = "https://github.com/petrkgn/katamino-game-angular/blob/main/wshape.png?raw=true",
   // SHAPE_X,
   // SHAPE_Y,

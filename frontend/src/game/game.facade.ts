@@ -12,6 +12,7 @@ import { gameFeature } from "./store/game/state";
 import { Entity } from "./types/entity";
 import { areAllObjectsDefined } from "./utils";
 import { EntityComponents } from "./types/components";
+import { EntityView } from "./constants/view.enum";
 
 @Injectable()
 export class GameFacade {
@@ -57,9 +58,8 @@ export class GameFacade {
         height: 0,
       },
       {
-        type: ComponentType.MOUSE,
-        mx: 0,
-        my: 0,
+        type: ComponentType.VIEW,
+        img: EntityView.SHAPE_W,
       },
       {
         type: ComponentType.ROTATE,

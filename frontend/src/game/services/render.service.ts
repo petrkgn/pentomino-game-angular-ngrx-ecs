@@ -1,60 +1,81 @@
 import { inject, Injectable } from "@angular/core";
-import { WINDOW } from "@ng-web-apis/common";
-
-import { RenderParams } from "../types/render-params";
 import { PickComponentType } from "../types/components";
 import { ComponentType } from "../constants/component-type.enum";
-import { AssetService } from "./asset.service";
+import { CanvasParams } from "../types/canvas-params";
+import { Entity } from "../types/entity";
+import { AssetStore } from "../store/assets/asset-srore";
+import { CELL_SIZE } from "../constants/cell-size";
 
 @Injectable({
   providedIn: "root",
 })
 export class RenderService {
-  private readonly window = inject(WINDOW);
-  private readonly assetService = inject(AssetService)
+  private readonly assetStore = inject(AssetStore);
 
-  render(params: RenderParams): void {
-    const { ctx, canvas, shapes, img, imgWidth, imgHeight } = params;
+  render(params: CanvasParams, shapes: Entity[]): void {
+    const { ctx, canvas, width, height } = params;
 
     if (!ctx || !shapes.length) {
       this.clearCanvasIfNoShapes(ctx, canvas);
       return;
     }
 
-    shapes.every((shape) => {
-      const { rotateComponent, positionComponent, isMirror } =
-        this.getShapeComponents(shape);
-
-      if (positionComponent && rotateComponent) {
-        this.updateCanvasSize(canvas, rotateComponent.angle);
-        this.renderShape(
-          ctx,
-          canvas,
-          img,
-          imgWidth,
-          imgHeight,
-          positionComponent,
+    requestAnimationFrame(() => {
+      shapes.forEach((shape) => {
+        const {
           rotateComponent,
-          isMirror
-        );
-      }
+          positionComponent,
+          isMirror,
+          shapeView,
+          shapeMatrix,
+          shapeRatio,
+        } = this.getShapeComponents(shape);
+
+        if (positionComponent && rotateComponent) {
+          const imgWidth =
+            (shapeMatrix.matrix.length / shapeMatrix.rows) *
+            CELL_SIZE *
+            shapeRatio.ratio;
+          const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
+          const asset = this.assetStore.entityMap()[shapeView.img];
+
+          this.updateCanvasSize(canvas, rotateComponent.angle, width, height);
+          this.renderShape(
+            ctx,
+            canvas,
+            asset.img,
+            imgWidth,
+            imgHeight,
+            positionComponent,
+            rotateComponent,
+            isMirror
+          );
+        }
+      });
     });
   }
 
   private getShapeComponents(shape: any) {
-    const rotateComponent = shape.components.entities[
-      ComponentType.ROTATE
-    ] as PickComponentType<ComponentType.ROTATE>;
-
-    const positionComponent = shape.components.entities[
-      ComponentType.POSITION
-    ] as PickComponentType<ComponentType.POSITION>;
-
-    const isMirror = shape.components.entities[
-      ComponentType.IS_MIRROR_TAG
-    ] as PickComponentType<ComponentType.IS_MIRROR_TAG>;
-
-    return { rotateComponent, positionComponent, isMirror };
+    return {
+      rotateComponent: shape.components.entities[
+        ComponentType.ROTATE
+      ] as PickComponentType<ComponentType.ROTATE>,
+      positionComponent: shape.components.entities[
+        ComponentType.POSITION
+      ] as PickComponentType<ComponentType.POSITION>,
+      isMirror: shape.components.entities[
+        ComponentType.IS_MIRROR_TAG
+      ] as PickComponentType<ComponentType.IS_MIRROR_TAG>,
+      shapeView: shape.components.entities[
+        ComponentType.VIEW
+      ] as PickComponentType<ComponentType.VIEW>,
+      shapeMatrix: shape.components.entities[
+        ComponentType.MATRIX
+      ] as PickComponentType<ComponentType.MATRIX>,
+      shapeRatio: shape.components.entities[
+        ComponentType.RATIO
+      ] as PickComponentType<ComponentType.RATIO>,
+    };
   }
 
   private clearCanvasIfNoShapes(
@@ -66,13 +87,22 @@ export class RenderService {
     }
   }
 
-  private updateCanvasSize(canvas: HTMLCanvasElement, angle: number): void {
+  private updateCanvasSize(
+    canvas: HTMLCanvasElement,
+    angle: number,
+    width: number,
+    height: number
+  ): void {
     if (angle === 90 || angle === 270) {
-      canvas.width = this.window.innerHeight * 2;
-      canvas.height = this.window.innerWidth;
+      if (canvas.width !== height * 2 || canvas.height !== width) {
+        canvas.width = height * 2;
+        canvas.height = width;
+      }
     } else {
-      canvas.width = this.window.innerWidth;
-      canvas.height = this.window.innerHeight;
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
     }
   }
 

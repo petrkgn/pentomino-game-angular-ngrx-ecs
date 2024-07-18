@@ -6,6 +6,7 @@ import {
   Input,
   Output,
   inject,
+  output,
 } from "@angular/core";
 import { WINDOW } from "@ng-web-apis/common";
 
@@ -23,11 +24,7 @@ export class CanvasParamsDirective implements AfterViewInit {
   private readonly elRef = inject<ElementRef<HTMLCanvasElement>>(ElementRef);
   private readonly resizeService = inject(ResizeService);
 
-  get canvas() {
-    return this.elRef.nativeElement;
-  }
-
-  @Output() canvasParams = new EventEmitter<CanvasParams>();
+  canvasParams = output<CanvasParams>();
 
   ngAfterViewInit() {
     this.initCanvasParams();
@@ -43,11 +40,12 @@ export class CanvasParamsDirective implements AfterViewInit {
   }
 
   private initCanvasParams(): void {
-    this.canvas.style.cssText = `${this.canvasCss};`;
-    const ctx = this.canvas.getContext("2d")!;
+    const canvas = this.elRef.nativeElement;
+    canvas.style.cssText = `${this.canvasCss};`;
+    const ctx = canvas.getContext("2d")!;
     ctx.imageSmoothingEnabled = true;
-    const width = (this.canvas.width = this.window.innerWidth);
-    const height = (this.canvas.height = this.window.innerHeight);
+    const width = (canvas.width = this.window.innerWidth);
+    const height = (canvas.height = this.window.innerHeight);
     const canvasCenter = {
       x: this.window.innerWidth * 0.5,
       y: this.window.innerHeight * 0.5,
@@ -57,7 +55,7 @@ export class CanvasParamsDirective implements AfterViewInit {
       canvasCenter,
       width,
       height,
-      canvasEl: this.canvas,
+      canvas,
     };
     this.canvasParams.emit(canvasParams);
   }

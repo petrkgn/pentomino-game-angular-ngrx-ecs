@@ -16,7 +16,7 @@ import { ResizeService } from "../../services/resize.service";
 import { tap } from "rxjs";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { ComponentView } from "../../constants/view.enum";
+import { EntityView } from "../../constants/view.enum";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CanvasParams } from "../../types/canvas-params";
 
@@ -31,7 +31,7 @@ import { CanvasParams } from "../../types/canvas-params";
       (canvasParams)="onCanvasParams($event)"
       #canvas
     ></canvas>
-    <img #myImg class="assets" [src]="componentView.SHAPE_W" />
+    <img #myImg class="assets" src="/assets/wshape.png" />
   `,
   styles: ``,
 })
@@ -40,7 +40,7 @@ export class ShapesPackComponent implements AfterViewInit {
   private readonly window = inject(WINDOW);
   private readonly gameFacade = inject(GameFacade);
 
-  readonly componentView = ComponentView;
+  readonly componentView = EntityView;
 
   private imgWidth = 96;
   private imgHeight = 96;
@@ -121,8 +121,8 @@ export class ShapesPackComponent implements AfterViewInit {
       this.canvasParams.ctx.clearRect(
         0,
         0,
-        this.canvasParams.canvasEl.width,
-        this.canvasParams.canvasEl.height
+        this.canvasParams.canvas.width,
+        this.canvasParams.canvas.height
       );
     }
   }

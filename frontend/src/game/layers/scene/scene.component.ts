@@ -8,7 +8,7 @@ import {
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { ResizeService } from "../../services/resize.service";
 import { CanvasParams } from "../../types/canvas-params";
-import { ComponentView } from "../../constants/view.enum";
+import { EntityView } from "../../constants/view.enum";
 import { CELL_SIZE } from "../../constants/cell-size";
 import { animationFrameScheduler, tap } from "rxjs";
 import { BoardsSize } from "../../constants/board-size";
@@ -27,7 +27,10 @@ import { RectService } from "../../services/rect.service";
       (canvasParams)="onCanvasParams($event)"
       #canvas
     ></canvas>
-    <img #bgImg [src]="componentView.BG" />`,
+    <img
+      #bgImg
+      src="https://raw.githubusercontent.com/petrkgn/katamino-game-angular/main/fon.png?raw=true"
+    />`,
   styles: `
   img {
    display: none;
@@ -39,7 +42,7 @@ export class SceneComponent {
   private readonly rectService = inject(RectService);
   private readonly store = inject(Store);
 
-  readonly componentView = ComponentView;
+  readonly componentView = EntityView;
 
   private canvasParams!: CanvasParams;
 

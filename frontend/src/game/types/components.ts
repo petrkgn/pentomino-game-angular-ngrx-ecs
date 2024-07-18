@@ -1,5 +1,6 @@
 import { ComponentType } from "../constants/component-type.enum";
 import { GameObjectsIds } from "../constants/game-objects-ids.enum";
+import { EntityView } from "../constants/view.enum";
 
 type Position = {
   type: ComponentType.POSITION;
@@ -46,7 +47,7 @@ type Ratio = {
 
 type View = {
   type: ComponentType.VIEW;
-  view: GameObjectsIds;
+  img: EntityView;
 };
 
 type IsPackTag = {

@@ -97,12 +97,15 @@ export class PlacementShapesComponent implements AfterViewInit {
     if (!this.canvasParams.ctx) return;
     const params: RenderParams = {
       ctx: this.canvasParams.ctx,
-      canvas: this.canvasParams?.canvasEl || null,
+      canvas: this.canvasParams?.canvas || null,
       shapes: this.placementShapes() as Entity[],
       img: this.img.nativeElement,
       imgWidth: this.imgWidth,
       imgHeight: this.imgHeight,
     };
-    this.renderService.render(params);
+    this.renderService.render(
+      this.canvasParams,
+      this.placementShapes() as Entity[]
+    );
   }
 }

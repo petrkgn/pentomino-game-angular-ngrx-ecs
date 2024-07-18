@@ -13,7 +13,7 @@ import { ResizeService } from "../../services/resize.service";
 import { CanvasParams } from "../../types/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CELL_SIZE } from "../../constants/cell-size";
-import { ComponentView } from "../../constants/view.enum";
+import { EntityView } from "../../constants/view.enum";
 
 export type BoardPositionParams = {
   width: number;
@@ -31,7 +31,10 @@ export type BoardPositionParams = {
       (canvasParams)="onCanvasParams($event)"
       #canvas
     ></canvas>
-    <img #boardImg [src]="componentView.BOARD" />`,
+    <img
+      #boardImg
+      src="https://raw.githubusercontent.com/petrkgn/katamino-game-angular/main/board5.png?raw=true"
+    />`,
   styles: `
   img {
    display: none;
@@ -42,7 +45,7 @@ export class BoardComponent implements AfterViewInit {
   private readonly store = inject(Store);
   private readonly resizeService = inject(ResizeService);
 
-  readonly componentView = ComponentView;
+  readonly componentView = EntityView;
 
   private canvasParams!: CanvasParams;
 

@@ -5,5 +5,5 @@ export type CanvasParams = {
   canvasCenter: { x: number; y: number };
   width: number;
   height: number;
-  canvasEl: HTMLCanvasElement;
+  canvas: HTMLCanvasElement;
 };
