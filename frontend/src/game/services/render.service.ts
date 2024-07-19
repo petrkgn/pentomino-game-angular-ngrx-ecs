@@ -1,4 +1,6 @@
 import { inject, Injectable } from "@angular/core";
+import { animationFrameScheduler } from "rxjs";
+
 import { PickComponentType } from "../types/components";
 import { ComponentType } from "../constants/component-type.enum";
 import { CanvasParams } from "../types/canvas-params";
@@ -12,7 +14,7 @@ import { CELL_SIZE } from "../constants/cell-size";
 export class RenderService {
   private readonly assetStore = inject(AssetStore);
 
-  render(params: CanvasParams, shapes: Entity[]): void {
+  renderCurrentShapes(params: CanvasParams, shapes: Entity[]): void {
     const { ctx, canvas, width, height } = params;
 
     if (!ctx || !shapes.length) {
@@ -20,38 +22,52 @@ export class RenderService {
       return;
     }
 
-    requestAnimationFrame(() => {
-      shapes.forEach((shape) => {
-        const {
-          rotateComponent,
+    animationFrameScheduler.schedule(
+      function (actions) {
+        this.schedule(actions);
+      },
+      0,
+      this.renderAllCurrentShapes(shapes, ctx, canvas, width, height)
+    );
+  }
+
+  private renderAllCurrentShapes(
+    shapes: Entity[],
+    ctx: CanvasRenderingContext2D,
+    canvas: HTMLCanvasElement,
+    width: number,
+    height: number
+  ): void {
+    shapes.forEach((shape) => {
+      const {
+        rotateComponent,
+        positionComponent,
+        isMirror,
+        shapeView,
+        shapeMatrix,
+        shapeRatio,
+      } = this.getShapeComponents(shape);
+
+      if (positionComponent && rotateComponent) {
+        const imgWidth =
+          (shapeMatrix.matrix.length / shapeMatrix.rows) *
+          CELL_SIZE *
+          shapeRatio.ratio;
+        const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
+        const asset = this.assetStore.entityMap()[shapeView.img];
+
+        this.updateCanvasSize(canvas, rotateComponent.angle, width, height);
+        this.renderShape(
+          ctx,
+          canvas,
+          asset.img,
+          imgWidth,
+          imgHeight,
           positionComponent,
-          isMirror,
-          shapeView,
-          shapeMatrix,
-          shapeRatio,
-        } = this.getShapeComponents(shape);
-
-        if (positionComponent && rotateComponent) {
-          const imgWidth =
-            (shapeMatrix.matrix.length / shapeMatrix.rows) *
-            CELL_SIZE *
-            shapeRatio.ratio;
-          const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
-          const asset = this.assetStore.entityMap()[shapeView.img];
-
-          this.updateCanvasSize(canvas, rotateComponent.angle, width, height);
-          this.renderShape(
-            ctx,
-            canvas,
-            asset.img,
-            imgWidth,
-            imgHeight,
-            positionComponent,
-            rotateComponent,
-            isMirror
-          );
-        }
-      });
+          rotateComponent,
+          isMirror
+        );
+      }
     });
   }
 

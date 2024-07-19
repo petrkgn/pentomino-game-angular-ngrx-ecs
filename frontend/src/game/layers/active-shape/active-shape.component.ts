@@ -1,25 +1,11 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  inject,
-  ViewChild,
-  effect,
-} from "@angular/core";
-import { WINDOW } from "@ng-web-apis/common";
+import { Component, inject, effect, untracked, signal } from "@angular/core";
+
 import { Entity } from "../../types/entity";
-import { EntityView } from "../../constants/view.enum";
-import { ResizeService } from "../../services/resize.service";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { AssetStore } from "../../store/assets/asset-srore";
-import { tap } from "rxjs/internal/operators/tap";
 import { RenderService } from "../../services/render.service";
-import { RenderParams } from "../../types/render-params";
-import { isDefined } from "../../utils";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CanvasParams } from "../../types/canvas-params";
-import { animationFrameScheduler } from "rxjs";
 
 @Component({
   selector: "game-active-shape",
@@ -39,34 +25,28 @@ export class ActiveShapeComponent {
   private readonly gameFacade = inject(GameFacade);
   private readonly renderService = inject(RenderService);
 
-  readonly componentView = EntityView;
-
   activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
     initialValue: [],
   });
 
-  private canvasParams!: CanvasParams;
+  private canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {
     effect((): void => {
-      animationFrameScheduler.schedule(
-        function (actions) {
-          this.schedule(actions);
-        },
-        0,
-        this.renderShapes()
-      );
+      const activeShapes = this.activeShapes();
+      const canvasParams = this.canvasParams();
+      untracked(() => {
+        if (!canvasParams) return;
+        this.renderShapes(canvasParams, activeShapes);
+      });
     });
   }
 
   onCanvasParams(params: CanvasParams): void {
-    this.canvasParams = params;
+    this.canvasParams.set(params);
   }
 
-  renderShapes(): void {
-    this.renderService.render(
-      this.canvasParams,
-      this.activeShapes() as Entity[]
-    );
+  renderShapes(canvasParams: CanvasParams, activeShapes: Entity[]): void {
+    this.renderService.renderCurrentShapes(canvasParams, activeShapes);
   }
 }
