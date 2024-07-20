@@ -13,6 +13,11 @@ import { CELL_SIZE } from "../constants/cell-size";
 })
 export class RenderService {
   private readonly assetStore = inject(AssetStore);
+  private offscreenCanvas: HTMLCanvasElement;
+
+  constructor() {
+    this.offscreenCanvas = document.createElement("canvas");
+  }
 
   renderCurrentShapes(params: CanvasParams, shapes: Entity[]): void {
     const { ctx, canvas, width, height } = params;
@@ -38,6 +43,12 @@ export class RenderService {
     width: number,
     height: number
   ): void {
+    this.offscreenCanvas.width = width;
+    this.offscreenCanvas.height = height;
+    const offscreenCtx = this.offscreenCanvas.getContext("2d")!;
+
+    offscreenCtx.clearRect(0, 0, width, height);
+
     shapes.forEach((shape) => {
       const {
         rotateComponent,
@@ -48,27 +59,31 @@ export class RenderService {
         shapeRatio,
       } = this.getShapeComponents(shape);
 
-      if (positionComponent && rotateComponent) {
-        const imgWidth =
-          (shapeMatrix.matrix.length / shapeMatrix.rows) *
-          CELL_SIZE *
-          shapeRatio.ratio;
-        const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
-        const asset = this.assetStore.entityMap()[shapeView.img];
-
-        this.updateCanvasSize(canvas, rotateComponent.angle, width, height);
-        this.renderShape(
-          ctx,
-          canvas,
-          asset.img,
-          imgWidth,
-          imgHeight,
-          positionComponent,
-          rotateComponent,
-          isMirror
-        );
+      if (!positionComponent || !rotateComponent) {
+        return;
       }
+
+      const asset = this.assetStore.entityMap()[shapeView.img];
+      const imgWidth =
+        (shapeMatrix.matrix.length / shapeMatrix.rows) *
+        CELL_SIZE *
+        shapeRatio.ratio;
+      const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
+
+      this.renderShape(
+        offscreenCtx,
+        this.offscreenCanvas,
+        asset.img,
+        imgWidth,
+        imgHeight,
+        positionComponent,
+        rotateComponent,
+        isMirror
+      );
     });
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(this.offscreenCanvas, 0, 0, canvas.width, canvas.height);
   }
 
   private getShapeComponents(shape: any) {
@@ -103,25 +118,6 @@ export class RenderService {
     }
   }
 
-  private updateCanvasSize(
-    canvas: HTMLCanvasElement,
-    angle: number,
-    width: number,
-    height: number
-  ): void {
-    if (angle === 90 || angle === 270) {
-      if (canvas.width !== height * 2 || canvas.height !== width) {
-        canvas.width = height * 4;
-        canvas.height = width * 4;
-      }
-    } else {
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
-      }
-    }
-  }
-
   private renderShape(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
@@ -138,8 +134,6 @@ export class RenderService {
 
     const positionX = x - canvas.getBoundingClientRect().left;
     const positionY = y - canvas.getBoundingClientRect().top;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.save();
     ctx.translate(positionX, positionY);
