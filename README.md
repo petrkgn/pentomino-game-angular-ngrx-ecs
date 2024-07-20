@@ -1,8 +1,8 @@
 # "Anubis Gates" Pentomino Game (Angular NgRx Frontend)
 
----
-
 This project is a frontend application for the Pentomino game, developed using Angular and NgRx. It implements the Entity Component System (ECS) pattern for game state management.
+
+---
 
 ## Features
 
