@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Directive,
   ElementRef,
-  EventEmitter,
   Input,
   Output,
   inject,
@@ -44,8 +43,8 @@ export class CanvasParamsDirective implements AfterViewInit {
     canvas.style.cssText = `${this.canvasCss};`;
     const ctx = canvas.getContext("2d")!;
     ctx.imageSmoothingEnabled = true;
-    const width = (canvas.width = this.window.innerWidth);
-    const height = (canvas.height = this.window.innerHeight);
+    const width = (canvas.width = this.window.innerWidth * devicePixelRatio);
+    const height = (canvas.height = this.window.innerHeight * devicePixelRatio);
     const canvasCenter = {
       x: this.window.innerWidth * 0.5,
       y: this.window.innerHeight * 0.5,
