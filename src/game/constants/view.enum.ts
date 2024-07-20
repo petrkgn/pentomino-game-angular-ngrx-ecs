@@ -1,0 +1,17 @@
+export enum EntityView {
+  // SHAPE_F,
+  // SHAPE_I,
+  // SHAPE_L,
+  // SHAPE_N,
+  // SHAPE_P,
+  // SHAPE_T,
+  // SHAPE_U,
+  // SHAPE_V,
+  SHAPE_W = "wshape",
+  // SHAPE_W = "https://github.com/petrkgn/katamino-game-angular/blob/main/wshape.png?raw=true",
+  // SHAPE_X,
+  // SHAPE_Y,
+  // SHAPE_Z,
+  BOARD = "https://raw.githubusercontent.com/petrkgn/katamino-game-angular/main/board5.png?raw=true",
+  BG = "https://raw.githubusercontent.com/petrkgn/katamino-game-angular/main/fon.png?raw=true",
+}

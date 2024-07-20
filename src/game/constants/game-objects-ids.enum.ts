@@ -1,0 +1,16 @@
+export enum GameObjectsIds {
+  SHAPE_F,
+  SHAPE_I,
+  SHAPE_L,
+  SHAPE_N,
+  SHAPE_P,
+  SHAPE_T,
+  SHAPE_U,
+  SHAPE_V,
+  SHAPE_W,
+  SHAPE_X,
+  SHAPE_Y,
+  SHAPE_Z,
+  BOARD,
+  SHAPES_PACK,
+}

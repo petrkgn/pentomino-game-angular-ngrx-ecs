@@ -1,0 +1,19 @@
+/* Add application styles & imports to this file! */
+canvas {
+    position: absolute;
+  }
+  
+body {
+  /* background-color: rgb(21, 6, 1); */
+  background-color: rgb(34, 13, 2);
+  /* background-color: rgb(43, 20, 1); */
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  overflow: clip;
+  cursor: url('assets/cursor2.svg') 12 0, default;
+} 
+
+.assets {  
+  display: none;
+}

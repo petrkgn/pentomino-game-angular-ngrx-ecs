@@ -1,0 +1,17 @@
+export enum ComponentType {
+  POSITION,
+  MOVE,
+  MOUSE,
+  ROTATE,
+  VIEW,
+  SHAPE,
+  RENDER,
+  IS_ACTIVE_TAG,
+  MATRIX,
+  PLACEMENT,
+  RATIO,
+  IS_PACK_TAG,
+  SIZE,
+  HINT_BOX,
+  IS_MIRROR_TAG,
+}
