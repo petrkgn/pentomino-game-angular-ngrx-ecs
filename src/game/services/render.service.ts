@@ -111,8 +111,8 @@ export class RenderService {
   ): void {
     if (angle === 90 || angle === 270) {
       if (canvas.width !== height * 2 || canvas.height !== width) {
-        canvas.width = height * 2;
-        canvas.height = width;
+        canvas.width = height * 4;
+        canvas.height = width * 4;
       }
     } else {
       if (canvas.width !== width || canvas.height !== height) {
