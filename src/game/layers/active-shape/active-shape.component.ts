@@ -14,8 +14,8 @@ import { CanvasParams } from "../../types/canvas-params";
   template: `
     <canvas
       canvasParams
-      [canvasCss]="''"
-      (canvasParams)="onCanvasParams($event)"
+      [canvasCss]="'background-color: green; opacity: 0.3;'"
+      (canvasParams)="canvasParams.set($event)"
       #canvas
     ></canvas>
   `,
@@ -29,7 +29,7 @@ export class ActiveShapeComponent {
     initialValue: [],
   });
 
-  private canvasParams = signal<CanvasParams | null>(null);
+  canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {
     effect((): void => {
@@ -40,10 +40,6 @@ export class ActiveShapeComponent {
         this.renderShapes(canvasParams, activeShapes);
       });
     });
-  }
-
-  onCanvasParams(params: CanvasParams): void {
-    this.canvasParams.set(params);
   }
 
   renderShapes(canvasParams: CanvasParams, activeShapes: Entity[]): void {

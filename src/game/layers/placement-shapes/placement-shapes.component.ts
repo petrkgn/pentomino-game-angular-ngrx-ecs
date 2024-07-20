@@ -16,7 +16,7 @@ import { RenderService } from "../../services/render.service";
   template: ` <canvas
     canvasParams
     [canvasCss]="''"
-    (canvasParams)="onCanvasParams($event)"
+    (canvasParams)="canvasParams.set($event)"
     #canvas
   ></canvas>`,
 })
@@ -28,7 +28,7 @@ export class PlacementShapesComponent {
     initialValue: [],
   });
 
-  private canvasParams = signal<CanvasParams | null>(null);
+  canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {
     effect((): void => {
@@ -39,10 +39,6 @@ export class PlacementShapesComponent {
         this.renderShapes(canvasParams, placementShapes);
       });
     });
-  }
-
-  onCanvasParams(params: CanvasParams): void {
-    this.canvasParams.set(params);
   }
 
   renderShapes(canvasParams: CanvasParams, activeShapes: Entity[]): void {
