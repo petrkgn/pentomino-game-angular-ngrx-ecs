@@ -7,7 +7,7 @@ import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { CanvasParams } from "../../types/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
-import { RenderService } from "../../services/render.service";
+import { RenderService } from "../../services/render-shapes.service";
 
 @Component({
   selector: "game-placement-shapes",

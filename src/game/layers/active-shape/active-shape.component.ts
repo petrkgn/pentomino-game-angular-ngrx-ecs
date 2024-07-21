@@ -3,7 +3,7 @@ import { Component, inject, effect, untracked, signal } from "@angular/core";
 import { Entity } from "../../types/entity";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { RenderService } from "../../services/render.service";
+import { RenderService } from "../../services/render-shapes.service";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CanvasParams } from "../../types/canvas-params";
 

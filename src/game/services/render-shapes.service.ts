@@ -5,8 +5,8 @@ import { PickComponentType } from "../types/components";
 import { ComponentType } from "../constants/component-type.enum";
 import { CanvasParams } from "../types/canvas-params";
 import { Entity } from "../types/entity";
-import { AssetStore } from "../store/assets/asset-srore";
 import { CELL_SIZE } from "../constants/cell-size";
+import { AssetStore } from "../store/assets/asset-srore";
 
 @Injectable({
   providedIn: "root",
@@ -23,7 +23,7 @@ export class RenderService {
     const { ctx, canvas, width, height } = params;
 
     if (!ctx || !shapes.length) {
-      this.clearCanvasIfNoShapes(ctx, canvas);
+      this.clearCanvas(ctx, canvas);
       return;
     }
 
@@ -43,50 +43,50 @@ export class RenderService {
     width: number,
     height: number
   ): void {
-    this.offscreenCanvas.width = width;
-    this.offscreenCanvas.height = height;
+    this.prepareOffscreenCanvas(width, height);
     const offscreenCtx = this.offscreenCanvas.getContext("2d")!;
 
-    offscreenCtx.clearRect(0, 0, width, height);
-
-    shapes.forEach((shape) => {
-      const {
-        rotateComponent,
-        positionComponent,
-        isMirror,
-        shapeView,
-        shapeMatrix,
-        shapeRatio,
-      } = this.getShapeComponents(shape);
-
-      if (!positionComponent || !rotateComponent) {
-        return;
-      }
-
-      const asset = this.assetStore.entityMap()[shapeView.img];
-      const imgWidth =
-        (shapeMatrix.matrix.length / shapeMatrix.rows) *
-        CELL_SIZE *
-        shapeRatio.ratio;
-      const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
-
-      this.renderShape(
-        offscreenCtx,
-        this.offscreenCanvas,
-        asset.img,
-        imgWidth,
-        imgHeight,
-        positionComponent,
-        rotateComponent,
-        isMirror
-      );
-    });
+    shapes.forEach((shape) => this.renderShape(offscreenCtx, shape));
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(this.offscreenCanvas, 0, 0, canvas.width, canvas.height);
   }
 
-  private getShapeComponents(shape: any) {
+  private renderShape(ctx: CanvasRenderingContext2D, shape: Entity): void {
+    const {
+      rotateComponent,
+      positionComponent,
+      isMirror,
+      shapeView,
+      shapeMatrix,
+      shapeRatio,
+    } = this.getShapeComponents(shape);
+
+    if (!positionComponent || !rotateComponent) {
+      return;
+    }
+
+    const asset = this.assetStore.entityMap()[shapeView.img];
+    if (!asset) return;
+
+    const imgWidth =
+      (shapeMatrix.matrix.length / shapeMatrix.rows) *
+      CELL_SIZE *
+      shapeRatio.ratio;
+    const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
+
+    this.drawTransformedShape(
+      ctx,
+      asset.img,
+      imgWidth,
+      imgHeight,
+      positionComponent,
+      rotateComponent,
+      isMirror
+    );
+  }
+
+  private getShapeComponents(shape: Entity) {
     return {
       rotateComponent: shape.components.entities[
         ComponentType.ROTATE
@@ -109,7 +109,14 @@ export class RenderService {
     };
   }
 
-  private clearCanvasIfNoShapes(
+  private prepareOffscreenCanvas(width: number, height: number): void {
+    this.offscreenCanvas.width = width;
+    this.offscreenCanvas.height = height;
+    const ctx = this.offscreenCanvas.getContext("2d")!;
+    ctx.clearRect(0, 0, width, height);
+  }
+
+  private clearCanvas(
     ctx: CanvasRenderingContext2D | null,
     canvas: HTMLCanvasElement
   ): void {
@@ -118,9 +125,8 @@ export class RenderService {
     }
   }
 
-  private renderShape(
+  private drawTransformedShape(
     ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
     img: HTMLImageElement,
     imgWidth: number,
     imgHeight: number,
@@ -132,8 +138,8 @@ export class RenderService {
     const x = positionComponent.x;
     const y = positionComponent.y;
 
-    const positionX = x - canvas.getBoundingClientRect().left;
-    const positionY = y - canvas.getBoundingClientRect().top;
+    const positionX = x - this.offscreenCanvas.getBoundingClientRect().left;
+    const positionY = y - this.offscreenCanvas.getBoundingClientRect().top;
 
     ctx.save();
     ctx.translate(positionX, positionY);
