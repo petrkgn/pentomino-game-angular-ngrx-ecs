@@ -35,9 +35,13 @@ export class CanvasParamsDirective implements AfterViewInit {
 
   private initializeCanvasParams(): void {
     const canvas = this.elRef.nativeElement;
+
     this.applyCanvasStyles(canvas);
+
     const ctx = this.getCanvasContext(canvas);
+
     const { width, height } = this.setCanvasDimensions(canvas);
+
     const canvasCenter = this.calculateCanvasCenter(width, height);
 
     const canvasParams: CanvasParams = {
@@ -62,6 +66,7 @@ export class CanvasParamsDirective implements AfterViewInit {
     if (!ctx) {
       throw new Error("2D context not supported or canvas already initialized");
     }
+    ctx.scale(devicePixelRatio, devicePixelRatio);
     ctx.imageSmoothingEnabled = true;
     return ctx;
   }
