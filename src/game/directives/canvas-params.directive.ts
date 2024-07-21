@@ -40,15 +40,26 @@ export class CanvasParamsDirective implements AfterViewInit {
 
   private initCanvasParams(): void {
     const canvas = this.elRef.nativeElement;
-    canvas.style.cssText = `${this.canvasCss};`;
+
+    canvas.style.cssText = `${this.canvasCss}; width: 100vw; height: 100vh;`;
+
     const ctx = canvas.getContext("2d")!;
-    ctx.imageSmoothingEnabled = true;
-    const width = (canvas.width = this.window.innerWidth * devicePixelRatio);
-    const height = (canvas.height = this.window.innerHeight * devicePixelRatio);
+    const rect = canvas.getBoundingClientRect();
+
+    const width = (canvas.width =
+      Math.round(devicePixelRatio * rect.right) -
+      Math.round(devicePixelRatio * rect.left));
+    const height = (canvas.height =
+      Math.round(devicePixelRatio * rect.bottom) -
+      Math.round(devicePixelRatio * rect.top));
+
     const canvasCenter = {
       x: this.window.innerWidth * 0.5,
       y: this.window.innerHeight * 0.5,
     };
+
+    ctx.imageSmoothingEnabled = true;
+
     const canvasParams: CanvasParams = {
       ctx,
       canvasCenter,
