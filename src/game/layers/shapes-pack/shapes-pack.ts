@@ -44,6 +44,7 @@ export class ShapesPackComponent {
     effect((): void => {
       const activeShapes = this.shapesPack();
       const canvasParams = this.canvasParams();
+
       untracked(() => {
         if (!canvasParams) return;
         this.renderShapes(canvasParams, activeShapes);

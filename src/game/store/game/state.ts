@@ -39,7 +39,6 @@ export const gameFeature = createFeature({
     ),
     selectShapesPack: createSelector(selectGameState, (state): Entity[] => {
       const includeComponents = [ComponentType.IS_PACK_TAG];
-
       return componentsManager.getEntitiesWithComponents({
         state,
         includeComponents,
@@ -56,5 +55,8 @@ export const gameFeature = createFeature({
         });
       }
     ),
+    selectAll: createSelector(selectEntities, (entities) => {
+      return Object.values(entities);
+    }),
   }),
 });

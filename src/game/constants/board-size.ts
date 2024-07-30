@@ -1,7 +1,8 @@
-import { ComponentType } from "./component-type.enum";
-
-export const BoardsSize = {
-  firstLevel: [
-    1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,
-  ],
+export const Boards = {
+  ["5x5"]: createZeroFilledArray(25),
+  ["5x6"]: createZeroFilledArray(30),
 };
+
+function createZeroFilledArray(size: number): number[] {
+  return Array(size).fill(0);
+}

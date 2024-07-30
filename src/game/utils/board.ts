@@ -196,8 +196,9 @@ class BoardGame {
       boardMatrix,
       pentominoMatrix,
       ratio,
-    } = data;
-    const diff = -10 * ratio;
+    } = { ...data }; // Создаем копию данных
+
+    const diff = 10 * ratio;
 
     const { rows: boardRows, columns: boardColumns } =
       this.getRowsAndColumns(boardMatrix);
@@ -206,19 +207,42 @@ class BoardGame {
 
     const boardWidth = boardColumns * this.cellSize * ratio;
     const boardHeight = boardRows * this.cellSize * ratio;
-    const shapeWidth = pentominoColumns * this.cellSize * ratio;
-    const shapeHeight = pentominoRows * this.cellSize * ratio;
 
-    const shapeLeftX = shapePositionComponent.x - shapeWidth / 2;
-    const shapeRightX = shapePositionComponent.x + shapeWidth / 2;
-    const shapeTopY = shapePositionComponent.y - shapeHeight / 2;
-    const shapeBottomY = shapePositionComponent.y + shapeHeight / 2;
+    // Определяем фактические границы фигуры
+    let minRow = pentominoRows,
+      maxRow = 0,
+      minColumn = pentominoColumns,
+      maxColumn = 0;
+    for (let row = 0; row < pentominoRows; row++) {
+      for (let col = 0; col < pentominoColumns; col++) {
+        if (pentominoMatrix.matrix[row * pentominoColumns + col] !== 0) {
+          if (row < minRow) minRow = row;
+          if (row > maxRow) maxRow = row;
+          if (col < minColumn) minColumn = col;
+          if (col > maxColumn) maxColumn = col;
+        }
+      }
+    }
+
+    // Фактические границы фигуры относительно текущего положения
+    const shapeLeftX =
+      shapePositionComponent.x +
+      (minColumn - pentominoColumns / 2) * this.cellSize * ratio;
+    const shapeRightX =
+      shapePositionComponent.x +
+      (maxColumn - pentominoColumns / 2 + 1) * this.cellSize * ratio;
+    const shapeTopY =
+      shapePositionComponent.y +
+      (minRow - pentominoRows / 2) * this.cellSize * ratio;
+    const shapeBottomY =
+      shapePositionComponent.y +
+      (maxRow - pentominoRows / 2 + 1) * this.cellSize * ratio;
 
     return (
-      shapeLeftX - diff < boardPositionComponent.x ||
-      shapeRightX + diff > boardPositionComponent.x + boardWidth ||
-      shapeTopY - diff < boardPositionComponent.y ||
-      shapeBottomY + diff > boardPositionComponent.y + boardHeight
+      shapeLeftX + diff < boardPositionComponent.x ||
+      shapeRightX - diff > boardPositionComponent.x + boardWidth ||
+      shapeTopY + diff < boardPositionComponent.y ||
+      shapeBottomY - diff > boardPositionComponent.y + boardHeight
     );
   }
 
@@ -359,7 +383,7 @@ class BoardGame {
   public updateBoardMatrix(board: Entity, pentomino: Entity): number[] | null {
     const placementData = this.preparePlacementData(board, pentomino);
 
-    if (!placementData || !this.canPlacePentomino(board, pentomino)) {
+    if (!placementData) {
       return null;
     }
 

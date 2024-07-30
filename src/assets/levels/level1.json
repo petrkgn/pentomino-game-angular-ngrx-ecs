@@ -1,0 +1,24 @@
+{
+  "board": {
+    "size": "5x5",
+    "components": ["POSITION", "MATRIX", "RATIO"]
+  },
+  "shapes": [
+    {
+      "id": "SHAPE_W",
+      "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+    },
+    {
+      "id": "SHAPE_X",
+      "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+    },
+    {
+      "id": "SHAPE_I",
+      "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+    },
+    {
+      "id": "SHAPE_L",
+      "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+    }
+  ]
+}

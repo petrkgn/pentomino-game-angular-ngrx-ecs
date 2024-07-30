@@ -9,6 +9,7 @@ import { EffectsComponent } from "./layers/effects/effects.component";
 import { GameFacade } from "./game.facade";
 import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack";
 import { AssetStore } from "./store/assets/asset-srore";
+import { gameFeature } from "./store/game/state";
 
 @Component({
   selector: "katamino-game",
@@ -34,12 +35,10 @@ import { AssetStore } from "./store/assets/asset-srore";
 })
 export class GameComponent implements OnInit {
   private readonly gameFacade = inject(GameFacade);
-  private readonly store = inject(Store);
   private readonly assetStore = inject(AssetStore);
 
   ngOnInit() {
     this.assetStore.loadAssets();
-
-    this.gameFacade.initGameState(this.store);
+    this.gameFacade.initGameState("level1");
   }
 }

@@ -11,12 +11,12 @@ import { CanvasParams } from "../../types/canvas-params";
 import { EntityView } from "../../constants/view.enum";
 import { CELL_SIZE } from "../../constants/cell-size";
 import { animationFrameScheduler, tap } from "rxjs";
-import { BoardsSize } from "../../constants/board-size";
 import { Store } from "@ngrx/store";
 import { PentominoActions } from "../../store/game/actions";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import { ComponentType } from "../../constants/component-type.enum";
 import { RectService } from "../../services/rect.service";
+import { Boards } from "../../constants/board-size";
 
 @Component({
   selector: "game-scene",
@@ -48,7 +48,7 @@ export class SceneComponent {
 
   cellSize = CELL_SIZE;
   numRows = 5;
-  numCols = BoardsSize.firstLevel.length / this.numRows;
+  numCols = 5;
   boardPosition: { topLeftX: number; topLeftY: number } = {
     topLeftX: 0,
     topLeftY: 0,
@@ -130,6 +130,54 @@ export class SceneComponent {
         this.store.dispatch(
           PentominoActions.updateComponentData({
             entityId: GameObjectsIds.SHAPE_W,
+            componentType: ComponentType.HINT_BOX,
+            changes: {
+              type: ComponentType.HINT_BOX,
+              x: topLeftX + 6 * 16,
+              y: topLeftY + diff + shift + 10 * 16,
+              width: 6 * 16,
+              height: 6 * 16,
+            },
+          })
+        );
+      }
+
+      if (i === 1) {
+        this.store.dispatch(
+          PentominoActions.updateComponentData({
+            entityId: GameObjectsIds.SHAPE_X,
+            componentType: ComponentType.HINT_BOX,
+            changes: {
+              type: ComponentType.HINT_BOX,
+              x: topLeftX + 6 * 16,
+              y: topLeftY + diff + shift + 10 * 16,
+              width: 6 * 16,
+              height: 6 * 16,
+            },
+          })
+        );
+      }
+
+      if (i === 2) {
+        this.store.dispatch(
+          PentominoActions.updateComponentData({
+            entityId: GameObjectsIds.SHAPE_I,
+            componentType: ComponentType.HINT_BOX,
+            changes: {
+              type: ComponentType.HINT_BOX,
+              x: topLeftX + 6 * 16,
+              y: topLeftY + diff + shift + 10 * 16,
+              width: 6 * 16,
+              height: 6 * 16,
+            },
+          })
+        );
+      }
+
+      if (i === 3) {
+        this.store.dispatch(
+          PentominoActions.updateComponentData({
+            entityId: GameObjectsIds.SHAPE_L,
             componentType: ComponentType.HINT_BOX,
             changes: {
               type: ComponentType.HINT_BOX,

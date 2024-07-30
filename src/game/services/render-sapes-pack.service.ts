@@ -6,6 +6,7 @@ import { ComponentType } from "../constants/component-type.enum";
 import { CanvasParams } from "../types/canvas-params";
 import { Entity } from "../types/entity";
 import { AssetStore } from "../store/assets/asset-srore";
+import { CELL_SIZE } from "../constants/cell-size";
 
 @Injectable({
   providedIn: "root",
@@ -45,31 +46,50 @@ export class ShapesPackRenderService {
     this.prepareOffscreenCanvas(width, height);
     const offscreenCtx = this.offscreenCanvas.getContext("2d")!;
 
-    shapes.every((shape) => this.renderShape(shape, offscreenCtx));
+    shapes.forEach((shape) => this.renderShape(shape, offscreenCtx));
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(this.offscreenCanvas, 0, 0, canvas.width, canvas.height);
   }
 
   private renderShape(shape: Entity, ctx: CanvasRenderingContext2D): void {
-    const { hintBox, viewComponent } = this.getShapeComponents(shape);
+    const { hintBox, viewComponent, shapeMatrix } =
+      this.getShapeComponents(shape);
 
-    if (!hintBox || !viewComponent) {
+    if (!hintBox || !viewComponent.img) {
       return;
     }
 
     const asset = this.assetStore.entityMap()[viewComponent.img];
-
     if (!asset) return;
 
-    ctx.save();
-    ctx.drawImage(
-      asset.img,
-      hintBox.x + hintBox.width / 4,
-      hintBox.y + hintBox.height / 4,
-      hintBox.width / 2,
-      hintBox.height / 2
+    const matrixComponent = shapeMatrix;
+    const maxSize = 5; // Максимальный размер матрицы 5x5
+    const cellSize = CELL_SIZE; // Размер ячейки
+
+    // Фактический размер фигуры
+    const shapeWidth =
+      (matrixComponent.matrix.length / matrixComponent.rows) * cellSize;
+    const shapeHeight = matrixComponent.rows * cellSize;
+
+    // Размер области для нормализации
+    const normalizedSize = maxSize * cellSize;
+
+    // Масштабирование, чтобы фигура вписывалась в нормализованную область
+    const scale = Math.min(
+      hintBox.width / normalizedSize,
+      hintBox.height / normalizedSize
     );
+
+    const scaledWidth = shapeWidth * scale;
+    const scaledHeight = shapeHeight * scale;
+
+    // Центрирование фигуры в hintBox
+    const offsetX = hintBox.x + (hintBox.width - scaledWidth) / 2;
+    const offsetY = hintBox.y + (hintBox.height - scaledHeight) / 2;
+
+    ctx.save();
+    ctx.drawImage(asset.img, offsetX, offsetY, scaledWidth, scaledHeight);
     ctx.restore();
   }
 
@@ -81,6 +101,9 @@ export class ShapesPackRenderService {
       viewComponent: shape.components.entities[
         ComponentType.VIEW
       ] as PickComponentType<ComponentType.VIEW>,
+      shapeMatrix: shape.components.entities[
+        ComponentType.MATRIX
+      ] as PickComponentType<ComponentType.MATRIX>,
     };
   }
 

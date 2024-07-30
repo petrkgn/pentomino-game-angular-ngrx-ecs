@@ -14,7 +14,7 @@ import { CanvasParams } from "../../types/canvas-params";
   template: `
     <canvas
       canvasParams
-      [canvasCss]="'background-color: green; opacity: 0.3;'"
+      [canvasCss]="''"
       (canvasParams)="canvasParams.set($event)"
       #canvas
     ></canvas>

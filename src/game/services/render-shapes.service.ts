@@ -65,9 +65,8 @@ export class RenderService {
     if (!positionComponent || !rotateComponent) {
       return;
     }
-
+    if (!shapeView.img) return;
     const asset = this.assetStore.entityMap()[shapeView.img];
-    if (!asset) return;
 
     const imgWidth =
       (shapeMatrix.matrix.length / shapeMatrix.rows) *

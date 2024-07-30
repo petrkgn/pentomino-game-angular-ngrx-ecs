@@ -77,7 +77,6 @@ export const gameReducer = createReducer(
     return newState;
   }),
   on(PlayerActions.mirrorShape, (state) => {
-    console.log("mirrorShape");
     const activeShape = componentsManager.getEntitiesWithComponents({
       state,
       includeComponents: [ComponentType.IS_ACTIVE_TAG],
@@ -103,7 +102,7 @@ export const gameReducer = createReducer(
       });
     }
     const mirroredMatrix = utils.mirrorPentomino(activeShape);
-    console.log(mirroredMatrix.matrix);
+
     newState = componentsManager.updateComponentData({
       state: newState,
       entityId: activeShape.id,
@@ -174,15 +173,23 @@ export const gameReducer = createReducer(
 
     if (!placementPosition || !updatedShapeCoords) {
       return handleShapePlacementFailure(state, activeShape);
+    } else {
+      return handleShapePlacementSuccess(
+        state,
+        board,
+        activeShape,
+        placementPosition,
+        updatedShapeCoords
+      );
     }
 
-    return handleShapePlacementSuccess(
-      state,
-      board,
-      activeShape,
-      placementPosition,
-      updatedShapeCoords
-    );
+    // return handleShapePlacementSuccess(
+    //   state,
+    //   board,
+    //   activeShape,
+    //   placementPosition,
+    //   updatedShapeCoords
+    // );
   }),
   on(GameActions.ratioChanged, (state, { ratio }) =>
     componentsManager.updateComponentDataForEntities({
@@ -347,6 +354,23 @@ function handleShapePlacementFailure(
     entityId: activeShape.id,
     componentType: ComponentType.ROTATE,
     changes: { angle: 0 },
+  });
+  newState = componentsManager.updateComponentData({
+    state: newState,
+    entityId: activeShape.id,
+    componentType: ComponentType.POSITION,
+    changes: { x: 0, y: 0 },
+  });
+  newState = componentsManager.updateComponentData({
+    state: newState,
+    entityId: activeShape.id,
+    componentType: ComponentType.MATRIX,
+    changes: {
+      matrix: [
+        0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
+        0,
+      ],
+    },
   });
 
   return newState;

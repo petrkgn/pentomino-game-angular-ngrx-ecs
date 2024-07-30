@@ -31,7 +31,6 @@ export class ResizeService {
       startWith(this.getWindowSize()),
       combineLatestWith(this.loadEvent$),
       map(() => this.getRatio(baseCellSize, gridWidthInCells))
-      // tap((res) => console.log("RES", res))
     );
   }
 

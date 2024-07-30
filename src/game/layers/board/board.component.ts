@@ -7,13 +7,14 @@ import {
 } from "@angular/core";
 import { Store } from "@ngrx/store";
 import { animationFrameScheduler, tap } from "rxjs";
-import { BoardsSize } from "../../constants/board-size";
+
 import { GameActions } from "../../store/game/actions";
 import { ResizeService } from "../../services/resize.service";
 import { CanvasParams } from "../../types/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CELL_SIZE } from "../../constants/cell-size";
 import { EntityView } from "../../constants/view.enum";
+import { Boards } from "../../constants/board-size";
 
 export type BoardPositionParams = {
   width: number;
@@ -51,7 +52,7 @@ export class BoardComponent implements AfterViewInit {
 
   cellSize = CELL_SIZE;
   numRows = 5;
-  numCols = BoardsSize.firstLevel.length / this.numRows;
+  numCols = 5;
   canvasCss = "";
   boardPosition: { topLeftX: number; topLeftY: number } = {
     topLeftX: 0,
