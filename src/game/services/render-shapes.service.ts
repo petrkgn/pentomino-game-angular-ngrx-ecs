@@ -1,6 +1,4 @@
 import { inject, Injectable } from "@angular/core";
-import { animationFrameScheduler } from "rxjs";
-
 import { PickComponentType } from "../types/components";
 import { ComponentType } from "../constants/component-type.enum";
 import { CanvasParams } from "../types/canvas-params";
@@ -13,75 +11,92 @@ import { AssetStore } from "../store/assets/asset-srore";
 })
 export class RenderService {
   private readonly assetStore = inject(AssetStore);
-  private offscreenCanvas: HTMLCanvasElement;
+  private offscreenCanvas: OffscreenCanvas;
 
   constructor() {
-    this.offscreenCanvas = document.createElement("canvas");
+    const { innerWidth: width, innerHeight: height } = window;
+    this.offscreenCanvas = new OffscreenCanvas(width, height);
   }
 
+  /**
+   * Render current shapes on the main canvas.
+   * @param params - Parameters containing the main canvas and its dimensions.
+   * @param shapes - Array of entities to be rendered.
+   */
   renderCurrentShapes(params: CanvasParams, shapes: Entity[]): void {
-    const { ctx, canvas, width, height } = params;
+    const { canvas, width, height } = params;
+    const ctx = canvas.getContext("bitmaprenderer");
 
-    if (!ctx || !shapes.length) {
-      this.clearCanvas(ctx, canvas);
+    if (!ctx) {
+      console.warn("Main canvas context is null, cannot render shapes");
       return;
     }
 
-    animationFrameScheduler.schedule(
-      function (actions) {
-        this.schedule(actions);
-      },
-      0,
-      this.renderAllCurrentShapes(shapes, ctx, canvas, width, height)
-    );
+    if (!shapes.length) {
+      this.clearCanvas(ctx, width, height);
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      this.renderAllCurrentShapes(shapes, ctx, width, height);
+    });
   }
 
   private renderAllCurrentShapes(
     shapes: Entity[],
-    ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement,
+    ctx: ImageBitmapRenderingContext,
     width: number,
     height: number
   ): void {
     this.prepareOffscreenCanvas(width, height);
-    const offscreenCtx = this.offscreenCanvas.getContext("2d")!;
+    const offscreenCtx = this.offscreenCanvas.getContext("2d");
+
+    if (!offscreenCtx) {
+      console.error("Offscreen canvas context not available");
+      return;
+    }
 
     shapes.forEach((shape) => this.renderShape(offscreenCtx, shape));
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(this.offscreenCanvas, 0, 0, canvas.width, canvas.height);
+    const bitmap = this.offscreenCanvas.transferToImageBitmap();
+    ctx.transferFromImageBitmap(bitmap);
   }
 
-  private renderShape(ctx: CanvasRenderingContext2D, shape: Entity): void {
-    const {
-      rotateComponent,
-      positionComponent,
-      isMirror,
-      shapeView,
-      shapeMatrix,
-      shapeRatio,
-    } = this.getShapeComponents(shape);
+  private renderShape(
+    ctx: OffscreenCanvasRenderingContext2D,
+    shape: Entity
+  ): void {
+    const components = this.getShapeComponents(shape);
 
-    if (!positionComponent || !rotateComponent) {
+    if (
+      !components.positionComponent ||
+      !components.rotateComponent ||
+      !components.shapeView ||
+      !components.shapeMatrix ||
+      !components.shapeRatio
+    ) {
       return;
     }
-    if (!shapeView.img) return;
-    const asset = this.assetStore.entityMap()[shapeView.img];
+
+    if (!components.shapeView.img) return;
+
+    const asset = this.assetStore.entityMap()[components.shapeView.img];
 
     const imgWidth =
-      (shapeMatrix.matrix.length / shapeMatrix.rows) *
+      (components.shapeMatrix.matrix.length / components.shapeMatrix.rows) *
       CELL_SIZE *
-      shapeRatio.ratio;
-    const imgHeight = shapeMatrix.rows * CELL_SIZE * shapeRatio.ratio;
+      components.shapeRatio.ratio;
+    const imgHeight =
+      components.shapeMatrix.rows * CELL_SIZE * components.shapeRatio.ratio;
 
     this.drawTransformedShape(
       ctx,
       asset.img,
       imgWidth,
       imgHeight,
-      positionComponent,
-      rotateComponent,
-      isMirror
+      components.positionComponent,
+      components.rotateComponent,
+      components.isMirror
     );
   }
 
@@ -111,21 +126,32 @@ export class RenderService {
   private prepareOffscreenCanvas(width: number, height: number): void {
     this.offscreenCanvas.width = width;
     this.offscreenCanvas.height = height;
-    const ctx = this.offscreenCanvas.getContext("2d")!;
-    ctx.clearRect(0, 0, width, height);
+    const ctx = this.offscreenCanvas.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, width, height);
+    } else {
+      console.error("Offscreen canvas context not available for clearing");
+    }
   }
 
   private clearCanvas(
-    ctx: CanvasRenderingContext2D | null,
-    canvas: HTMLCanvasElement
+    ctx: ImageBitmapRenderingContext,
+    width: number,
+    height: number
   ): void {
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const offscreenCanvas = new OffscreenCanvas(width, height);
+    const offscreenCtx = offscreenCanvas.getContext("2d");
+    if (offscreenCtx) {
+      offscreenCtx.clearRect(0, 0, width, height);
+      const emptyBitmap = offscreenCanvas.transferToImageBitmap();
+      ctx.transferFromImageBitmap(emptyBitmap);
+    } else {
+      console.error("Offscreen canvas context not available for clearing");
     }
   }
 
   private drawTransformedShape(
-    ctx: CanvasRenderingContext2D,
+    ctx: OffscreenCanvasRenderingContext2D,
     img: HTMLImageElement,
     imgWidth: number,
     imgHeight: number,
@@ -133,15 +159,11 @@ export class RenderService {
     rotateComponent: PickComponentType<ComponentType.ROTATE>,
     isMirror: PickComponentType<ComponentType.IS_MIRROR_TAG> | undefined
   ): void {
-    const angle = rotateComponent.angle;
-    const x = positionComponent.x;
-    const y = positionComponent.y;
-
-    const positionX = x - this.offscreenCanvas.getBoundingClientRect().left;
-    const positionY = y - this.offscreenCanvas.getBoundingClientRect().top;
+    const { x: posX, y: posY } = positionComponent;
+    const { angle } = rotateComponent;
 
     ctx.save();
-    ctx.translate(positionX, positionY);
+    ctx.translate(posX, posY);
     ctx.rotate((angle * Math.PI) / 180);
 
     if (isMirror) {
@@ -149,12 +171,11 @@ export class RenderService {
     }
 
     this.drawImage(ctx, img, imgWidth, imgHeight, angle);
-
     ctx.restore();
   }
 
   private applyMirrorEffect(
-    ctx: CanvasRenderingContext2D,
+    ctx: OffscreenCanvasRenderingContext2D,
     angle: number
   ): void {
     if (angle === 0 || angle === 180) {
@@ -165,7 +186,7 @@ export class RenderService {
   }
 
   private drawImage(
-    ctx: CanvasRenderingContext2D,
+    ctx: OffscreenCanvasRenderingContext2D,
     img: HTMLImageElement,
     imgWidth: number,
     imgHeight: number,

@@ -88,8 +88,8 @@ export class SceneComponent {
     const { topLeftX, topLeftY } = this.rectService.getTopLeftCoordinates(
       1280,
       896,
-      this.canvasParams.canvasCenter.x,
-      this.canvasParams.canvasCenter.y
+      this.canvasParams.canvasCenter!.x,
+      this.canvasParams.canvasCenter!.y
     );
     this.canvasParams.ctx.lineWidth = 2 * ratio;
     this.canvasParams.ctx.drawImage(

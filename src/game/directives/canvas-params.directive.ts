@@ -10,6 +10,7 @@ import { Observable, tap } from "rxjs";
 
 import { CanvasParams } from "../types/canvas-params";
 import { ResizeService } from "../services/resize.service";
+import { CanvasContext } from "../constants/canvas-context";
 
 @Directive({
   selector: "[canvasParams]",
@@ -20,6 +21,7 @@ export class CanvasParamsDirective implements AfterViewInit {
   private readonly resizeService = inject(ResizeService);
 
   canvasCss = input<string>("");
+  context = input<string>(CanvasContext.DEFAULT);
   canvasParams = output<CanvasParams>();
 
   ngAfterViewInit() {

@@ -95,8 +95,8 @@ export class BoardComponent implements AfterViewInit {
     this.boardPosition = this.getTopLeftCoordinates({
       width: this.numCols * this.cellSize,
       height: this.numRows * this.cellSize,
-      centerX: this.canvasParams.canvasCenter.x,
-      centerY: this.canvasParams.canvasCenter.y + 80,
+      centerX: this.canvasParams.canvasCenter!.x,
+      centerY: this.canvasParams.canvasCenter!.y + 80,
     });
 
     this.store.dispatch(

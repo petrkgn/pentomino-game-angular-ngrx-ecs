@@ -23,7 +23,7 @@ export class ShapesPackRenderService {
     const { ctx, canvas, width, height } = params;
 
     if (!ctx || !shapes.length) {
-      this.clearCanvas(ctx, canvas);
+      this.clearCanvas(ctx!, canvas);
       return;
     }
 
