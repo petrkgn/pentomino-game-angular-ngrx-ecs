@@ -185,9 +185,9 @@ class BoardGame {
   }
 
   /**
-   * Проверяет, выходит ли фигура за границы доски.
-   * @param data Данные для проверки.
-   * @returns true если фигура выходит за границы, иначе false.
+   * Checks if a shape is out of bounds of the board.
+   * @param data Data for the check.
+   * @returns True if the shape is out of bounds, otherwise false.
    */
   private isOutOfBounds(data: PlacementData): boolean {
     const {
@@ -196,26 +196,66 @@ class BoardGame {
       boardMatrix,
       pentominoMatrix,
       ratio,
-    } = { ...data }; // Создаем копию данных
+    } = data;
 
-    const diff = 10 * ratio;
+    const tolerance = 10 * ratio;
+    const cellSize = this.cellSize * ratio;
 
     const { rows: boardRows, columns: boardColumns } =
       this.getRowsAndColumns(boardMatrix);
     const { rows: pentominoRows, columns: pentominoColumns } =
       this.getRowsAndColumns(pentominoMatrix);
 
-    const boardWidth = boardColumns * this.cellSize * ratio;
-    const boardHeight = boardRows * this.cellSize * ratio;
+    const boardWidth = boardColumns * cellSize;
+    const boardHeight = boardRows * cellSize;
 
-    // Определяем фактические границы фигуры
-    let minRow = pentominoRows,
+    const shapeBounds = this.calculateShapeBounds(
+      pentominoMatrix,
+      pentominoRows,
+      pentominoColumns
+    );
+
+    const shapeLeftX =
+      shapePositionComponent.x +
+      (shapeBounds.minColumn - pentominoColumns / 2) * cellSize;
+    const shapeRightX =
+      shapePositionComponent.x +
+      (shapeBounds.maxColumn - pentominoColumns / 2 + 1) * cellSize;
+    const shapeTopY =
+      shapePositionComponent.y +
+      (shapeBounds.minRow - pentominoRows / 2) * cellSize;
+    const shapeBottomY =
+      shapePositionComponent.y +
+      (shapeBounds.maxRow - pentominoRows / 2 + 1) * cellSize;
+
+    return (
+      shapeLeftX + tolerance < boardPositionComponent.x ||
+      shapeRightX - tolerance > boardPositionComponent.x + boardWidth ||
+      shapeTopY + tolerance < boardPositionComponent.y ||
+      shapeBottomY - tolerance > boardPositionComponent.y + boardHeight
+    );
+  }
+
+  /**
+   * Calculate the boundaries of the shape.
+   * @param pentominoMatrix The matrix of the shape.
+   * @param rows The number of rows in the shape matrix.
+   * @param columns The number of columns in the shape matrix.
+   * @returns The minimum and maximum row and column indices.
+   */
+  private calculateShapeBounds(
+    pentominoMatrix: any,
+    rows: number,
+    columns: number
+  ) {
+    let minRow = rows,
       maxRow = 0,
-      minColumn = pentominoColumns,
+      minColumn = columns,
       maxColumn = 0;
-    for (let row = 0; row < pentominoRows; row++) {
-      for (let col = 0; col < pentominoColumns; col++) {
-        if (pentominoMatrix.matrix[row * pentominoColumns + col] !== 0) {
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
+        if (pentominoMatrix.matrix[row * columns + col] !== 0) {
           if (row < minRow) minRow = row;
           if (row > maxRow) maxRow = row;
           if (col < minColumn) minColumn = col;
@@ -224,26 +264,7 @@ class BoardGame {
       }
     }
 
-    // Фактические границы фигуры относительно текущего положения
-    const shapeLeftX =
-      shapePositionComponent.x +
-      (minColumn - pentominoColumns / 2) * this.cellSize * ratio;
-    const shapeRightX =
-      shapePositionComponent.x +
-      (maxColumn - pentominoColumns / 2 + 1) * this.cellSize * ratio;
-    const shapeTopY =
-      shapePositionComponent.y +
-      (minRow - pentominoRows / 2) * this.cellSize * ratio;
-    const shapeBottomY =
-      shapePositionComponent.y +
-      (maxRow - pentominoRows / 2 + 1) * this.cellSize * ratio;
-
-    return (
-      shapeLeftX + diff < boardPositionComponent.x ||
-      shapeRightX - diff > boardPositionComponent.x + boardWidth ||
-      shapeTopY + diff < boardPositionComponent.y ||
-      shapeBottomY - diff > boardPositionComponent.y + boardHeight
-    );
+    return { minRow, maxRow, minColumn, maxColumn };
   }
 
   /**
