@@ -69,7 +69,7 @@ export class EntityFactoryService {
     if (!matrix) {
       return undefined;
     }
-    const rows = Math.sqrt(matrix.length);
+    const rows = isBoard ? this.boardSize[0] : Math.sqrt(matrix.length);
     return {
       ...defaultComponent,
       matrix,
@@ -81,9 +81,12 @@ export class EntityFactoryService {
     entityId: string,
     defaultComponent: any
   ): EntityComponents {
+    const isBoard = entityId === "BOARD";
+    const view = isBoard ? this.boardSize : entityId;
+    console.log("!!!!!!!!!!!", isBoard, view);
     return {
       ...defaultComponent,
-      img: EntityView[entityId as keyof typeof EntityView],
+      img: EntityView[view as keyof typeof EntityView],
     };
   }
 }

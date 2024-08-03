@@ -25,8 +25,8 @@ import { CanvasContext } from "../../constants/canvas-context";
   template: `
     <canvas
       canvasParams
-      [canvasCss]="'background-color: red; opacity: 0.2;'"
-      [context]="canvasContext"
+      [canvasCss]="''"
+      [context]="'bitmaprenderer'"
       (canvasParams)="canvasParams.set($event)"
       #canvas
     ></canvas>
@@ -40,7 +40,6 @@ export class ActiveShapeComponent {
     initialValue: [],
   });
 
-  canvasContext = "bitmaprenderer" as const;
   canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {

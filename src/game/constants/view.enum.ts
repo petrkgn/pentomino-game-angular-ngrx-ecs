@@ -11,6 +11,7 @@ export enum EntityView {
   SHAPE_X = "shape_x",
   SHAPE_Y = "shape_y",
   // SHAPE_Z,
-  BOARD = "https://raw.githubusercontent.com/petrkgn/katamino-game-angular/main/board5.png?raw=true",
+  ["5x5"] = "board5",
+  ["5x6"] = "board6",
   BG = "https://raw.githubusercontent.com/petrkgn/katamino-game-angular/main/fon.png?raw=true",
 }

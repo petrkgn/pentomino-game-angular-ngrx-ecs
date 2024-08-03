@@ -5,7 +5,7 @@ import { map, Observable, tap } from "rxjs";
 import { ComponentType } from "./constants/component-type.enum";
 import { gameFeature } from "./store/game/state";
 import { Entity } from "./types/entity";
-import { areAllObjectsDefined } from "./utils";
+import { areAllObjectsDefined, filterDefined } from "./utils";
 import { EntityFactoryService } from "./services/entity-factory.service";
 import { GameConfigService } from "./services/game-config.service";
 
@@ -33,10 +33,18 @@ export class GameFacade {
       .pipe(map((entities) => this.handleEntitiesDefined(entities)));
   }
 
-  private handleEntitiesDefined(entities: Entity[]): Entity[] {
+  selectBoard(): Observable<Entity> {
+    return this.store
+      .select(gameFeature.selectBoard)
+      .pipe(map((entity) => this.handleEntitiesDefined([entity])?.[0]));
+  }
+
+  private handleEntitiesDefined(
+    entities: (Entity | null | undefined)[]
+  ): Entity[] {
     const isEntitiesDefined =
       entities.length > 0 && areAllObjectsDefined(entities);
-    return isEntitiesDefined ? structuredClone(entities) : [];
+    return isEntitiesDefined ? structuredClone(entities as Entity[]) : [];
   }
 
   initGameState(level: string) {

@@ -26,7 +26,7 @@ import { RenderService } from "../../services/render-shapes.service";
   template: ` <canvas
     canvasParams
     [canvasCss]="''"
-    [context]="canvasContext"
+    [context]="'bitmaprenderer'"
     (canvasParams)="canvasParams.set($event)"
     #canvas
   ></canvas>`,
@@ -39,7 +39,6 @@ export class PlacementShapesComponent {
     initialValue: [],
   });
 
-  canvasContext = "bitmaprenderer" as const;
   canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {

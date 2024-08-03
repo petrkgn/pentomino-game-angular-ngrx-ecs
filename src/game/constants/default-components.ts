@@ -1,6 +1,5 @@
 import { EntityComponents } from "../types/components";
 import { ComponentType } from "./component-type.enum";
-import { EntityView } from "./view.enum";
 
 export const DefaultComponents: {
   [key in ComponentType]?: Partial<EntityComponents>;

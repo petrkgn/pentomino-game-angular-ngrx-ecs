@@ -208,24 +208,26 @@ export const gameReducer = createReducer(
       state: newState,
       entityId: GameObjectsIds.BOARD,
     });
-    const placementShape = componentsManager.getEntitiesWithComponents({
+    const placementShapes = componentsManager.getEntitiesWithComponents({
       state: newState,
       includeComponents: [ComponentType.PLACEMENT],
-    })[0];
+    });
 
-    if (board && placementShape) {
-      const placementPosition = boardGame.recalculateShapePosition(
-        board,
-        placementShape
-      );
-      if (placementPosition) {
-        newState = componentsManager.updateComponentData({
-          state: newState,
-          entityId: placementShape.id,
-          componentType: ComponentType.POSITION,
-          changes: { x: placementPosition.x, y: placementPosition.y },
-        });
-      }
+    if (board && placementShapes.length > 0) {
+      placementShapes.forEach((placementShape) => {
+        const placementPosition = boardGame.recalculateShapePosition(
+          board,
+          placementShape
+        );
+        if (placementPosition) {
+          newState = componentsManager.updateComponentData({
+            state: newState,
+            entityId: placementShape.id,
+            componentType: ComponentType.POSITION,
+            changes: { x: placementPosition.x, y: placementPosition.y },
+          });
+        }
+      });
     }
 
     return newState;

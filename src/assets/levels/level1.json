@@ -1,7 +1,7 @@
 {
   "board": {
-    "size": "5x5",
-    "components": ["POSITION", "MATRIX", "RATIO"]
+    "size": "5x6",
+    "components": ["POSITION", "MATRIX", "RATIO", "VIEW"]
   },
   "shapes": [
     {
