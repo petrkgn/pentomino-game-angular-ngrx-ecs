@@ -1,5 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
-import { EntityComponents, PickComponentType } from "../../types/components";
+
+import { PickComponentType } from "../../types/components";
 import { ComponentType } from "../../constants/component-type.enum";
 import { PentominoActions, PlayerActions, GameActions } from "./actions";
 import {
@@ -11,11 +12,15 @@ import {
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import * as utils from "../../utils";
 import BoardGame from "../../utils/board";
-import { EntityId } from "../../types/entity-id.type";
-import { Entity } from "../../types/entity";
 import ComponentsManager from "../../utils/componentsManager";
 import EntitiesManager from "../../utils/entitiesManager";
-import { EntityState } from "@ngrx/entity";
+import {
+  findEntityWithPoint,
+  handleBoardShapeSelection,
+  handlePackShapeSelection,
+  handleShapePlacementFailure,
+  handleShapePlacementSuccess,
+} from "../../utils/reducer-helpers";
 
 const boardGame = new BoardGame();
 const entitiesManager = new EntitiesManager(entitiesAdapter);
@@ -173,23 +178,15 @@ export const gameReducer = createReducer(
 
     if (!placementPosition || !updatedShapeCoords) {
       return handleShapePlacementFailure(state, activeShape);
-    } else {
-      return handleShapePlacementSuccess(
-        state,
-        board,
-        activeShape,
-        placementPosition,
-        updatedShapeCoords
-      );
     }
 
-    // return handleShapePlacementSuccess(
-    //   state,
-    //   board,
-    //   activeShape,
-    //   placementPosition,
-    //   updatedShapeCoords
-    // );
+    return handleShapePlacementSuccess(
+      state,
+      board,
+      activeShape,
+      placementPosition,
+      updatedShapeCoords
+    );
   }),
   on(GameActions.ratioChanged, (state, { ratio }) =>
     componentsManager.updateComponentDataForEntities({
@@ -234,186 +231,3 @@ export const gameReducer = createReducer(
     return newState;
   })
 );
-
-function findEntityWithPoint(
-  entities: EntityState<Entity>,
-  { x: pointX, y: pointY }: { x: number; y: number }
-): EntityId | null {
-  for (const entityId of entities.ids) {
-    const entity = entities.entities[entityId];
-    if (entity?.components?.entities?.[ComponentType.HINT_BOX]) {
-      const hintBox = entity.components.entities[
-        ComponentType.HINT_BOX
-      ] as PickComponentType<ComponentType.HINT_BOX>;
-      const isPointWithinBox =
-        pointX >= hintBox.x &&
-        pointX <= hintBox.x + hintBox.width &&
-        pointY >= hintBox.y &&
-        pointY <= hintBox.y + hintBox.height;
-      if (isPointWithinBox) {
-        return entity.id;
-      }
-    }
-  }
-  return null;
-}
-
-function handleBoardShapeSelection(
-  state: EntityState<Entity>,
-  board: Entity,
-  cellValue: EntityId,
-  mx: number,
-  my: number
-) {
-  let newState = state;
-  const newBoard = boardGame.clearShapeCellsOnBoard(board, cellValue);
-
-  newState = componentsManager.removeComponentFromEntity({
-    state: newState,
-    entityId: cellValue,
-    componentType: ComponentType.IS_PACK_TAG,
-  });
-  newState = componentsManager.addComponentToEntity({
-    state: newState,
-    entityId: cellValue,
-    component: { type: ComponentType.IS_ACTIVE_TAG },
-  });
-  newState = componentsManager.updateComponentData({
-    state: newState,
-    entityId: cellValue,
-    componentType: ComponentType.POSITION,
-    changes: { x: mx, y: my },
-  });
-  newState = componentsManager.updateComponentData({
-    state: newState,
-    entityId: GameObjectsIds.BOARD,
-    componentType: ComponentType.MATRIX,
-    changes: { matrix: newBoard },
-  });
-
-  return newState;
-}
-
-function handlePackShapeSelection(
-  state: EntityState<Entity>,
-  shapesId: EntityId,
-  mx: number,
-  my: number
-) {
-  let newState = state;
-  newState = componentsManager.removeComponentForEntities({
-    state,
-    includeComponents: [ComponentType.HINT_BOX],
-    componentType: ComponentType.IS_PACK_TAG,
-  });
-  newState = componentsManager.addComponentToEntity({
-    state: newState,
-    entityId: shapesId,
-    component: { type: ComponentType.IS_ACTIVE_TAG },
-  });
-  newState = componentsManager.updateComponentData({
-    state: newState,
-    entityId: shapesId,
-    componentType: ComponentType.POSITION,
-    changes: { x: mx, y: my },
-  });
-
-  return newState;
-}
-
-function handleShapePlacementFailure(
-  state: EntityState<Entity>,
-  activeShape: Entity
-) {
-  const isMirror = activeShape.components.entities[ComponentType.IS_MIRROR_TAG];
-  let newState = state;
-  if (isMirror) {
-    newState = componentsManager.removeComponentFromEntity({
-      state: newState,
-      entityId: activeShape.id,
-      componentType: ComponentType.IS_MIRROR_TAG,
-    });
-  }
-  newState = componentsManager.removeComponentFromEntity({
-    state: newState,
-    entityId: activeShape.id,
-    componentType: ComponentType.IS_ACTIVE_TAG,
-  });
-  newState = componentsManager.addComponentToEntity({
-    state: newState,
-    entityId: activeShape.id,
-    component: { type: ComponentType.IS_PACK_TAG },
-  });
-  newState = componentsManager.removeComponentFromEntity({
-    state: newState,
-    entityId: activeShape.id,
-    componentType: ComponentType.PLACEMENT,
-  });
-  newState = componentsManager.updateComponentData({
-    state: newState,
-    entityId: activeShape.id,
-    componentType: ComponentType.ROTATE,
-    changes: { angle: 0 },
-  });
-  newState = componentsManager.updateComponentData({
-    state: newState,
-    entityId: activeShape.id,
-    componentType: ComponentType.POSITION,
-    changes: { x: 0, y: 0 },
-  });
-  newState = componentsManager.updateComponentData({
-    state: newState,
-    entityId: activeShape.id,
-    componentType: ComponentType.MATRIX,
-    changes: {
-      matrix: [
-        0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
-        0,
-      ],
-    },
-  });
-
-  return newState;
-}
-
-function handleShapePlacementSuccess(
-  state: EntityState<Entity>,
-  board: Entity,
-  activeShape: Entity,
-  placementPosition: any,
-  updatedShapeCoords: any
-) {
-  let newState = state;
-  const newBoard = boardGame.updateBoardMatrix(board, activeShape);
-  if (newBoard) {
-    newState = componentsManager.updateComponentData({
-      state: newState,
-      entityId: GameObjectsIds.BOARD,
-      componentType: ComponentType.MATRIX,
-      changes: { matrix: newBoard },
-    });
-  }
-
-  newState = componentsManager.removeComponentFromEntity({
-    state: newState,
-    entityId: activeShape.id,
-    componentType: ComponentType.IS_ACTIVE_TAG,
-  });
-  newState = componentsManager.addComponentToEntity({
-    state: newState,
-    entityId: activeShape.id,
-    component: {
-      type: ComponentType.PLACEMENT,
-      cellX: placementPosition.cellX,
-      cellY: placementPosition.cellY,
-    },
-  });
-  newState = componentsManager.updateComponentData({
-    state: newState,
-    entityId: activeShape.id,
-    componentType: ComponentType.POSITION,
-    changes: { x: updatedShapeCoords.x, y: updatedShapeCoords.y },
-  });
-
-  return newState;
-}

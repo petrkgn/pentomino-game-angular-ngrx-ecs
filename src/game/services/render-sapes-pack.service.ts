@@ -21,9 +21,9 @@ export class ShapesPackRenderService {
 
   renderShapesPack(params: CanvasParams, shapes: Entity[]): void {
     const { ctx, canvas, width, height } = params;
-
-    if (!ctx || !shapes.length) {
-      this.clearCanvas(ctx!, canvas);
+    const isSupportedContext = Boolean(ctx instanceof CanvasRenderingContext2D);
+    if (!ctx || (!shapes.length && isSupportedContext)) {
+      this.clearCanvas(ctx as CanvasRenderingContext2D, canvas);
       return;
     }
 
@@ -32,7 +32,13 @@ export class ShapesPackRenderService {
         this.schedule(actions);
       },
       0,
-      this.renderAllCurrentShapes(shapes, ctx, canvas, width, height)
+      this.renderAllCurrentShapes(
+        shapes,
+        ctx as CanvasRenderingContext2D,
+        canvas,
+        width,
+        height
+      )
     );
   }
 

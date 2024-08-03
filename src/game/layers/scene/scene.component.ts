@@ -24,6 +24,7 @@ import { Boards } from "../../constants/board-size";
   standalone: true,
   template: ` <canvas
       canvasParams
+      [context]="'2d'"
       (canvasParams)="onCanvasParams($event)"
       #canvas
     ></canvas>
@@ -84,7 +85,11 @@ export class SceneComponent {
   }
 
   render(ratio: number): void {
-    if (!this.canvasParams.ctx || !this.bgImg) return;
+    if (
+      !(this.canvasParams.ctx instanceof CanvasRenderingContext2D) ||
+      !this.bgImg
+    )
+      return;
     const { topLeftX, topLeftY } = this.rectService.getTopLeftCoordinates(
       1280,
       896,
@@ -178,6 +183,22 @@ export class SceneComponent {
         this.store.dispatch(
           PentominoActions.updateComponentData({
             entityId: GameObjectsIds.SHAPE_L,
+            componentType: ComponentType.HINT_BOX,
+            changes: {
+              type: ComponentType.HINT_BOX,
+              x: topLeftX + 6 * 16,
+              y: topLeftY + diff + shift + 10 * 16,
+              width: 6 * 16,
+              height: 6 * 16,
+            },
+          })
+        );
+      }
+
+      if (i === 4) {
+        this.store.dispatch(
+          PentominoActions.updateComponentData({
+            entityId: GameObjectsIds.SHAPE_F,
             componentType: ComponentType.HINT_BOX,
             changes: {
               type: ComponentType.HINT_BOX,

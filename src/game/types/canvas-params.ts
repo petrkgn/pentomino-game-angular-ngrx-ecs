@@ -1,8 +1,8 @@
-import { ElementRef } from "@angular/core";
+import { CanvasCtx } from "./canvas-ctx";
 
 export type CanvasParams = {
-  ctx?: CanvasRenderingContext2D | null;
-  canvasCenter?: { x: number; y: number };
+  ctx: CanvasCtx | null;
+  canvasCenter: { x: number; y: number };
   width: number;
   height: number;
   canvas: HTMLCanvasElement;

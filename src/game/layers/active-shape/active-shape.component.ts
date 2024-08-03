@@ -21,23 +21,20 @@ import { CanvasContext } from "../../constants/canvas-context";
   selector: "game-active-shape",
   standalone: true,
   imports: [CanvasParamsDirective],
+  providers: [RenderService],
   template: `
     <canvas
       canvasParams
-      [canvasCss]="''"
+      [canvasCss]="'background-color: red; opacity: 0.2;'"
       [context]="canvasContext"
       (canvasParams)="canvasParams.set($event)"
       #canvas
     ></canvas>
-    <canvas #myCanvas sryle=""></canvas>
   `,
-  styles: ``,
 })
-export class ActiveShapeComponent implements AfterViewInit {
+export class ActiveShapeComponent {
   private readonly gameFacade = inject(GameFacade);
   private readonly renderService = inject(RenderService);
-
-  canvas = viewChild.required<ElementRef<HTMLCanvasElement>>("myCanvas");
 
   activeShapes = toSignal(this.gameFacade.selectActiveShape(), {
     initialValue: [],
@@ -52,20 +49,9 @@ export class ActiveShapeComponent implements AfterViewInit {
       const canvasParams = this.canvasParams();
       untracked(() => {
         if (!canvasParams) return;
-        this.renderShapes(
-          {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            canvas: this.canvas().nativeElement,
-          },
-          activeShapes
-        );
+        this.renderShapes(canvasParams, activeShapes);
       });
     });
-  }
-  ngAfterViewInit(): void {
-    this.canvas().nativeElement.width = window.innerWidth;
-    this.canvas().nativeElement.height = window.innerHeight;
   }
 
   renderShapes(canvasParams: CanvasParams, activeShapes: Entity[]): void {

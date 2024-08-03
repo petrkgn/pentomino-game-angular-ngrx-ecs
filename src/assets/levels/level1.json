@@ -19,6 +19,10 @@
     {
       "id": "SHAPE_L",
       "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+    },
+    {
+      "id": "SHAPE_F",
+      "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
     }
   ]
 }

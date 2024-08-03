@@ -84,9 +84,9 @@ export function handlePackShapeSelection(
   my: number
 ) {
   let newState = state;
-  newState = componentsManager.removeComponentForEntities({
+  newState = componentsManager.removeComponentFromEntity({
     state,
-    includeComponents: [ComponentType.HINT_BOX],
+    entityId: shapesId,
     componentType: ComponentType.IS_PACK_TAG,
   });
   newState = componentsManager.addComponentToEntity({

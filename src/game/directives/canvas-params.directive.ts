@@ -2,26 +2,31 @@ import {
   AfterViewInit,
   Directive,
   ElementRef,
+  Input,
+  Output,
+  EventEmitter,
   inject,
-  output,
   input,
+  output,
 } from "@angular/core";
 import { Observable, tap } from "rxjs";
 
 import { CanvasParams } from "../types/canvas-params";
 import { ResizeService } from "../services/resize.service";
 import { CanvasContext } from "../constants/canvas-context";
+import { CanvasCtx } from "../types/canvas-ctx";
+import { CanvasContextName } from "../types/canvas-context-name";
 
 @Directive({
   selector: "[canvasParams]",
   standalone: true,
 })
 export class CanvasParamsDirective implements AfterViewInit {
-  private readonly elRef = inject<ElementRef<HTMLCanvasElement>>(ElementRef);
+  private readonly elRef = inject(ElementRef<HTMLCanvasElement>);
   private readonly resizeService = inject(ResizeService);
 
   canvasCss = input<string>("");
-  context = input<string>(CanvasContext.DEFAULT);
+  context = input<CanvasContextName>(CanvasContext.DEFAULT);
   canvasParams = output<CanvasParams>();
 
   ngAfterViewInit() {
@@ -61,16 +66,18 @@ export class CanvasParamsDirective implements AfterViewInit {
     canvas.style.cssText = `${this.canvasCss()}; width: 100vw; height: 100vh;`;
   }
 
-  private getCanvasContext(
-    canvas: HTMLCanvasElement
-  ): CanvasRenderingContext2D {
-    const ctx = canvas.getContext("2d");
+  private getCanvasContext(canvas: HTMLCanvasElement): CanvasCtx {
+    const ctx = canvas.getContext(this.context());
     if (!ctx) {
-      throw new Error("2D context not supported or canvas already initialized");
+      throw new Error("context not supported or canvas already initialized");
     }
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-    ctx.imageSmoothingEnabled = true;
-    return ctx;
+
+    if (ctx instanceof CanvasRenderingContext2D) {
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      ctx.imageSmoothingEnabled = true;
+    }
+
+    return ctx as any;
   }
 
   private setCanvasDimensions(canvas: HTMLCanvasElement): {

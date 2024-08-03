@@ -21,16 +21,17 @@ import { RenderService } from "../../services/render-shapes.service";
 @Component({
   selector: "game-placement-shapes",
   imports: [CanvasParamsDirective, JsonPipe, NgIf, AsyncPipe],
+  providers: [RenderService],
   standalone: true,
   template: ` <canvas
-      canvasParams
-      [canvasCss]="''"
-      (canvasParams)="canvasParams.set($event)"
-      #canvas
-    ></canvas>
-    <canvas #myCanvas sryle=""></canvas>`,
+    canvasParams
+    [canvasCss]="''"
+    [context]="canvasContext"
+    (canvasParams)="canvasParams.set($event)"
+    #canvas
+  ></canvas>`,
 })
-export class PlacementShapesComponent implements AfterViewInit {
+export class PlacementShapesComponent {
   private readonly gameFacade = inject(GameFacade);
   private readonly renderService = inject(RenderService);
 
@@ -38,8 +39,7 @@ export class PlacementShapesComponent implements AfterViewInit {
     initialValue: [],
   });
 
-  canvas = viewChild.required<ElementRef<HTMLCanvasElement>>("myCanvas");
-
+  canvasContext = "bitmaprenderer" as const;
   canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {
@@ -48,21 +48,9 @@ export class PlacementShapesComponent implements AfterViewInit {
       const canvasParams = this.canvasParams();
       untracked(() => {
         if (!canvasParams) return;
-        this.renderShapes(
-          {
-            width: window.innerWidth,
-            height: window.innerHeight,
-            canvas: this.canvas().nativeElement,
-          },
-          placementShapes
-        );
+        this.renderShapes(canvasParams, placementShapes);
       });
     });
-  }
-
-  ngAfterViewInit(): void {
-    this.canvas().nativeElement.width = window.innerWidth;
-    this.canvas().nativeElement.height = window.innerHeight;
   }
 
   renderShapes(canvasParams: CanvasParams, activeShapes: Entity[]): void {

@@ -29,6 +29,7 @@ export type BoardPositionParams = {
   template: ` <canvas
       canvasParams
       [canvasCss]="canvasCss"
+      [context]="'2d'"
       (canvasParams)="onCanvasParams($event)"
       #canvas
     ></canvas>
@@ -53,7 +54,7 @@ export class BoardComponent implements AfterViewInit {
   cellSize = CELL_SIZE;
   numRows = 5;
   numCols = 5;
-  canvasCss = "";
+  canvasCss = "background-color: white; opacity: 0.2;";
   boardPosition: { topLeftX: number; topLeftY: number } = {
     topLeftX: 0,
     topLeftY: 0,
@@ -110,7 +111,11 @@ export class BoardComponent implements AfterViewInit {
   }
 
   private drawGrid(ratio: number): void {
-    if (!this.canvasParams.ctx || !this.boardImg) return;
+    if (
+      !(this.canvasParams.ctx instanceof CanvasRenderingContext2D) ||
+      !this.boardImg
+    )
+      return;
 
     this.canvasParams.ctx.lineWidth = 2 * ratio;
     this.canvasParams.ctx.drawImage(

@@ -1,5 +1,5 @@
 export enum GameObjectsIds {
-  SHAPE_F,
+  SHAPE_F = 1,
   SHAPE_I,
   SHAPE_L,
   SHAPE_N,
