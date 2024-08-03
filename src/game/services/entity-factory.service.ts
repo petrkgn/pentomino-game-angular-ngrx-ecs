@@ -83,7 +83,7 @@ export class EntityFactoryService {
   ): EntityComponents {
     const isBoard = entityId === "BOARD";
     const view = isBoard ? this.boardSize : entityId;
-    console.log("!!!!!!!!!!!", isBoard, view);
+
     return {
       ...defaultComponent,
       img: EntityView[view as keyof typeof EntityView],
