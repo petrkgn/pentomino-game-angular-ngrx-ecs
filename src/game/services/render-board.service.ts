@@ -70,7 +70,8 @@ export class BoardRenderService {
       this.getBoardComponents(board);
     const { rows, columns } = this.getRowsAndColumns(boardMatrix);
 
-    if (!boardView?.img) return;
+    if (!boardView?.img || positionComponent.x === 0) return;
+
     const boardImg = this.assetStore.entityMap()[boardView.img]?.img;
 
     if (!boardImg) return;
