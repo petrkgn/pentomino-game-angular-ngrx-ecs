@@ -11,6 +11,7 @@ import {
 } from "../store/game/initial.state";
 import ComponentsManager from "./componentsManager";
 import { GameObjectsIds } from "../constants/game-objects-ids.enum";
+import { Matrices } from "../constants/matricies";
 
 const boardGame = new BoardGame();
 const componentsManager = new ComponentsManager(
@@ -137,6 +138,14 @@ export function handleShapePlacementFailure(
     entityId: activeShape.id,
     componentType: ComponentType.ROTATE,
     changes: { angle: 0 },
+  });
+  newState = componentsManager.updateComponentData({
+    state: newState,
+    entityId: activeShape.id,
+    componentType: ComponentType.MATRIX,
+    changes: {
+      matrix: Matrices[GameObjectsIds[activeShape.id] as keyof typeof Matrices],
+    },
   });
 
   return newState;
