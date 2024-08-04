@@ -509,17 +509,17 @@ class BoardGame {
    * @param board Доска для проверки.
    * @returns true, если доска полностью заполнена; иначе false.
    */
-  public isBoardFilled(board: Entity): boolean {
-    const matrixComponent = board.components.entities[
-      ComponentType.MATRIX
-    ] as PickComponentType<ComponentType.MATRIX>;
+  public isBoardFilled(board: number[]): boolean {
+    // const matrixComponent = board.components.entities[
+    //   ComponentType.MATRIX
+    // ] as PickComponentType<ComponentType.MATRIX>;
 
-    if (!matrixComponent) {
-      return false;
-    }
+    // if (!matrixComponent) {
+    //   return false;
+    // }
 
-    const matrix = matrixComponent.matrix;
-    return matrix.every((cell) => cell === 1);
+    // const matrix = matrixComponent.matrix;
+    return board.every((cell) => cell !== 0);
   }
 }
 

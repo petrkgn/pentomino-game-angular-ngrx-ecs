@@ -161,6 +161,8 @@ export function handleShapePlacementSuccess(
   let newState = state;
   const newBoard = boardGame.updateBoardMatrix(board, activeShape);
   if (newBoard) {
+    if (boardGame.isBoardFilled(newBoard))
+      setTimeout(() => alert("Game over"), 500);
     newState = componentsManager.updateComponentData({
       state: newState,
       entityId: GameObjectsIds.BOARD,

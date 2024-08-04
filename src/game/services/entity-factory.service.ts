@@ -69,6 +69,7 @@ export class EntityFactoryService {
     if (!matrix) {
       return undefined;
     }
+
     const rows = isBoard ? this.boardSize[0] : Math.sqrt(matrix.length);
     return {
       ...defaultComponent,

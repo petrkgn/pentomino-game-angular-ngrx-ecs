@@ -134,7 +134,7 @@ export class SceneComponent {
       if (i === 0) {
         this.store.dispatch(
           PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_W,
+            entityId: GameObjectsIds.SHAPE_L,
             componentType: ComponentType.HINT_BOX,
             changes: {
               type: ComponentType.HINT_BOX,
@@ -150,7 +150,7 @@ export class SceneComponent {
       if (i === 1) {
         this.store.dispatch(
           PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_X,
+            entityId: GameObjectsIds.SHAPE_V,
             componentType: ComponentType.HINT_BOX,
             changes: {
               type: ComponentType.HINT_BOX,
@@ -166,7 +166,7 @@ export class SceneComponent {
       if (i === 2) {
         this.store.dispatch(
           PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_I,
+            entityId: GameObjectsIds.SHAPE_P,
             componentType: ComponentType.HINT_BOX,
             changes: {
               type: ComponentType.HINT_BOX,
@@ -182,7 +182,7 @@ export class SceneComponent {
       if (i === 3) {
         this.store.dispatch(
           PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_L,
+            entityId: GameObjectsIds.SHAPE_Z,
             componentType: ComponentType.HINT_BOX,
             changes: {
               type: ComponentType.HINT_BOX,
@@ -198,7 +198,7 @@ export class SceneComponent {
       if (i === 4) {
         this.store.dispatch(
           PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_F,
+            entityId: GameObjectsIds.SHAPE_Y,
             componentType: ComponentType.HINT_BOX,
             changes: {
               type: ComponentType.HINT_BOX,
