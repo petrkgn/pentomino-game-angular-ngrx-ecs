@@ -16,11 +16,9 @@ import { gameFeature } from "./store/game/state";
   standalone: true,
   providers: [GameFacade],
   template: `
-    <game-scene />
-    <game-board />
-    <game-placement-shapes />
-    <game-shapes-pack />
-    <game-active-shape />
+
+    <game-effects />
+
   `,
   styles: ``,
   imports: [
@@ -38,7 +36,7 @@ export class GameComponent implements OnInit {
   private readonly assetStore = inject(AssetStore);
 
   ngOnInit() {
-    this.assetStore.loadAssets();
-    this.gameFacade.initGameState("level1");
+    // this.assetStore.loadAssets();
+    // this.gameFacade.initGameState("level1");
   }
 }

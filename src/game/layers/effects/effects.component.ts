@@ -2,17 +2,13 @@ import {
   Component,
   ElementRef,
   ViewChild,
+  AfterViewInit,
   inject,
-  viewChild,
-} from "@angular/core";
-import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
-
-import { CanvasParams } from "../../types/canvas-params";
-import { WebGLService } from "../../services/webgl.service";
+} from '@angular/core';
+import { WebGLService } from '../../services/webgl.service';
 
 @Component({
-  selector: "game-effects",
-  imports: [CanvasParamsDirective],
+  selector: 'game-effects',
   standalone: true,
   template: `<canvas
       #fire1
@@ -22,28 +18,25 @@ import { WebGLService } from "../../services/webgl.service";
       #fire2
       style="width: 150px; height: 500px; top: 50px; left: 1225px"
     ></canvas>`,
-  styles: ` `,
 })
-export class EffectsComponent {
-  @ViewChild("fire1") private fire1!: ElementRef<HTMLCanvasElement>;
-  @ViewChild("fire2") private fire2!: ElementRef<HTMLCanvasElement>;
+export class EffectsComponent implements AfterViewInit {
+  @ViewChild('fire1') private fire1!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('fire2') private fire2!: ElementRef<HTMLCanvasElement>;
 
   private readonly webGLService = inject(WebGLService);
 
   ngAfterViewInit(): void {
-    this.webGLService.loadFragmentShader("/assets/fire.frag").then(() => {
-      this.webGLService.initWebGL(this.fire1.nativeElement);
-      this.webGLService.initWebGL(this.fire2.nativeElement);
-      this.setAnimationCoordinates(this.fire1.nativeElement, 65, 210); // example coordinates for canvas1
-      this.setAnimationCoordinates(this.fire2.nativeElement, 65, 210); // example coordinates for canvas2
+    this.webGLService.loadFragmentShader('/assets/fire.frag').then(() => {
+      console.log('Fragment shader loaded, initializing canvases');
+      this.initCanvas(this.fire1.nativeElement);
+      this.initCanvas(this.fire2.nativeElement);
     });
   }
 
-  setAnimationCoordinates(
-    canvas: HTMLCanvasElement,
-    x: number,
-    y: number
-  ): void {
-    this.webGLService.setMouseCoordinates(canvas, x, y);
+  private initCanvas(canvas: HTMLCanvasElement): void {
+    const offscreenCanvas = canvas.transferControlToOffscreen();
+    offscreenCanvas.width = 150;
+    offscreenCanvas.height = 500;
+    this.webGLService.initWebGL(offscreenCanvas, { x: 65, y: 210 });
   }
 }

@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "lib": ["es2018", "webworker"],
+      "outDir": "./out-tsc/worker",
+      "module": "esnext"
+    },
+    "include": ["src/app/workers/webgl.worker.ts"]
+  }
+  
