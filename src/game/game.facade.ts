@@ -39,6 +39,12 @@ export class GameFacade {
       .pipe(map((entity) => this.handleEntitiesDefined([entity])?.[0]));
   }
 
+  selectAllShapes(): Observable<Entity[]> {
+    return this.store
+      .select(gameFeature.selectAll)
+      .pipe(map((entities) => this.handleEntitiesDefined(entities)));
+  }
+
   private handleEntitiesDefined(
     entities: (Entity | null | undefined)[]
   ): Entity[] {

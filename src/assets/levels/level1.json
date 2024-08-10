@@ -17,7 +17,15 @@
       "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
     },
     {
-      "id": "SHAPE_Z",
+      "id": "SHAPE_I",
+      "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+    },
+    {
+      "id": "SHAPE_T",
+      "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+    },
+    {
+      "id": "SHAPE_F",
       "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
     },
     {

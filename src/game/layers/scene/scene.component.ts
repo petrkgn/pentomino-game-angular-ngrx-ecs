@@ -1,235 +1,156 @@
 import {
   Component,
   ElementRef,
-  OnInit,
-  ViewChild,
+  effect,
   inject,
+  output,
+  signal,
+  untracked,
+  viewChild,
 } from "@angular/core";
+
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
-import { ResizeService } from "../../services/resize.service";
 import { CanvasParams } from "../../types/canvas-params";
-import { EntityView } from "../../constants/view.enum";
-import { CELL_SIZE } from "../../constants/cell-size";
-import { animationFrameScheduler, tap } from "rxjs";
 import { Store } from "@ngrx/store";
 import { PentominoActions } from "../../store/game/actions";
-import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import { ComponentType } from "../../constants/component-type.enum";
 import { RectService } from "../../services/rect.service";
-import { Boards } from "../../constants/board-size";
+import { GameFacade } from "../../game.facade";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 
 @Component({
   selector: "game-scene",
   imports: [CanvasParamsDirective],
   standalone: true,
-  template: ` <canvas
+  template: `
+    <canvas
       canvasParams
       [context]="'2d'"
-      (canvasParams)="onCanvasParams($event)"
+      (canvasParams)="canvasParams.set($event)"
       #canvas
     ></canvas>
-    <img
-      #bgImg
-      src="https://raw.githubusercontent.com/petrkgn/katamino-game-angular/main/fon.png?raw=true"
-    />`,
-  styles: `
-  img {
-   display: none;
-  }  
-`,
+    <img #bgImg src="/assets/fon.png" />
+  `,
+  styles: [
+    `
+      img {
+        display: none;
+      }
+    `,
+  ],
 })
 export class SceneComponent {
-  private readonly resizeService = inject(ResizeService);
+  private readonly bgImg =
+    viewChild.required<ElementRef<HTMLImageElement>>("bgImg");
+
   private readonly rectService = inject(RectService);
   private readonly store = inject(Store);
+  private readonly gameFacade = inject(GameFacade);
 
-  readonly componentView = EntityView;
+  fireCoords = output<{
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }>();
 
-  private canvasParams!: CanvasParams;
+  shapesPack = toSignal(this.gameFacade.selectAllShapes(), {
+    initialValue: [],
+  });
 
-  cellSize = CELL_SIZE;
-  numRows = 5;
-  numCols = 5;
-  boardPosition: { topLeftX: number; topLeftY: number } = {
-    topLeftX: 0,
-    topLeftY: 0,
-  };
+  canvasParams = signal<CanvasParams | null>(null);
 
-  @ViewChild("bgImg", { static: true })
-  private readonly bgImg!: ElementRef;
-
-  constructor() {}
-
-  ngAfterViewInit() {
-    this.resizeService
-      .calculateScaleRatio(32, 20)
-      .pipe(
-        tap((value) => {
-          const ratio = Math.ceil(value);
-          this.cellSize = CELL_SIZE * ratio;
-
-          animationFrameScheduler.schedule(
-            function (actions) {
-              this.schedule(actions);
-            },
-            0,
-            this.render(ratio)
-          );
-        })
-      )
-      .subscribe();
+  constructor() {
+    effect(() => {
+      const params = this.canvasParams();
+      const bgImg = this.bgImg();
+      if (params && bgImg) {
+        untracked(() => {
+          this.renderScene(params, bgImg.nativeElement);
+        });
+      }
+    });
   }
 
-  onCanvasParams(params: CanvasParams): void {
-    this.canvasParams = params;
-  }
+  renderScene(
+    canvasParams: CanvasParams | null,
+    imgEl: HTMLImageElement
+  ): void {
+    if (!canvasParams) return;
 
-  render(ratio: number): void {
-    if (
-      !(this.canvasParams.ctx instanceof CanvasRenderingContext2D) ||
-      !this.bgImg
-    )
-      return;
+    const { ctx, canvasCenter } = canvasParams;
+    if (!(ctx instanceof CanvasRenderingContext2D)) return;
+
     const { topLeftX, topLeftY } = this.rectService.getTopLeftCoordinates(
       1280,
       896,
-      this.canvasParams.canvasCenter!.x,
-      this.canvasParams.canvasCenter!.y
-    );
-    this.canvasParams.ctx.lineWidth = 2 * ratio;
-    this.canvasParams.ctx.drawImage(
-      this.bgImg.nativeElement,
-      topLeftX,
-      topLeftY,
-      1280,
-      896
+      canvasCenter!.x,
+      canvasCenter!.y
     );
 
-    this.canvasParams.ctx.fillStyle = "red";
-    this.canvasParams.ctx.strokeStyle = "green";
-    this.canvasParams.ctx.lineWidth = 1;
+    ctx.drawImage(imgEl, topLeftX, topLeftY, 1280, 896);
 
-    for (let i = 0; i <= 56; i++) {
-      const y = i * 16;
-      // this.canvasParams.ctx.beginPath();
-      // this.canvasParams.ctx.moveTo(topLeftX, topLeftY + y);
-      // this.canvasParams.ctx.lineTo(topLeftX + 80 * 16, topLeftY + y);
-      // this.canvasParams.ctx.stroke();
-    }
+    this.emitFireCoords(topLeftX, topLeftY);
 
-    // Вертикальные линии
-    for (let i = 0; i <= 80; i++) {
-      const x = i * 16;
-      // this.canvasParams.ctx.beginPath();
-      // this.canvasParams.ctx.moveTo(topLeftX + x, topLeftY);
-      // this.canvasParams.ctx.lineTo(topLeftX + x, topLeftY + 56 * 16);
-      // this.canvasParams.ctx.stroke();
-    }
+    this.drawShapes(topLeftX, topLeftY);
+  }
 
-    for (let i = 0; i <= 5; i++) {
-      const diff = i * 16 * 6;
-      // const shift = i * 22;
-      const shift = 22 * i + (i * (i - 1)) / 2;
+  private emitFireCoords(topLeftX: number, topLeftY: number): void {
+    this.fireCoords.emit({
+      x1: topLeftX - 32,
+      y1: topLeftY + 32,
+      x2: topLeftX + 73 * 16 - 2,
+      y2: topLeftY + 32,
+    });
+  }
 
-      if (i === 0) {
-        this.store.dispatch(
-          PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_L,
-            componentType: ComponentType.HINT_BOX,
-            changes: {
-              type: ComponentType.HINT_BOX,
-              x: topLeftX + 6 * 16,
-              y: topLeftY + diff + shift + 10 * 16,
-              width: 6 * 16,
-              height: 6 * 16,
-            },
-          })
-        );
-      }
-
-      if (i === 1) {
-        this.store.dispatch(
-          PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_V,
-            componentType: ComponentType.HINT_BOX,
-            changes: {
-              type: ComponentType.HINT_BOX,
-              x: topLeftX + 6 * 16,
-              y: topLeftY + diff + shift + 10 * 16,
-              width: 6 * 16,
-              height: 6 * 16,
-            },
-          })
-        );
-      }
-
-      if (i === 2) {
-        this.store.dispatch(
-          PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_P,
-            componentType: ComponentType.HINT_BOX,
-            changes: {
-              type: ComponentType.HINT_BOX,
-              x: topLeftX + 6 * 16,
-              y: topLeftY + diff + shift + 10 * 16,
-              width: 6 * 16,
-              height: 6 * 16,
-            },
-          })
-        );
-      }
-
-      if (i === 3) {
-        this.store.dispatch(
-          PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_Z,
-            componentType: ComponentType.HINT_BOX,
-            changes: {
-              type: ComponentType.HINT_BOX,
-              x: topLeftX + 6 * 16,
-              y: topLeftY + diff + shift + 10 * 16,
-              width: 6 * 16,
-              height: 6 * 16,
-            },
-          })
-        );
-      }
-
-      if (i === 4) {
-        this.store.dispatch(
-          PentominoActions.updateComponentData({
-            entityId: GameObjectsIds.SHAPE_Y,
-            componentType: ComponentType.HINT_BOX,
-            changes: {
-              type: ComponentType.HINT_BOX,
-              x: topLeftX + 6 * 16,
-              y: topLeftY + diff + shift + 10 * 16,
-              width: 6 * 16,
-              height: 6 * 16,
-            },
-          })
-        );
-      }
-
-      // this.canvasParams.ctx.fillRect(
-      //   topLeftX + 6 * 16,
-      //   topLeftY + diff + shift + 10 * 16,
-      //   6 * 16,
-      //   6 * 16
-      // );
-    }
+  private drawShapes(topLeftX: number, topLeftY: number): void {
+    const shapesPack = this.shapesPack();
+    const shapesCount = shapesPack.length;
 
     for (let i = 0; i <= 5; i++) {
-      const diff = i * 16 * 6;
-      const shift = 22 * i + (i * (i - 1)) / 2;
-      const topLeftDiff = 62 * 16;
+      const offset = this.calculateShapeOffset(i);
 
-      // this.canvasParams.ctx.fillRect(
-      //   topLeftX + topLeftDiff + 6 * 16,
-      //   topLeftY + diff + shift + 10 * 16,
-      //   6 * 16,
-      //   6 * 16
-      // );
+      if (shapesPack[i]) {
+        this.updateShape(shapesPack[i].id, topLeftX, topLeftY, offset);
+      }
+
+      if (shapesCount > 5 && i <= 5) {
+        this.updateShape(
+          shapesPack[i + 6]?.id,
+          topLeftX + 62 * 16,
+          topLeftY,
+          offset
+        );
+      }
     }
+  }
+
+  private calculateShapeOffset(index: number): number {
+    const diff = index * 16 * 6;
+    const shift = 22 * index + (index * (index - 1)) / 2;
+    return diff + shift + 10 * 16;
+  }
+
+  private updateShape(
+    shapeId: GameObjectsIds,
+    topLeftX: number,
+    topLeftY: number,
+    offset: number
+  ): void {
+    this.store.dispatch(
+      PentominoActions.updateComponentData({
+        entityId: shapeId,
+        componentType: ComponentType.HINT_BOX,
+        changes: {
+          type: ComponentType.HINT_BOX,
+          x: topLeftX + 6 * 16,
+          y: topLeftY + offset,
+          width: 6 * 16,
+          height: 6 * 16,
+        },
+      })
+    );
   }
 }

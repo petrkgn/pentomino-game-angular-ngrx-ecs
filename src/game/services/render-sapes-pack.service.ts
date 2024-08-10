@@ -7,6 +7,7 @@ import { CanvasParams } from "../types/canvas-params";
 import { Entity } from "../types/entity";
 import { AssetStore } from "../store/assets/asset-srore";
 import { CELL_SIZE } from "../constants/cell-size";
+import { MAX_SIZE_SHAPE_MATRIX } from "../constants/max-size-shape-matrix";
 
 @Injectable({
   providedIn: "root",
@@ -70,8 +71,8 @@ export class ShapesPackRenderService {
     if (!asset) return;
 
     const matrixComponent = shapeMatrix;
-    const maxSize = 5; // Максимальный размер матрицы 5x5
-    const cellSize = CELL_SIZE; // Размер ячейки
+    const maxSize = MAX_SIZE_SHAPE_MATRIX;
+    const cellSize = CELL_SIZE;
 
     // Фактический размер фигуры
     const shapeWidth =

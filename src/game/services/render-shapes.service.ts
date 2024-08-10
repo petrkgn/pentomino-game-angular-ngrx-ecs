@@ -164,7 +164,7 @@ export class RenderService {
    */
   private calculateImageDimensions(
     components: ReturnType<typeof this.getShapeComponents>
-  ) {
+  ): { width: number; height: number } {
     const imgWidth =
       (components.shapeMatrix.matrix.length / components.shapeMatrix.rows) *
       CELL_SIZE *

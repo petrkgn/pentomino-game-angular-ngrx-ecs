@@ -510,15 +510,6 @@ class BoardGame {
    * @returns true, если доска полностью заполнена; иначе false.
    */
   public isBoardFilled(board: number[]): boolean {
-    // const matrixComponent = board.components.entities[
-    //   ComponentType.MATRIX
-    // ] as PickComponentType<ComponentType.MATRIX>;
-
-    // if (!matrixComponent) {
-    //   return false;
-    // }
-
-    // const matrix = matrixComponent.matrix;
     return board.every((cell) => cell !== 0);
   }
 }

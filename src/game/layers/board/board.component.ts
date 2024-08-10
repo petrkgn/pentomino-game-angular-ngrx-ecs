@@ -58,8 +58,9 @@ export class BoardComponent implements AfterViewInit {
       .pipe(
         tap(() => {
           const canvasParams = this.canvasParams();
-          if (canvasParams) {
-            this.boardService.getBoardPosition(this.board(), canvasParams);
+          const board = this.board();
+          if (canvasParams && board) {
+            this.boardService.getBoardPosition(board, canvasParams);
           }
         })
       )

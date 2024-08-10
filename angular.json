@@ -35,7 +35,8 @@
             "outputPath": "dist/demo",
             "scripts": [],
             "styles": ["src/global_styles.css"],
-            "tsConfig": "tsconfig.app.json"
+            "tsConfig": "tsconfig.app.json",
+            "webWorkerTsConfig": "tsconfig.worker.json"
           }
         },
         "serve": {

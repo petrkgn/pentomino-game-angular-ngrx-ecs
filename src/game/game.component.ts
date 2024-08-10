@@ -7,20 +7,20 @@ import { BoardComponent } from "./layers/board/board.component";
 import { PlacementShapesComponent } from "./layers/placement-shapes/placement-shapes.component";
 import { EffectsComponent } from "./layers/effects/effects.component";
 import { GameFacade } from "./game.facade";
-import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack";
+import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack.component";
 import { AssetStore } from "./store/assets/asset-srore";
-import { gameFeature } from "./store/game/state";
 
 @Component({
   selector: "katamino-game",
   standalone: true,
   providers: [GameFacade],
   template: `
-    <game-scene />
+    <game-scene (fireCoords)="fireCoords = $event" />
     <game-board />
     <game-placement-shapes />
     <game-shapes-pack />
     <game-active-shape />
+    <game-effects [fireCoords]="fireCoords" />
   `,
   styles: ``,
   imports: [
@@ -36,6 +36,8 @@ import { gameFeature } from "./store/game/state";
 export class GameComponent implements OnInit {
   private readonly gameFacade = inject(GameFacade);
   private readonly assetStore = inject(AssetStore);
+
+  fireCoords = { x1: 0, y1: 0, x2: 0, y2: 0 };
 
   ngOnInit() {
     this.assetStore.loadAssets();
