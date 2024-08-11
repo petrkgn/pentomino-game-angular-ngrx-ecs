@@ -52,11 +52,13 @@ export const gameReducer = createReducer(
       state,
       includeComponents: [ComponentType.IS_ACTIVE_TAG],
     })[0];
+
+    if (!activeShape) return state;
+
     const rotateComponent = activeShape.components.entities[
       ComponentType.ROTATE
     ] as PickComponentType<ComponentType.ROTATE>;
 
-    if (!activeShape) return state;
     let angle = rotateComponent.angle;
     const isMirror =
       activeShape.components.entities[ComponentType.IS_MIRROR_TAG];

@@ -9,6 +9,10 @@ import { EffectsComponent } from "./layers/effects/effects.component";
 import { GameFacade } from "./game.facade";
 import { ShapesPackComponent } from "./layers/shapes-pack/shapes-pack.component";
 import { AssetStore } from "./store/assets/asset-srore";
+import { StartScreenComponent } from "./layers/start-screen/start-screen.component";
+import { GameStateService } from "./services/game-state.service";
+import { GameState } from "./constants/game.state.enum";
+import { TutorialComponent } from "./layers/tutorial/tutorial.component";
 
 @Component({
   selector: "katamino-game",
@@ -17,10 +21,16 @@ import { AssetStore } from "./store/assets/asset-srore";
   template: `
     <game-scene (fireCoords)="fireCoords = $event" />
     <game-board />
-    <game-placement-shapes />
+    @if (gameStateService.state === gameState.PLAYING) {
     <game-shapes-pack />
-    <game-active-shape />
     <game-effects [fireCoords]="fireCoords" />
+    <game-placement-shapes />
+    <game-active-shape />
+    } @if (gameStateService.state === gameState.TUTORIAL) {
+    <game-tutorial />
+    } @if (gameStateService.state === gameState.START) {
+    <game-start-screen />
+    }
   `,
   styles: ``,
   imports: [
@@ -31,13 +41,18 @@ import { AssetStore } from "./store/assets/asset-srore";
     EffectsComponent,
     ShapesPackComponent,
     EffectsComponent,
+    StartScreenComponent,
+    TutorialComponent,
   ],
 })
 export class GameComponent implements OnInit {
   private readonly gameFacade = inject(GameFacade);
   private readonly assetStore = inject(AssetStore);
+  readonly gameStateService = inject(GameStateService);
+  readonly gameState = GameState;
 
   fireCoords = { x1: 0, y1: 0, x2: 0, y2: 0 };
+  GameState: any;
 
   ngOnInit() {
     this.assetStore.loadAssets();

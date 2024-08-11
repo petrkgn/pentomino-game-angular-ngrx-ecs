@@ -1,17 +1,8 @@
-import {
-  AfterViewInit,
-  Component,
-  effect,
-  inject,
-  signal,
-  untracked,
-  ViewChild,
-} from "@angular/core";
+import { Component, effect, inject, signal, untracked } from "@angular/core";
 
 import { Entity } from "../../types/entity";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { isDefined } from "../../utils/filter-defined";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CanvasParams } from "../../types/canvas-params";
 import { ShapesPackRenderService } from "../../services/render-sapes-pack.service";
