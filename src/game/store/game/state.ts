@@ -1,19 +1,12 @@
-import { createFeature, createReducer, createSelector, on } from "@ngrx/store";
+import { createFeature, createSelector } from "@ngrx/store";
 
 import { Entity } from "../../types/entity";
 import { ComponentType } from "../../constants/component-type.enum";
-import { PlayerActions, GameActions, PentominoActions } from "./actions";
-import {
-  initialGameEntitiesState,
-  entitiesAdapter,
-  componentsAdapter,
-} from "./initial.state";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
-import * as utils from "../../utils";
 import { gameReducer } from "./reducer";
 import EntitiesManager from "../../utils/entitiesManager";
 import ComponentsManager from "../../utils/componentsManager";
-import { EntityState } from "@ngrx/entity";
+import { entitiesAdapter, componentsAdapter } from "./initial.state";
 
 const entitiesManager = new EntitiesManager(entitiesAdapter);
 const componentsManager = new ComponentsManager(

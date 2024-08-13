@@ -10,7 +10,6 @@ import {
   GameObjects,
 } from "./initial.state";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
-import * as utils from "../../utils";
 import BoardGame from "../../utils/board";
 import ComponentsManager from "../../utils/componentsManager";
 import EntitiesManager from "../../utils/entitiesManager";
@@ -21,6 +20,7 @@ import {
   handleShapePlacementFailure,
   handleShapePlacementSuccess,
 } from "../../utils/reducer-helpers";
+import { mirrorPentomino, rotatePentomino } from "../../utils/matrices";
 
 const boardGame = new BoardGame();
 const entitiesManager = new EntitiesManager(entitiesAdapter);
@@ -47,6 +47,9 @@ export const gameReducer = createReducer(
         changes,
       })
   ),
+  on(PentominoActions.removeAllEntities, (state) =>
+    entitiesManager.deleteAllEntities({ state })
+  ),
   on(PlayerActions.rotateShape, (state) => {
     const activeShape = componentsManager.getEntitiesWithComponents({
       state,
@@ -70,7 +73,7 @@ export const gameReducer = createReducer(
 
     let newState = { ...state };
 
-    const rotatedMatrix = utils.rotatePentomino(activeShape);
+    const rotatedMatrix = rotatePentomino(activeShape);
     const updatedComponents = [
       { componentType: ComponentType.ROTATE, changes: { angle } },
       { componentType: ComponentType.MATRIX, changes: rotatedMatrix },
@@ -108,7 +111,7 @@ export const gameReducer = createReducer(
         component: { type: ComponentType.IS_MIRROR_TAG },
       });
     }
-    const mirroredMatrix = utils.mirrorPentomino(activeShape);
+    const mirroredMatrix = mirrorPentomino(activeShape);
 
     newState = componentsManager.updateComponentData({
       state: newState,

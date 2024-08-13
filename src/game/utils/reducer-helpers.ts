@@ -1,10 +1,10 @@
 import { EntityState } from "@ngrx/entity";
+
 import { Entity } from "../types/entity";
 import { EntityId } from "../types/entity-id.type";
 import { ComponentType } from "../constants/component-type.enum";
 import { PickComponentType } from "../types/components";
 import BoardGame from "./board";
-import EntitiesManager from "./entitiesManager";
 import {
   componentsAdapter,
   entitiesAdapter,
@@ -12,6 +12,7 @@ import {
 import ComponentsManager from "./componentsManager";
 import { GameObjectsIds } from "../constants/game-objects-ids.enum";
 import { Matrices } from "../constants/matricies";
+import { GameActions } from "../store/game/actions";
 
 const boardGame = new BoardGame();
 const componentsManager = new ComponentsManager(
@@ -161,8 +162,6 @@ export function handleShapePlacementSuccess(
   let newState = state;
   const newBoard = boardGame.updateBoardMatrix(board, activeShape);
   if (newBoard) {
-    if (boardGame.isBoardFilled(newBoard))
-      setTimeout(() => alert("Game over"), 500);
     newState = componentsManager.updateComponentData({
       state: newState,
       entityId: GameObjectsIds.BOARD,

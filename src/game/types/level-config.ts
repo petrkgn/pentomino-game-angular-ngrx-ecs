@@ -2,12 +2,12 @@ import { ComponentType } from "../constants/component-type.enum";
 import { GameObjectsIds } from "../constants/game-objects-ids.enum";
 import { EntityComponents } from "./components";
 
-interface Board {
+export interface Board {
   size: string;
   components: string[];
 }
 
-interface Shape {
+export interface Shape {
   id: string;
   components: string[];
 }

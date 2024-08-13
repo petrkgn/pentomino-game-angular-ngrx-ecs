@@ -1,5 +1,6 @@
 import { inject, Injectable } from "@angular/core";
 import { Store } from "@ngrx/store";
+
 import { PentominoActions } from "../store/game/actions";
 import { ComponentType } from "../constants/component-type.enum";
 import { EntityView } from "../constants/view.enum";

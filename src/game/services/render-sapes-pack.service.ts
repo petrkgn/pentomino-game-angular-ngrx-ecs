@@ -1,5 +1,4 @@
 import { inject, Injectable } from "@angular/core";
-import { animationFrameScheduler } from "rxjs";
 
 import { PickComponentType } from "../types/components";
 import { ComponentType } from "../constants/component-type.enum";
@@ -22,25 +21,22 @@ export class ShapesPackRenderService {
 
   renderShapesPack(params: CanvasParams, shapes: Entity[]): void {
     const { ctx, canvas, width, height } = params;
+
     const isSupportedContext = Boolean(ctx instanceof CanvasRenderingContext2D);
     if (!ctx || (!shapes.length && isSupportedContext)) {
       this.clearCanvas(ctx as CanvasRenderingContext2D, canvas);
       return;
     }
 
-    animationFrameScheduler.schedule(
-      function (actions) {
-        this.schedule(actions);
-      },
-      0,
+    requestAnimationFrame(() => {
       this.renderAllCurrentShapes(
         shapes,
         ctx as CanvasRenderingContext2D,
         canvas,
         width,
         height
-      )
-    );
+      );
+    });
   }
 
   private renderAllCurrentShapes(

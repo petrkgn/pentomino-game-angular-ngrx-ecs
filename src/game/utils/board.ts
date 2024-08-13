@@ -185,9 +185,9 @@ class BoardGame {
   }
 
   /**
-   * Checks if a shape is out of bounds of the board.
-   * @param data Data for the check.
-   * @returns True if the shape is out of bounds, otherwise false.
+   * Проверяет, выходит ли фигура за пределы доски.
+   * @param data Данные для проверки.
+   * @returns True, если фигура выходит за пределы, иначе false.
    */
   private isOutOfBounds(data: PlacementData): boolean {
     const {
@@ -237,11 +237,11 @@ class BoardGame {
   }
 
   /**
-   * Calculate the boundaries of the shape.
-   * @param pentominoMatrix The matrix of the shape.
-   * @param rows The number of rows in the shape matrix.
-   * @param columns The number of columns in the shape matrix.
-   * @returns The minimum and maximum row and column indices.
+   * Вычисляет границы фигуры.
+   * @param pentominoMatrix Матрица фигуры.
+   * @param rows Количество строк в матрице фигуры.
+   * @param columns Количество столбцов в матрице фигуры.
+   * @returns Минимальные и максимальные индексы строк и столбцов.
    */
   private calculateShapeBounds(
     pentominoMatrix: any,
@@ -268,9 +268,9 @@ class BoardGame {
   }
 
   /**
-   * Checks if the shape intersects with other shapes on the board.
-   * @param data Data for the check.
-   * @returns True if there are intersections, otherwise false.
+   * Проверяет, пересекается ли фигура с другими фигурами на доске.
+   * @param data Данные для проверки.
+   * @returns True, если имеются пересечения, иначе false.
    */
   private intersectsOtherShapes(data: PlacementData): boolean {
     const { boardMatrix, pentominoMatrix } = data;
@@ -396,10 +396,10 @@ class BoardGame {
   }
 
   /**
-   * Updates the board matrix component after placing a pentomino.
-   * @param board The board to update.
-   * @param pentomino The pentomino to place.
-   * @returns The updated board matrix or null if the pentomino cannot be placed.
+   * Обновляет компонент матрицы доски после размещения петомино.
+   * @param board Доска для обновления.
+   * @param pentomino Петомино для размещения.
+   * @returns Обновленная матрица доски или null, если петомино не может быть размещено.
    */
   public updateBoardMatrix(board: Entity, pentomino: Entity): number[] | null {
     const placementData = this.preparePlacementData(board, pentomino);

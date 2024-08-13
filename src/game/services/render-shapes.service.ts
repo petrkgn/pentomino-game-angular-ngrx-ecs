@@ -1,4 +1,5 @@
 import { inject, Injectable } from "@angular/core";
+
 import { PickComponentType } from "../types/components";
 import { ComponentType } from "../constants/component-type.enum";
 import { CanvasParams } from "../types/canvas-params";
@@ -28,7 +29,6 @@ export class RenderService {
   renderCurrentShapes(params: CanvasParams, shapes: Entity[]): void {
     const { ctx, width, height } = params;
     if (!ctx || !this.isSupportedContext(ctx)) {
-      console.warn("Контекст основного канваса null или не поддерживается");
       return;
     }
 
@@ -73,7 +73,6 @@ export class RenderService {
     const offscreenCtx = this.offscreenCanvas.getContext("2d");
 
     if (!offscreenCtx) {
-      console.error("Контекст оффскрин канваса недоступен");
       return;
     }
 
@@ -186,8 +185,6 @@ export class RenderService {
     const ctx = this.offscreenCanvas.getContext("2d");
     if (ctx) {
       ctx.clearRect(0, 0, width, height);
-    } else {
-      console.error("Контекст оффскрин канваса недоступен для очистки");
     }
   }
 

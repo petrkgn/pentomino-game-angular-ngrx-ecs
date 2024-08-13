@@ -1,4 +1,11 @@
-import { Component, effect, inject, signal, untracked } from "@angular/core";
+import {
+  Component,
+  effect,
+  inject,
+  OnInit,
+  signal,
+  untracked,
+} from "@angular/core";
 
 import { Entity } from "../../types/entity";
 import { GameFacade } from "../../game.facade";
@@ -37,7 +44,7 @@ export class ShapesPackComponent {
       const canvasParams = this.canvasParams();
 
       untracked(() => {
-        if (!canvasParams) return;
+        if (!canvasParams || !activeShapes) return;
         this.renderShapes(canvasParams, activeShapes);
       });
     });

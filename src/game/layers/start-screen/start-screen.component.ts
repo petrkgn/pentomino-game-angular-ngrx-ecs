@@ -64,49 +64,49 @@ export class StartScreenComponent {
 
       if (paramsBg && bgImg && startButtonImg) {
         untracked(() => {
-          this.waitForImagesToLoad(
+          this.loadImages(
             bgImg.nativeElement,
             startButtonImg.nativeElement
           ).then(() => {
-            this.renderScene(paramsBg, bgImg.nativeElement);
-            this.renderLoadingBarWithFont(paramsBar);
+            this.renderBackground(paramsBg, bgImg.nativeElement);
+            this.renderLoadingBar(paramsBar);
           });
         });
       }
     });
   }
 
-  private waitForImagesToLoad(...images: HTMLImageElement[]): Promise<void> {
+  private loadImages(...images: HTMLImageElement[]): Promise<void> {
     return new Promise<void>((resolve) => {
       let loadedCount = 0;
-      const checkAllLoaded = () => {
-        loadedCount++;
-        if (loadedCount === images.length) {
-          resolve();
-        }
-      };
-
       images.forEach((img) => {
         if (img.complete) {
-          checkAllLoaded();
+          loadedCount++;
         } else {
-          img.onload = checkAllLoaded;
+          img.onload = () => {
+            loadedCount++;
+            if (loadedCount === images.length) {
+              resolve();
+            }
+          };
         }
       });
+      if (loadedCount === images.length) {
+        resolve();
+      }
     });
   }
 
-  private renderScene(
+  private renderBackground(
     canvasParams: CanvasParams | null,
     imgEl: HTMLImageElement
   ): void {
-    if (
-      !canvasParams ||
-      !(canvasParams.ctx instanceof CanvasRenderingContext2D)
-    )
-      return;
+    if (!this.isValidCanvasParams(canvasParams)) return;
 
-    const { ctx, canvasCenter, canvas } = canvasParams;
+    const { ctx, canvasCenter, canvas } = canvasParams!;
+
+    if (!(ctx instanceof CanvasRenderingContext2D)) return;
+
     const { topLeftX, topLeftY } = this.rectService.getTopLeftCoordinates(
       1280,
       896,
@@ -114,39 +114,33 @@ export class StartScreenComponent {
       canvasCenter!.y
     );
 
-    const overlayColor = "rgba(0, 0, 0, 0.2)";
-
-    ctx.fillStyle = overlayColor;
+    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.drawImage(imgEl, topLeftX, topLeftY, 1280, 896);
   }
 
-  private renderLoadingBarWithFont(canvasParams: CanvasParams | null): void {
-    if (!canvasParams) return;
+  private renderLoadingBar(canvasParams: CanvasParams | null): void {
+    if (!this.isValidCanvasParams(canvasParams)) return;
 
     document.fonts.ready.then(() => {
-      this.renderLoadingBar(canvasParams);
+      this.animateLoadingBar(canvasParams!);
     });
   }
 
-  private renderLoadingBar(canvasParams: CanvasParams | null): void {
-    if (
-      !canvasParams ||
-      !(canvasParams.ctx instanceof CanvasRenderingContext2D)
-    )
-      return;
-
+  private animateLoadingBar(canvasParams: CanvasParams): void {
     const { ctx, canvasCenter } = canvasParams;
+    if (!(ctx instanceof CanvasRenderingContext2D)) return;
+
     const barDimensions = this.getLoadingBarDimensions(canvasCenter!);
 
-    let progress = 0; // Initial progress
     const startTime = Date.now();
-    const minLoadingTime = 1000; // Minimum loading time in milliseconds
+    const minLoadingTime = 3000;
 
     const updateProgress = () => {
-      const elapsedTime = Date.now() - startTime;
-      progress = this.calculateProgress(elapsedTime, minLoadingTime);
+      const progress = this.calculateProgress(
+        Date.now() - startTime,
+        minLoadingTime
+      );
 
       this.clearLoadingBar(ctx, barDimensions);
       this.drawLoadingBar(ctx, barDimensions, progress);
@@ -162,11 +156,44 @@ export class StartScreenComponent {
     updateProgress();
   }
 
+  private renderStartButton(canvasParams: CanvasParams): void {
+    if (!this.isValidCanvasParams(canvasParams)) return;
+
+    const { ctx, canvasCenter } = canvasParams;
+
+    if (!(ctx instanceof CanvasRenderingContext2D)) return;
+
+    const buttonImg = this.startButton().nativeElement;
+
+    this.clearCanvas(ctx);
+
+    const buttonDimensions = this.getStartButtonDimensions(
+      canvasCenter!,
+      buttonImg
+    );
+    ctx.drawImage(
+      buttonImg,
+      buttonDimensions.buttonX,
+      buttonDimensions.buttonY,
+      buttonDimensions.buttonWidth,
+      buttonDimensions.buttonHeight
+    );
+
+    this.setupStartButtonClickListener(canvasParams.canvas, buttonDimensions);
+  }
+
+  private isValidCanvasParams(canvasParams: CanvasParams | null): boolean {
+    return (
+      Boolean(canvasParams) &&
+      canvasParams?.ctx instanceof CanvasRenderingContext2D
+    );
+  }
+
   private getLoadingBarDimensions(canvasCenter: { x: number; y: number }) {
     const barWidth = 470;
     const barHeight = 5;
     const barX = canvasCenter.x - barWidth / 2;
-    const barY = canvasCenter.y + 370; // Render slightly below the center
+    const barY = canvasCenter.y + 370;
 
     return { barWidth, barHeight, barX, barY };
   }
@@ -217,31 +244,8 @@ export class StartScreenComponent {
     ctx.restore();
   }
 
-  private renderStartButton(canvasParams: CanvasParams | null): void {
-    if (
-      !canvasParams ||
-      !(canvasParams.ctx instanceof CanvasRenderingContext2D)
-    )
-      return;
-
-    const { ctx, canvasCenter } = canvasParams;
-    const buttonImg = this.startButton().nativeElement;
-
-    this.clearCanvas(ctx);
-
-    const buttonDimensions = this.getStartButtonDimensions(
-      canvasCenter!,
-      buttonImg
-    );
-    ctx.drawImage(
-      buttonImg,
-      buttonDimensions.buttonX,
-      buttonDimensions.buttonY,
-      buttonDimensions.buttonWidth,
-      buttonDimensions.buttonHeight
-    );
-
-    this.addStartButtonClickListener(canvasParams.canvas, buttonDimensions);
+  private clearCanvas(ctx: CanvasRenderingContext2D) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   }
 
   private getStartButtonDimensions(
@@ -251,16 +255,12 @@ export class StartScreenComponent {
     const buttonWidth = buttonImg.width * 2;
     const buttonHeight = buttonImg.height * 2;
     const buttonX = canvasCenter.x - buttonImg.width;
-    const buttonY = canvasCenter.y + 370; // Render slightly below the center
+    const buttonY = canvasCenter.y + 360;
 
     return { buttonWidth, buttonHeight, buttonX, buttonY };
   }
 
-  private clearCanvas(ctx: CanvasRenderingContext2D) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  }
-
-  private addStartButtonClickListener(
+  private setupStartButtonClickListener(
     canvas: HTMLCanvasElement,
     {
       buttonX,
@@ -274,33 +274,23 @@ export class StartScreenComponent {
       buttonHeight: number;
     }
   ) {
-    canvas.addEventListener("click", (event: MouseEvent) =>
-      this.onCanvasClick(buttonX, buttonY, buttonWidth, buttonHeight, event)
-    );
-  }
+    canvas.addEventListener("click", (event: MouseEvent) => {
+      const clickX = event.offsetX;
+      const clickY = event.offsetY;
 
-  private onCanvasClick(
-    buttonX: number,
-    buttonY: number,
-    buttonWidth: number,
-    buttonHeight: number,
-    event: MouseEvent
-  ): void {
-    const clickX = event.offsetX;
-    const clickY = event.offsetY;
-
-    if (
-      this.isClickInsideButton(
-        clickX,
-        clickY,
-        buttonX,
-        buttonY,
-        buttonWidth,
-        buttonHeight
-      )
-    ) {
-      this.gameStateService.startTutorial();
-    }
+      if (
+        this.isClickInsideButton(
+          clickX,
+          clickY,
+          buttonX,
+          buttonY,
+          buttonWidth,
+          buttonHeight
+        )
+      ) {
+        this.gameStateService.startTutorial();
+      }
+    });
   }
 
   private isClickInsideButton(

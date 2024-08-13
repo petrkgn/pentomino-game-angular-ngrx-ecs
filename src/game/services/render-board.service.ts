@@ -79,7 +79,6 @@ export class BoardRenderService {
     const offscreenCtx = this.offscreenCanvas.getContext("2d");
 
     if (!offscreenCtx) {
-      console.error("Контекст оффскрин канваса недоступен");
       return;
     }
 
@@ -109,8 +108,6 @@ export class BoardRenderService {
     const ctx = this.offscreenCanvas.getContext("2d");
     if (ctx) {
       ctx.clearRect(0, 0, width, height);
-    } else {
-      console.error("Контекст оффскрин канваса недоступен для очистки");
     }
   }
 }

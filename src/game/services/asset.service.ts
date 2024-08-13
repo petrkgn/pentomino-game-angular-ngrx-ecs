@@ -29,7 +29,6 @@ export class AssetService {
     return this.http.get<string[]>(this.apiUrl).pipe(
       mergeMap((files) => this.downloadAll(files)),
       catchError((err) => {
-        console.error("Error loading assets:", err);
         return of([]);
       })
     );
@@ -48,7 +47,6 @@ export class AssetService {
       map((assetArrays) => assetArrays.flat()),
       map((assets) => assets.filter((asset) => asset !== null) as AssetImg[]),
       catchError((err) => {
-        console.error("Error during downloading assets:", err);
         return of([]);
       }),
       finalize(() => {
@@ -79,8 +77,7 @@ export class AssetService {
       };
       img.src = `${this.apiUrl}/${fileName}`;
     }).pipe(
-      catchError((err) => {
-        console.error(err);
+      catchError(() => {
         return of(null);
       })
     );

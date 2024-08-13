@@ -1,7 +1,8 @@
 import { inject, Injectable } from "@angular/core";
-import { Actions, createEffect } from "@ngrx/effects";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
 import {
   debounceTime,
+  delay,
   filter,
   map,
   repeat,
@@ -12,12 +13,12 @@ import {
 } from "rxjs";
 
 import { GameActions, PlayerActions } from "./actions";
-
 import { ResizeService } from "../../services/resize.service";
 import { Store } from "@ngrx/store";
 import { gameFeature } from "./state";
 import { KEY_PRESSED } from "../../tokens/key-pressed.token";
 import { MOUSE_EVENT } from "../../tokens/mouse-event.token";
+import { GameStateService } from "../../services/game-state.service";
 
 @Injectable()
 export class GameEffects {
@@ -26,11 +27,11 @@ export class GameEffects {
   private readonly resizeService = inject(ResizeService);
   private readonly mouseEvent$ = inject(MOUSE_EVENT);
   private readonly store = inject(Store);
+  private readonly gameStateService = inject(GameStateService);
   private readonly activeShapes$ = this.store.select(
     gameFeature.selectActiveShape
   );
 
-  // Subjects to control the completion of click streams
   private stopClickWithoutActiveShape$$ = new Subject<void>();
   private stopClickWithActiveShape$$ = new Subject<void>();
 
@@ -82,6 +83,17 @@ export class GameEffects {
     this.resizeService
       .calculateScaleRatio(32, 20)
       .pipe(map((e) => GameActions.ratioChanged({ ratio: Math.ceil(e) })))
+  );
+
+  readonly levelCompleted$ = createEffect(
+    () => {
+      return this.actions$.pipe(
+        ofType(GameActions.levelCompleted),
+        delay(40),
+        tap(() => this.gameStateService.completeLevel())
+      );
+    },
+    { dispatch: false }
   );
 
   readonly rotateShape$ = createEffect(() =>

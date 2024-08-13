@@ -13,7 +13,7 @@ import { CanvasParams } from "../../types/canvas-params";
 import { GameStateService } from "../../services/game-state.service";
 
 @Component({
-  selector: "game-tutorial",
+  selector: "game-level-completed",
   imports: [CanvasParamsDirective],
   standalone: true,
   template: `
@@ -24,8 +24,7 @@ import { GameStateService } from "../../services/game-state.service";
       #canvas
     ></canvas>
 
-    <img #gameDescription src="/assets/game_description.png" />
-    <img #gameControl src="/assets/game_control.png" />
+    <img #levelCompleted src="/assets/level_completed.png" />
   `,
   styles: [
     `
@@ -35,61 +34,49 @@ import { GameStateService } from "../../services/game-state.service";
     `,
   ],
 })
-export class TutorialComponent {
-  private readonly gameDescription =
-    viewChild.required<ElementRef<HTMLImageElement>>("gameDescription");
-  private readonly gameControl =
-    viewChild.required<ElementRef<HTMLImageElement>>("gameControl");
-
+export class LevelCompletedComponent {
   private readonly gameStateService = inject(GameStateService);
+  private readonly levelCompleted =
+    viewChild.required<ElementRef<HTMLImageElement>>("levelCompleted");
 
   canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {
     effect(() => {
       const params = this.canvasParams();
-      const gameDescriptionImg = this.gameDescription();
-      const gameControlImg = this.gameControl();
+      const levelCompleted = this.levelCompleted();
 
-      if (params && gameDescriptionImg && gameControlImg) {
+      if (params && levelCompleted) {
         untracked(() => {
-          this.handleImagesLoading(
-            gameDescriptionImg.nativeElement,
-            gameControlImg.nativeElement
-          );
+          this.handleImagesLoading(levelCompleted.nativeElement);
         });
       }
     });
   }
 
-  private handleImagesLoading(
-    descriptionEl: HTMLImageElement,
-    controlEl: HTMLImageElement
-  ): void {
+  private handleImagesLoading(levelCompletedEl: HTMLImageElement): void {
     const onImagesLoaded = () => {
-      this.renderTutorial(this.canvasParams(), descriptionEl, controlEl);
+      this.renderMessage(this.canvasParams(), levelCompletedEl);
     };
 
-    if (descriptionEl.complete && controlEl.complete) {
+    if (levelCompletedEl.complete) {
       onImagesLoaded();
     } else {
-      descriptionEl.onload = onImagesLoaded;
-      controlEl.onload = onImagesLoaded;
+      levelCompletedEl.onload = onImagesLoaded;
     }
   }
 
-  private renderTutorial(
+  private renderMessage(
     canvasParams: CanvasParams | null,
-    descriptionEl: HTMLImageElement,
-    controlEl: HTMLImageElement
+    levelCompletedEl: HTMLImageElement
   ): void {
     if (
       !canvasParams ||
       !(canvasParams.ctx instanceof CanvasRenderingContext2D)
     )
       return;
-    this.clearCanvas(canvasParams.ctx, canvasParams.canvas);
-    this.showDescriptionImage(canvasParams, descriptionEl, controlEl);
+
+    this.showMessageImage(canvasParams, levelCompletedEl);
   }
 
   private getButtonDimensions(
@@ -111,17 +98,10 @@ export class TutorialComponent {
   private drawOverlay(
     ctx: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
-    color: string = "rgba(0, 0, 0, 0.5)"
+    color: string = "rgba(0, 0, 0, 0.4)"
   ) {
     ctx.fillStyle = color;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-
-  private clearCanvas(
-    ctx: CanvasRenderingContext2D,
-    canvas: HTMLCanvasElement
-  ) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   private drawImageCentered(
@@ -134,10 +114,10 @@ export class TutorialComponent {
 
     const topLeftX = canvasCenter.x - imgWidth / 2;
     const topLeftY = canvasCenter.y - imgHeight / 2;
-    ctx.save();
+
     this.drawOverlay(ctx, ctx.canvas);
     ctx.drawImage(imgEl, topLeftX, topLeftY);
-    ctx.restore();
+    ctx.fillRect(canvasCenter!.x - 45, canvasCenter!.y + 48, 100, 30);
   }
 
   private handleClick(
@@ -174,47 +154,24 @@ export class TutorialComponent {
     canvas.addEventListener("click", onClick);
   }
 
-  private showControlImage(
+  private showMessageImage(
     canvasParams: CanvasParams,
-    controlEl: HTMLImageElement
+    levelCompletedEl: HTMLImageElement
   ) {
     const { ctx, canvasCenter, canvas } = canvasParams;
     if (!(ctx instanceof CanvasRenderingContext2D)) return;
-    this.clearCanvas(ctx, canvas);
-    this.drawImageCentered(ctx, canvasCenter!, controlEl);
+    this.drawImageCentered(ctx, canvasCenter!, levelCompletedEl);
 
     const button = this.getButtonDimensions(
       canvasCenter!.x,
       canvasCenter!.y,
       -45,
-      130,
+      48,
       100,
       30
     );
-    this.addButtonClickListener(canvas, button, () =>
-      this.gameStateService.startPlaying()
-    );
-  }
-
-  private showDescriptionImage(
-    canvasParams: CanvasParams,
-    descriptionEl: HTMLImageElement,
-    controlEl: HTMLImageElement
-  ) {
-    const { ctx, canvasCenter, canvas } = canvasParams;
-    if (!(ctx instanceof CanvasRenderingContext2D)) return;
-    this.drawImageCentered(ctx, canvasCenter!, descriptionEl);
-
-    const button = this.getButtonDimensions(
-      canvasCenter!.x,
-      canvasCenter!.y,
-      -50,
-      208,
-      100,
-      30
-    );
-    this.addButtonClickListener(canvas, button, () =>
-      this.showControlImage(canvasParams, controlEl)
-    );
+    this.addButtonClickListener(canvas, button, () => {
+      this.gameStateService.startPlaying();
+    });
   }
 }

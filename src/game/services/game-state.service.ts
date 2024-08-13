@@ -5,14 +5,14 @@ import { GameState } from "../constants/game.state.enum";
   providedIn: "root",
 })
 export class GameStateService {
-  private _state = signal<GameState>(GameState.START);
+  state = signal<GameState>(GameState.START);
 
-  get state(): GameState {
-    return this._state();
-  }
+  //   get state(): GameState {
+  //     return this._state();
+  //   }
 
   setState(newState: GameState): void {
-    this._state.set(newState);
+    this.state.set(newState);
   }
 
   startGame(): void {
@@ -21,8 +21,6 @@ export class GameStateService {
   }
 
   private loadAssets(): void {
-    // Логика загрузки изображений и звуков
-    // После завершения загрузки, переключаемся на этап обучения
     this.setState(GameState.TUTORIAL);
   }
 
@@ -36,14 +34,12 @@ export class GameStateService {
 
   completeLevel(): void {
     this.setState(GameState.LEVEL_COMPLETED);
-    this.loadNextLevel();
+    // this.loadNextLevel();
   }
 
-  private loadNextLevel(): void {
-    // Логика загрузки следующего уровня
-    // После загрузки можно переключиться обратно на playing или другой статус
-    this.setState(GameState.PLAYING);
-  }
+  //   private loadNextLevel(): void {
+  //     this.setState(GameState.PLAYING);
+  //   }
 
   failLevel(): void {
     this.setState(GameState.LEVEL_FAILED);

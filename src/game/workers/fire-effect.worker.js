@@ -14,13 +14,11 @@ self.addEventListener("message", (event) => {
 
   const gl = canvas.getContext("webgl2");
   if (!gl) {
-    console.error("Failed to get WebGL2 context");
     return;
   }
 
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
   if (!vertexShader) {
-    console.error("Vertex shader creation failed");
     return;
   }
 
@@ -30,13 +28,11 @@ self.addEventListener("message", (event) => {
     fragmentShaderSource
   );
   if (!fragmentShader) {
-    console.error("Fragment shader creation failed");
     return;
   }
 
   const program = createProgram(gl, vertexShader, fragmentShader);
   if (!program) {
-    console.error("Program creation failed");
     return;
   }
 
@@ -51,12 +47,6 @@ self.addEventListener("message", (event) => {
   const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
   const mouseLocation = gl.getUniformLocation(program, "u_mouse");
   const timeLocation = gl.getUniformLocation(program, "u_time");
-
-  if (resolutionLocation === null)
-    console.error("Failed to get location of u_resolution");
-  if (mouseLocation === null)
-    console.error("Failed to get location of u_mouse");
-  if (timeLocation === null) console.error("Failed to get location of u_time");
 
   if (
     resolutionLocation === null ||
@@ -80,12 +70,7 @@ self.addEventListener("message", (event) => {
     if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
       return shader;
     }
-    console.error(
-      `Shader ${
-        type === gl.VERTEX_SHADER ? "VERTEX" : "FRAGMENT"
-      } compilation failed:`,
-      gl.getShaderInfoLog(shader)
-    );
+
     gl.deleteShader(shader);
     return null;
   }
@@ -98,7 +83,7 @@ self.addEventListener("message", (event) => {
     if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
       return program;
     }
-    console.error("Program linking failed:", gl.getProgramInfoLog(program));
+
     gl.deleteProgram(program);
     return null;
   }
@@ -109,7 +94,6 @@ self.addEventListener("message", (event) => {
       "a_position"
     );
     if (positionAttributeLocation < 0) {
-      console.error("Failed to get the storage location of a_position");
       return;
     }
     const positionBuffer = gl.createBuffer();
@@ -132,7 +116,7 @@ self.addEventListener("message", (event) => {
       type,
       normalize,
       stride,
-      offset
+      offset 
     );
     gl.bindVertexArray(vao);
   }

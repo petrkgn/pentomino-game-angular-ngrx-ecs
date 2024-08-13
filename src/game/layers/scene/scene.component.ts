@@ -18,6 +18,7 @@ import { RectService } from "../../services/rect.service";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
+import { tap } from "rxjs";
 
 @Component({
   selector: "game-scene",
@@ -58,6 +59,14 @@ export class SceneComponent {
   shapesPack = toSignal(this.gameFacade.selectAllShapes(), {
     initialValue: [],
   });
+
+  private levelChanged = toSignal(
+    this.gameFacade.startNextLevel().pipe(
+      tap(() => {
+        this.renderScene(this.canvasParams(), this.bgImg().nativeElement);
+      })
+    )
+  );
 
   canvasParams = signal<CanvasParams | null>(null);
 

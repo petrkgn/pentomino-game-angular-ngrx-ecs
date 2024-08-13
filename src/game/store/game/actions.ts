@@ -28,6 +28,7 @@ export const PentominoActions = createActionGroup({
       componentType: ComponentType;
       changes: Partial<EntityComponents>;
     }>(),
+    removeAllEntities: emptyProps(),
   },
 });
 
@@ -50,5 +51,6 @@ export const GameActions = createActionGroup({
     changeScene: props<{ changes: Partial<EntityComponents> }>(),
     shapePlacement: emptyProps(),
     ratioChanged: props<{ ratio: number }>(),
+    levelCompleted: emptyProps(),
   },
 });

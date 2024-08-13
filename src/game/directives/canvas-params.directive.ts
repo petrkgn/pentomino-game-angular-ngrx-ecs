@@ -2,14 +2,12 @@ import {
   AfterViewInit,
   Directive,
   ElementRef,
-  Input,
-  Output,
-  EventEmitter,
   inject,
   input,
+  OnDestroy,
   output,
 } from "@angular/core";
-import { Observable, tap } from "rxjs";
+import { Observable, Subject, takeUntil, tap } from "rxjs";
 
 import { CanvasParams } from "../types/canvas-params";
 import { ResizeService } from "../services/resize.service";
@@ -21,9 +19,10 @@ import { CanvasContextName } from "../types/canvas-context-name";
   selector: "[canvasParams]",
   standalone: true,
 })
-export class CanvasParamsDirective implements AfterViewInit {
+export class CanvasParamsDirective implements AfterViewInit, OnDestroy {
   private readonly elRef = inject(ElementRef<HTMLCanvasElement>);
   private readonly resizeService = inject(ResizeService);
+  private readonly destroy$ = new Subject<void>();
 
   canvasCss = input<string>("");
   context = input<CanvasContextName>(CanvasContext.DEFAULT);
@@ -31,7 +30,12 @@ export class CanvasParamsDirective implements AfterViewInit {
 
   ngAfterViewInit() {
     this.initializeCanvasParams();
-    this.handleResize().subscribe();
+    this.handleResize().pipe(takeUntil(this.destroy$)).subscribe();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private handleResize(): Observable<number> {
