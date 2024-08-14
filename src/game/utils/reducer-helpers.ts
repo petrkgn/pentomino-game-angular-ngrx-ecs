@@ -20,6 +20,9 @@ const componentsManager = new ComponentsManager(
   componentsAdapter
 );
 
+const shapeSuccessPlacement = new Audio("assets/figura_yes.mp3");
+const shapeFailurePlacement = new Audio("assets/figura_no.mp3");
+
 export function findEntityWithPoint(
   entities: EntityState<Entity>,
   { x: pointX, y: pointY }: { x: number; y: number }
@@ -119,6 +122,7 @@ export function handleShapePlacementFailure(
       componentType: ComponentType.IS_MIRROR_TAG,
     });
   }
+  shapeFailurePlacement.play();
   newState = componentsManager.removeComponentFromEntity({
     state: newState,
     entityId: activeShape.id,
@@ -169,7 +173,7 @@ export function handleShapePlacementSuccess(
       changes: { matrix: newBoard },
     });
   }
-
+  shapeSuccessPlacement.play();
   newState = componentsManager.removeComponentFromEntity({
     state: newState,
     entityId: activeShape.id,

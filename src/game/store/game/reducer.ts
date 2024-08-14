@@ -28,6 +28,8 @@ const componentsManager = new ComponentsManager(
   entitiesAdapter,
   componentsAdapter
 );
+const shapeRevers = new Audio("assets/revers.mp3");
+const shapeRotate = new Audio("assets/revers.mp3");
 
 export const gameReducer = createReducer(
   initialGameEntitiesState,
@@ -78,7 +80,7 @@ export const gameReducer = createReducer(
       { componentType: ComponentType.ROTATE, changes: { angle } },
       { componentType: ComponentType.MATRIX, changes: rotatedMatrix },
     ];
-
+    shapeRotate.play();
     newState = componentsManager.updateMultipleComponentsDataForEntities(
       { state, includeComponents: [ComponentType.IS_ACTIVE_TAG] },
       updatedComponents
@@ -112,7 +114,7 @@ export const gameReducer = createReducer(
       });
     }
     const mirroredMatrix = mirrorPentomino(activeShape);
-
+    shapeRevers.play();
     newState = componentsManager.updateComponentData({
       state: newState,
       entityId: activeShape.id,
