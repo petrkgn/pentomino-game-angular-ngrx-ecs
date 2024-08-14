@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  OnInit,
   effect,
   inject,
   signal,
@@ -34,10 +35,12 @@ import { GameStateService } from "../../services/game-state.service";
     `,
   ],
 })
-export class LevelCompletedComponent {
+export class LevelCompletedComponent implements OnInit {
   private readonly gameStateService = inject(GameStateService);
   private readonly levelCompleted =
     viewChild.required<ElementRef<HTMLImageElement>>("levelCompleted");
+
+  private levelCompletedSound = new Audio("assets/level_yes.mp3");
 
   canvasParams = signal<CanvasParams | null>(null);
 
@@ -52,6 +55,9 @@ export class LevelCompletedComponent {
         });
       }
     });
+  }
+  ngOnInit(): void {
+    this.levelCompletedSound.play();
   }
 
   private handleImagesLoading(levelCompletedEl: HTMLImageElement): void {

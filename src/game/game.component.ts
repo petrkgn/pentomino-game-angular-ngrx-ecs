@@ -22,7 +22,9 @@ import { CurtainComponent } from "./layers/curtain/curtain.component";
   template: `
     <game-scene (fireCoords)="fireCoords = $event" />
     <game-board />
+    @if(gameStateService.state() === gameState.PLAYING) {
     <game-effects [fireCoords]="fireCoords" />
+    }
     <game-shapes-pack />
     <game-placement-shapes />
     <game-active-shape />
