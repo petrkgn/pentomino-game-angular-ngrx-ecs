@@ -1,0 +1,32 @@
+{
+    "board": {
+      "size": "5x6",
+      "components": ["POSITION", "MATRIX", "RATIO", "VIEW"]
+    },
+    "shapes": [
+      {
+        "id": "SHAPE_Y",
+        "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+      },
+      {
+        "id": "SHAPE_P",
+        "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+      },
+      {
+        "id": "SHAPE_U",
+        "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+      },
+      {
+        "id": "SHAPE_N",
+        "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+      },
+      {
+        "id": "SHAPE_V",
+        "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+      },
+	  {
+        "id": "SHAPE_F",
+        "components": ["POSITION", "MATRIX", "RATIO", "IS_PACK_TAG", "HINT_BOX", "VIEW", "ROTATE"]
+      }
+    ]
+  }
