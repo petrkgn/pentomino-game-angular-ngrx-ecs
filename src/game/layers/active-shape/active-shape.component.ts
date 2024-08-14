@@ -1,25 +1,36 @@
-import { Component, inject, effect, untracked, signal } from "@angular/core";
+import {
+  Component,
+  inject,
+  effect,
+  untracked,
+  signal,
+  AfterViewInit,
+  viewChild,
+  ElementRef,
+} from "@angular/core";
 
 import { Entity } from "../../types/entity";
 import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
-import { RenderService } from "../../services/render.service";
+import { RenderService } from "../../services/render-shapes.service";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
 import { CanvasParams } from "../../types/canvas-params";
+import { CanvasContext } from "../../constants/canvas-context";
 
 @Component({
   selector: "game-active-shape",
   standalone: true,
   imports: [CanvasParamsDirective],
+  providers: [RenderService],
   template: `
     <canvas
       canvasParams
       [canvasCss]="''"
-      (canvasParams)="onCanvasParams($event)"
+      [context]="'bitmaprenderer'"
+      (canvasParams)="canvasParams.set($event)"
       #canvas
     ></canvas>
   `,
-  styles: ``,
 })
 export class ActiveShapeComponent {
   private readonly gameFacade = inject(GameFacade);
@@ -29,7 +40,7 @@ export class ActiveShapeComponent {
     initialValue: [],
   });
 
-  private canvasParams = signal<CanvasParams | null>(null);
+  canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {
     effect((): void => {
@@ -40,10 +51,6 @@ export class ActiveShapeComponent {
         this.renderShapes(canvasParams, activeShapes);
       });
     });
-  }
-
-  onCanvasParams(params: CanvasParams): void {
-    this.canvasParams.set(params);
   }
 
   renderShapes(canvasParams: CanvasParams, activeShapes: Entity[]): void {

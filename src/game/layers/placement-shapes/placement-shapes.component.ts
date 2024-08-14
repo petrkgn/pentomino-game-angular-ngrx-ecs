@@ -1,4 +1,13 @@
-import { Component, effect, inject, signal, untracked } from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  signal,
+  untracked,
+  viewChild,
+} from "@angular/core";
 
 import { AsyncPipe, JsonPipe, NgIf } from "@angular/common";
 
@@ -7,16 +16,18 @@ import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { CanvasParams } from "../../types/canvas-params";
 import { CanvasParamsDirective } from "../../directives/canvas-params.directive";
-import { RenderService } from "../../services/render.service";
+import { RenderService } from "../../services/render-shapes.service";
 
 @Component({
   selector: "game-placement-shapes",
   imports: [CanvasParamsDirective, JsonPipe, NgIf, AsyncPipe],
+  providers: [RenderService],
   standalone: true,
   template: ` <canvas
     canvasParams
     [canvasCss]="''"
-    (canvasParams)="onCanvasParams($event)"
+    [context]="'bitmaprenderer'"
+    (canvasParams)="canvasParams.set($event)"
     #canvas
   ></canvas>`,
 })
@@ -28,7 +39,7 @@ export class PlacementShapesComponent {
     initialValue: [],
   });
 
-  private canvasParams = signal<CanvasParams | null>(null);
+  canvasParams = signal<CanvasParams | null>(null);
 
   constructor() {
     effect((): void => {
@@ -39,10 +50,6 @@ export class PlacementShapesComponent {
         this.renderShapes(canvasParams, placementShapes);
       });
     });
-  }
-
-  onCanvasParams(params: CanvasParams): void {
-    this.canvasParams.set(params);
   }
 
   renderShapes(canvasParams: CanvasParams, activeShapes: Entity[]): void {

@@ -47,7 +47,7 @@ type Ratio = {
 
 type View = {
   type: ComponentType.VIEW;
-  img: EntityView;
+  img: EntityView | null;
 };
 
 type IsPackTag = {

@@ -5,7 +5,7 @@ import { Entity } from "../types/entity";
 import { EntityComponents } from "../types/components";
 
 /**
- * Общий интерфейс для входных данных методов EntitiesManager.
+ * Common interface for input data of EntitiesManager methods.
  */
 interface EntitiesManagerParams {
   state: GameObjects;
@@ -88,6 +88,16 @@ class EntitiesManager {
       { id: entityId, changes: entity },
       state
     );
+  }
+
+  /**
+   * Deletes all entities.
+   * @param {EntitiesManagerParams} params - The parameters for the method.
+   * @returns {GameObjects} The new state of the game objects without any entities.
+   */
+  deleteAllEntities(params: EntitiesManagerParams): GameObjects {
+    const { state } = params;
+    return this.entitiesAdapter.removeAll(state);
   }
 }
 

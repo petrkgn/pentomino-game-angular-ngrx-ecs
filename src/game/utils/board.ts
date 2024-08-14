@@ -185,9 +185,9 @@ class BoardGame {
   }
 
   /**
-   * Проверяет, выходит ли фигура за границы доски.
+   * Проверяет, выходит ли фигура за пределы доски.
    * @param data Данные для проверки.
-   * @returns true если фигура выходит за границы, иначе false.
+   * @returns True, если фигура выходит за пределы, иначе false.
    */
   private isOutOfBounds(data: PlacementData): boolean {
     const {
@@ -197,35 +197,80 @@ class BoardGame {
       pentominoMatrix,
       ratio,
     } = data;
-    const diff = -10 * ratio;
+
+    const tolerance = 10 * ratio;
+    const cellSize = this.cellSize * ratio;
 
     const { rows: boardRows, columns: boardColumns } =
       this.getRowsAndColumns(boardMatrix);
     const { rows: pentominoRows, columns: pentominoColumns } =
       this.getRowsAndColumns(pentominoMatrix);
 
-    const boardWidth = boardColumns * this.cellSize * ratio;
-    const boardHeight = boardRows * this.cellSize * ratio;
-    const shapeWidth = pentominoColumns * this.cellSize * ratio;
-    const shapeHeight = pentominoRows * this.cellSize * ratio;
+    const boardWidth = boardColumns * cellSize;
+    const boardHeight = boardRows * cellSize;
 
-    const shapeLeftX = shapePositionComponent.x - shapeWidth / 2;
-    const shapeRightX = shapePositionComponent.x + shapeWidth / 2;
-    const shapeTopY = shapePositionComponent.y - shapeHeight / 2;
-    const shapeBottomY = shapePositionComponent.y + shapeHeight / 2;
+    const shapeBounds = this.calculateShapeBounds(
+      pentominoMatrix,
+      pentominoRows,
+      pentominoColumns
+    );
+
+    const shapeLeftX =
+      shapePositionComponent.x +
+      (shapeBounds.minColumn - pentominoColumns / 2) * cellSize;
+    const shapeRightX =
+      shapePositionComponent.x +
+      (shapeBounds.maxColumn - pentominoColumns / 2 + 1) * cellSize;
+    const shapeTopY =
+      shapePositionComponent.y +
+      (shapeBounds.minRow - pentominoRows / 2) * cellSize;
+    const shapeBottomY =
+      shapePositionComponent.y +
+      (shapeBounds.maxRow - pentominoRows / 2 + 1) * cellSize;
 
     return (
-      shapeLeftX - diff < boardPositionComponent.x ||
-      shapeRightX + diff > boardPositionComponent.x + boardWidth ||
-      shapeTopY - diff < boardPositionComponent.y ||
-      shapeBottomY + diff > boardPositionComponent.y + boardHeight
+      shapeLeftX + tolerance < boardPositionComponent.x ||
+      shapeRightX - tolerance > boardPositionComponent.x + boardWidth ||
+      shapeTopY + tolerance < boardPositionComponent.y ||
+      shapeBottomY - tolerance > boardPositionComponent.y + boardHeight
     );
   }
 
   /**
-   * Checks if the shape intersects with other shapes on the board.
-   * @param data Data for the check.
-   * @returns True if there are intersections, otherwise false.
+   * Вычисляет границы фигуры.
+   * @param pentominoMatrix Матрица фигуры.
+   * @param rows Количество строк в матрице фигуры.
+   * @param columns Количество столбцов в матрице фигуры.
+   * @returns Минимальные и максимальные индексы строк и столбцов.
+   */
+  private calculateShapeBounds(
+    pentominoMatrix: any,
+    rows: number,
+    columns: number
+  ) {
+    let minRow = rows,
+      maxRow = 0,
+      minColumn = columns,
+      maxColumn = 0;
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < columns; col++) {
+        if (pentominoMatrix.matrix[row * columns + col] !== 0) {
+          if (row < minRow) minRow = row;
+          if (row > maxRow) maxRow = row;
+          if (col < minColumn) minColumn = col;
+          if (col > maxColumn) maxColumn = col;
+        }
+      }
+    }
+
+    return { minRow, maxRow, minColumn, maxColumn };
+  }
+
+  /**
+   * Проверяет, пересекается ли фигура с другими фигурами на доске.
+   * @param data Данные для проверки.
+   * @returns True, если имеются пересечения, иначе false.
    */
   private intersectsOtherShapes(data: PlacementData): boolean {
     const { boardMatrix, pentominoMatrix } = data;
@@ -351,15 +396,15 @@ class BoardGame {
   }
 
   /**
-   * Updates the board matrix component after placing a pentomino.
-   * @param board The board to update.
-   * @param pentomino The pentomino to place.
-   * @returns The updated board matrix or null if the pentomino cannot be placed.
+   * Обновляет компонент матрицы доски после размещения петомино.
+   * @param board Доска для обновления.
+   * @param pentomino Петомино для размещения.
+   * @returns Обновленная матрица доски или null, если петомино не может быть размещено.
    */
   public updateBoardMatrix(board: Entity, pentomino: Entity): number[] | null {
     const placementData = this.preparePlacementData(board, pentomino);
 
-    if (!placementData || !this.canPlacePentomino(board, pentomino)) {
+    if (!placementData) {
       return null;
     }
 
@@ -464,17 +509,8 @@ class BoardGame {
    * @param board Доска для проверки.
    * @returns true, если доска полностью заполнена; иначе false.
    */
-  public isBoardFilled(board: Entity): boolean {
-    const matrixComponent = board.components.entities[
-      ComponentType.MATRIX
-    ] as PickComponentType<ComponentType.MATRIX>;
-
-    if (!matrixComponent) {
-      return false;
-    }
-
-    const matrix = matrixComponent.matrix;
-    return matrix.every((cell) => cell === 1);
+  public isBoardFilled(board: number[]): boolean {
+    return board.every((cell) => cell !== 0);
   }
 }
 

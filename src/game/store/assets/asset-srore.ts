@@ -1,5 +1,4 @@
 import { computed, inject } from "@angular/core";
-
 import {
   patchState,
   signalStore,
@@ -9,6 +8,7 @@ import {
 } from "@ngrx/signals";
 import { setEntities, withEntities } from "@ngrx/signals/entities";
 import { rxMethod } from "@ngrx/signals/rxjs-interop";
+
 import { LoadingStatus } from "../../constants/loading-status.enum";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { catchError } from "rxjs/internal/operators/catchError";

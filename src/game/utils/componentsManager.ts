@@ -6,7 +6,7 @@ import { EntityId } from "../types/entity-id.type";
 import { Entity } from "../types/entity";
 
 /**
- * Общий интерфейс для входных данных методов ComponentsManager.
+ * A common interface for input parameters of ComponentsManager methods.
  */
 interface ComponentsManagerParams {
   state: GameObjects;

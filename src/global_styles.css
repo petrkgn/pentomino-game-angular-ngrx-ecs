@@ -1,4 +1,11 @@
 /* Add application styles & imports to this file! */
+@font-face {
+  font-family: 'DesdaC';
+  src: url('/assets/fonts/EgyptianAllCaps-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 canvas {
     position: absolute;
   }
@@ -11,7 +18,7 @@ body {
   margin: 0;
   padding: 0;
   overflow: clip;
-  cursor: url('assets/cursor2.svg') 12 0, default;
+  cursor: url('assets/cursor.svg') 12 0, default;
 } 
 
 .assets {  

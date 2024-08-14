@@ -2,19 +2,10 @@ import { inject, Injectable } from "@angular/core";
 import { WINDOW } from "@ng-web-apis/common";
 import {
   combineLatestWith,
-  delay,
-  delayWhen,
   fromEvent,
   map,
-  merge,
   Observable,
-  of,
-  share,
-  shareReplay,
   startWith,
-  switchMap,
-  tap,
-  withLatestFrom,
 } from "rxjs";
 
 @Injectable({ providedIn: "root" })
@@ -31,7 +22,6 @@ export class ResizeService {
       startWith(this.getWindowSize()),
       combineLatestWith(this.loadEvent$),
       map(() => this.getRatio(baseCellSize, gridWidthInCells))
-      // tap((res) => console.log("RES", res))
     );
   }
 

@@ -2,54 +2,59 @@ import {
   AfterViewInit,
   Directive,
   ElementRef,
-  EventEmitter,
-  Input,
-  Output,
   inject,
+  input,
+  OnDestroy,
   output,
 } from "@angular/core";
-import { WINDOW } from "@ng-web-apis/common";
+import { Observable, Subject, takeUntil, tap } from "rxjs";
 
 import { CanvasParams } from "../types/canvas-params";
 import { ResizeService } from "../services/resize.service";
-import { tap } from "rxjs";
+import { CanvasContext } from "../constants/canvas-context";
+import { CanvasCtx } from "../types/canvas-ctx";
+import { CanvasContextName } from "../types/canvas-context-name";
 
 @Directive({
   selector: "[canvasParams]",
   standalone: true,
 })
-export class CanvasParamsDirective implements AfterViewInit {
-  @Input() canvasCss: string = "";
-  private readonly window = inject(WINDOW);
-  private readonly elRef = inject<ElementRef<HTMLCanvasElement>>(ElementRef);
+export class CanvasParamsDirective implements AfterViewInit, OnDestroy {
+  private readonly elRef = inject(ElementRef<HTMLCanvasElement>);
   private readonly resizeService = inject(ResizeService);
+  private readonly destroy$ = new Subject<void>();
 
+  canvasCss = input<string>("");
+  context = input<CanvasContextName>(CanvasContext.DEFAULT);
   canvasParams = output<CanvasParams>();
 
   ngAfterViewInit() {
-    this.initCanvasParams();
-
-    this.resizeService
-      .calculateScaleRatio(32, 20)
-      .pipe(
-        tap(() => {
-          this.initCanvasParams();
-        })
-      )
-      .subscribe();
+    this.initializeCanvasParams();
+    this.handleResize().pipe(takeUntil(this.destroy$)).subscribe();
   }
 
-  private initCanvasParams(): void {
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private handleResize(): Observable<number> {
+    return this.resizeService
+      .calculateScaleRatio(32, 20)
+      .pipe(tap(() => this.initializeCanvasParams()));
+  }
+
+  private initializeCanvasParams(): void {
     const canvas = this.elRef.nativeElement;
-    canvas.style.cssText = `${this.canvasCss};`;
-    const ctx = canvas.getContext("2d")!;
-    ctx.imageSmoothingEnabled = true;
-    const width = (canvas.width = this.window.innerWidth);
-    const height = (canvas.height = this.window.innerHeight);
-    const canvasCenter = {
-      x: this.window.innerWidth * 0.5,
-      y: this.window.innerHeight * 0.5,
-    };
+
+    this.applyCanvasStyles(canvas);
+
+    const ctx = this.getCanvasContext(canvas);
+
+    const { width, height } = this.setCanvasDimensions(canvas);
+
+    const canvasCenter = this.calculateCanvasCenter(width, height);
+
     const canvasParams: CanvasParams = {
       ctx,
       canvasCenter,
@@ -57,6 +62,49 @@ export class CanvasParamsDirective implements AfterViewInit {
       height,
       canvas,
     };
+
     this.canvasParams.emit(canvasParams);
+  }
+
+  private applyCanvasStyles(canvas: HTMLCanvasElement): void {
+    canvas.style.cssText = `${this.canvasCss()}; width: 100vw; height: 100vh;`;
+  }
+
+  private getCanvasContext(canvas: HTMLCanvasElement): CanvasCtx {
+    const ctx = canvas.getContext(this.context());
+    if (!ctx) {
+      throw new Error("context not supported or canvas already initialized");
+    }
+
+    if (ctx instanceof CanvasRenderingContext2D) {
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      ctx.imageSmoothingEnabled = true;
+    }
+
+    return ctx as any;
+  }
+
+  private setCanvasDimensions(canvas: HTMLCanvasElement): {
+    width: number;
+    height: number;
+  } {
+    const rect = canvas.getBoundingClientRect();
+    const width = (canvas.width =
+      Math.round(devicePixelRatio * rect.right) -
+      Math.round(devicePixelRatio * rect.left));
+    const height = (canvas.height =
+      Math.round(devicePixelRatio * rect.bottom) -
+      Math.round(devicePixelRatio * rect.top));
+    return { width, height };
+  }
+
+  private calculateCanvasCenter(
+    width: number,
+    height: number
+  ): { x: number; y: number } {
+    return {
+      x: width * 0.5,
+      y: height * 0.5,
+    };
   }
 }
