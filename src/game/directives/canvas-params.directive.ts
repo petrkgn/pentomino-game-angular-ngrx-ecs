@@ -89,12 +89,8 @@ export class CanvasParamsDirective implements AfterViewInit, OnDestroy {
     height: number;
   } {
     const rect = canvas.getBoundingClientRect();
-    const width = (canvas.width =
-      Math.round(devicePixelRatio * rect.right) -
-      Math.round(devicePixelRatio * rect.left));
-    const height = (canvas.height =
-      Math.round(devicePixelRatio * rect.bottom) -
-      Math.round(devicePixelRatio * rect.top));
+    const width = (canvas.width = rect.width * devicePixelRatio);
+    const height = (canvas.height = rect.height * devicePixelRatio);
     return { width, height };
   }
 

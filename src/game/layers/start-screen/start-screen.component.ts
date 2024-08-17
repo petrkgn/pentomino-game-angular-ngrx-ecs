@@ -275,8 +275,9 @@ export class StartScreenComponent {
     }
   ) {
     canvas.addEventListener("click", (event: MouseEvent) => {
-      const clickX = event.offsetX;
-      const clickY = event.offsetY;
+      const dpr = window.devicePixelRatio || 1;
+      const clickX = event.offsetX * dpr;
+      const clickY = event.offsetY * dpr;
 
       if (
         this.isClickInsideButton(
