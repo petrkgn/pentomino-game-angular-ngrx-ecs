@@ -27,7 +27,7 @@
           },
           "options": {
             "assets": [
-              "src/favicon.ico",
+              "src/favicon.png",
               "src/assets"
             ],
             "index": "src/index.html",
