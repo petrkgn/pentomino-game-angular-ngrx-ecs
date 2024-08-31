@@ -4,6 +4,8 @@ import { Injectable } from "@angular/core";
   providedIn: "root",
 })
 export class FireEffectService {
+  private worker: Worker | null = null;
+
   private vertexShaderSource = `
     attribute vec2 a_position;
     void main() {
@@ -26,22 +28,47 @@ export class FireEffectService {
   }
 
   initWebGL(
-    canvas: OffscreenCanvas,
+    canvasId: string,
+    offscreenCanvas: OffscreenCanvas,
     coordinates: { x: number; y: number }
   ): void {
-    const worker = new Worker(
-      new URL("../workers/fire-effect.worker.js", import.meta.url)
-    );
-    worker.postMessage(
+    if (!this.worker) {
+      this.worker = new Worker(
+        new URL("../workers/fire-effect.worker.js", import.meta.url)
+      );
+    }
+
+    // Инициализация WebGL контекста для конкретного canvas
+    this.worker.postMessage(
       {
-        canvas,
+        type: "init",
+        canvasId,
+        canvas: offscreenCanvas,
         vertexShaderSource: this.vertexShaderSource,
         fragmentShaderSource: this.fragmentShaderSource,
-        width: canvas.width,
-        height: canvas.height,
+        width: offscreenCanvas.width,
+        height: offscreenCanvas.height,
         coordinates,
       },
-      [canvas]
+      [offscreenCanvas]
     );
+  }
+
+  updateWebGLSize(
+    canvasId: string,
+    width: number,
+    height: number,
+    coordinates: { x: number; y: number }
+  ): void {
+    if (this.worker) {
+      // Отправка обновленных размеров для конкретного canvas
+      this.worker.postMessage({
+        type: "update",
+        canvasId,
+        width,
+        height,
+        coordinates,
+      });
+    }
   }
 }

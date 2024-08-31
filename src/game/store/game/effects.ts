@@ -19,6 +19,7 @@ import { gameFeature } from "./state";
 import { KEY_PRESSED } from "../../tokens/key-pressed.token";
 import { MOUSE_EVENT } from "../../tokens/mouse-event.token";
 import { GameStateService } from "../../services/game-state.service";
+import { toSignal } from "@angular/core/rxjs-interop";
 
 @Injectable()
 export class GameEffects {
@@ -35,12 +36,15 @@ export class GameEffects {
   private stopClickWithoutActiveShape$$ = new Subject<void>();
   private stopClickWithActiveShape$$ = new Subject<void>();
 
-  currentAngle = 0;
+  private readonly dpr = toSignal(this.resizeService.calculateDpr());
 
   readonly mouseMove$ = createEffect(() =>
     this.mouseEvent$.pipe(
       filter((e) => e.type === "mousemove"),
-      map((e) => PlayerActions.mouseMove({ mx: e.x, my: e.y }))
+      map((e) => {
+        const dpr = this.dpr() || 1;
+        return PlayerActions.mouseMove({ mx: e.x * dpr, my: e.y * dpr });
+      })
     )
   );
 
@@ -51,7 +55,10 @@ export class GameEffects {
       withLatestFrom(this.activeShapes$),
       filter(([_, activeShapes]) => !activeShapes.length),
       tap(() => this.stopClickWithoutActiveShape$$.next()),
-      map(([e, _]) => PlayerActions.chooseShape({ mx: e.x, my: e.y })),
+      map(([e, _]) => {
+        const dpr = this.dpr() || 1;
+        return PlayerActions.chooseShape({ mx: e.x * dpr, my: e.y * dpr });
+      }),
       takeUntil(this.stopClickWithActiveShape$$),
       repeat()
     )

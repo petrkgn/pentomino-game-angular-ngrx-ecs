@@ -19,6 +19,7 @@ import { GameFacade } from "../../game.facade";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { GameObjectsIds } from "../../constants/game-objects-ids.enum";
 import { tap } from "rxjs";
+import { ResizeService } from "../../services/resize.service";
 
 @Component({
   selector: "game-scene",
@@ -48,6 +49,8 @@ export class SceneComponent {
   private readonly rectService = inject(RectService);
   private readonly store = inject(Store);
   private readonly gameFacade = inject(GameFacade);
+  private readonly resizeService = inject(ResizeService);
+  private readonly dpr = toSignal(this.resizeService.calculateDpr());
 
   fireCoords = output<{
     x1: number;
@@ -115,6 +118,8 @@ export class SceneComponent {
   }
 
   private drawShapes(topLeftX: number, topLeftY: number): void {
+    const dpr = this.dpr() || 1;
+
     const shapesPack = this.shapesPack();
     const shapesCount = shapesPack.length;
 
@@ -128,9 +133,9 @@ export class SceneComponent {
       if (shapesCount > 5 && i <= 5) {
         this.updateShape(
           shapesPack[i + 6]?.id,
-          topLeftX + 62 * 16,
-          topLeftY,
-          offset
+          (topLeftX + 62 * 16) / dpr,
+          topLeftY / dpr,
+          offset / dpr
         );
       }
     }
